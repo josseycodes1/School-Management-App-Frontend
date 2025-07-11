@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-export default {
+const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -14,13 +14,15 @@ export default {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       colors: {
-        lamaSky: "#C3EBFA",
-        lamaSkyLight: "#EDF9FD",
-        lamaPurple: "#CFCEFF",
-        lamaPurpleLight: "#F1F0FF",
-        lamaYellow: "#FAE27C",
-        lamaYellowLight: "#FEFCE8",
+        lamaSky: "#F699CD",
+        lamaSkyLight: "##F699CD",
+        lamaPurple: "#FC46AA",
+        lamaPurpleLight: "#F699CD",
+        lamaYellow: "#FC46AA",
+        lamaYellowLight: "#FC46AA",
       },
     },
   },
-} satisfies Config;
+  plugins: [],
+};
+export default config;

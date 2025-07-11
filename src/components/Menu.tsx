@@ -1,7 +1,6 @@
+import { role } from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
-import { role } from "@/lib/data";
-
 
 const menuItems = [
   {
@@ -118,7 +117,6 @@ const menuItems = [
   },
 ];
 
-
 const Menu = () => {
   return (
     <div className="mt-4 text-sm">
@@ -147,5 +145,4 @@ const Menu = () => {
   );
 };
 
-
-export default Menu
+export default Menu;
