@@ -17,6 +17,22 @@
   color: black !important;
 }
 
+.rbc-day-slot {
+  border-right: 1px solid #E5E7EB !important; /* vertical line */
+}
+
+.rbc-day-slot .rbc-event:nth-of-type(even) {
+  background-color: #FC46AA !important;
+  color: #FFFFFF !important;
+}
+
+/*  Hover effect */
+.rbc-toolbar > span > button:hover {
+  background-color: #F699CD !important;
+  cursor: pointer;
+}
+
+
 .rbc-btn-group:first-child {
   display: none !important;
 }
@@ -32,12 +48,12 @@
 
 .rbc-btn-group:last-child button {
   border: none !important;
-  background-color: #f1f0ff !important;
+  background-color: #F699CD !important;
   margin-left: 2px !important;
 }
 
 .rbc-toolbar button.rbc-active {
-  background-color: #dbdafe !important;
+  background-color: #FC46AA !important;
   box-shadow: none !important;
 }
 
@@ -62,7 +78,7 @@
 }
 
 .rbc-timeslot-group {
-  background-color: #f7fdff !important;
+  background-color: #FFFFFF !important;
 }
 
 .rbc-day-slot {
@@ -71,38 +87,38 @@
 
 .rbc-event {
   border: none !important;
-  color: black !important;
+  color: white !important;
   padding: 10px !important;
   margin: 10px !important;
   width: 99% !important;
 }
 
 .rbc-event:nth-child(1) {
-  background-color: #e2f8ff !important;
+  background-color: #FC46AA !important;
 }
 .rbc-event:nth-child(2) {
-  background-color: #fefce8 !important;
+  background-color: #FC46AA !important;
 }
 .rbc-event:nth-child(3) {
-  background-color: #f2f1ff !important;
+  background-color: #FC46AA !important;
 }
 .rbc-event:nth-child(4) {
-  background-color: #fdf2fb !important;
+  background-color: #FC46AA !important;
 }
 .rbc-event:nth-child(5) {
-  background-color: #e2f8ff !important;
+  background-color: #FC46AA!important;
 }
 .rbc-event:nth-child(6) {
-  background-color: #fefce8 !important;
+  background-color: #FC46AA !important;
 }
 .rbc-event:nth-child(7) {
-  background-color: #f2f1ff !important;
+  background-color: #FC46AA !important;
 }
 .rbc-event:nth-child(8) {
-  background-color: #fdf2fb !important;
+  background-color: #FC46AA !important;
 }
 
 .rbc-event-label{
-  color: gray !important;
+  color: white !important;
   margin-bottom: 5px;
 }
