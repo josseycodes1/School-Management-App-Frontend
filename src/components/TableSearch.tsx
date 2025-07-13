@@ -1,7 +1,5 @@
-<<<<<<< HEAD
-=======
+
 "use client";
->>>>>>> 59cae5017eea8338963649eca8ec0ae1dedb70bd
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
