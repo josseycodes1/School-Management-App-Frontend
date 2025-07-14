@@ -49,10 +49,10 @@ const FormModal = ({
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
   const bgColor =
     type === "create"
-      ? "bg-lamaYellow"
+      ? "bg-josseypink1"
       : type === "update"
-      ? "bg-lamaSky"
-      : "bg-lamaPurple";
+      ? "bg-josseypink2"
+      : "bg-jossey-pink1";
 
   const [open, setOpen] = useState(false);
 
@@ -62,7 +62,7 @@ const FormModal = ({
         <span className="text-center font-medium">
           All data will be lost. Are you sure you want to delete this {table}?
         </span>
-        <button className="bg-red-700 text-white py-2 px-4 rounded-md border-none w-max self-center">
+        <button className="bg-josseypink1 text-white py-2 px-4 rounded-md border-none w-max self-center">
           Delete
         </button>
       </form>
