@@ -24,7 +24,7 @@ const SingleTeacherPage = () => {
                 className="w-36 h-36 rounded-full object-cover"
               />
             </div>
-            <div className="w-2/3 flex flex-col justify-between gap-4">
+            <div className="w-2/3 flex flex-col justify-between gap-4 text-white">
               <div className="flex items-center gap-4">
                 <h1 className="text-xl font-semibold">Leonard Snyder</h1>
                 {role === "admin" && <FormModal
