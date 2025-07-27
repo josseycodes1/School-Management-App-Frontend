@@ -1,8 +1,11 @@
+'use client'
+
+import { useEffect, useState } from "react";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { parentsData, role } from "@/lib/data";
+// import { parentsData, role } from "@/lib/data"; // for static data
 import Image from "next/image";
 
 type Parent = {
@@ -41,6 +44,37 @@ const columns = [
 ];
 
 const ParentListPage = () => {
+  const [parentsData, setParentsData] = useState<Parent[]>([]);
+  const [role, setRole] = useState<string>("");
+
+  useEffect(() => {
+    const fetchParents = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:8000/api/accounts/parents/", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch parents");
+
+        const data = await res.json();
+        console.log("Fetched parent data:", data); // ✅ Add this
+        setParentsData(data);
+      } catch (error) {
+        console.error("Error fetching parents:", error);
+      }
+    };
+
+    // if we store role in localStorage
+    const userRole = localStorage.getItem("role") || "";
+    setRole(userRole);
+
+    fetchParents();
+  }, []);
+
   const renderRow = (item: Parent) => (
     <tr
       key={item.id}
@@ -52,7 +86,7 @@ const ParentListPage = () => {
           <p className="text-xs text-gray-500">{item?.email}</p>
         </div>
       </td>
-      <td className="hidden md:table-cell">{item.students.join(",")}</td>
+      <td className="hidden md:table-cell">{item.students.join(", ")}</td>
       <td className="hidden md:table-cell">{item.phone}</td>
       <td className="hidden md:table-cell">{item.address}</td>
       <td>
@@ -83,13 +117,15 @@ const ParentListPage = () => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-              <FormModal table="teacher" type="create"/>
+              <FormModal table="parent" type="create" />
             )}
           </div>
         </div>
       </div>
+
       {/* LIST */}
       <Table columns={columns} renderRow={renderRow} data={parentsData} />
+
       {/* PAGINATION */}
       <Pagination />
     </div>
