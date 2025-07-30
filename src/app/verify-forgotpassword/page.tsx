@@ -1,128 +1,190 @@
-'use client'
-import { useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { toast } from 'react-hot-toast'
-import Link from 'next/link'
+"use client";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
-export default function VerifyReset() {
-  const searchParams = useSearchParams()
-  const email = searchParams.get('email')
-  const [code, setCode] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+export default function VerifyForgotPassword() {
+  const [token, setToken] = useState("");
+  const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+  useEffect(() => {
+    // Get email from query parameters if it exists
+    const emailParam = searchParams.get("email");
+    if (emailParam) {
+      setEmail(decodeURIComponent(emailParam));
+    }
+  }, [searchParams]);
+
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setError("Passwords don't match");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, code, newPassword })
-      })
-
-      if (response.ok) {
-        toast.success('Password reset successfully!')
-        window.location.href = '/login'
-      } else {
-        const error = await response.json()
-        toast.error(error.message || 'Reset failed')
-      }
-    } catch (error) {
-      toast.error('Network error. Please try again.')
+      const response = await axios.post(
+        "http://localhost:8000/api/accounts/password_reset/verify/",
+        {
+          token,
+          email,
+          new_password: newPassword,
+        }
+      );
+      setSuccess(response.data.message);
+      setTimeout(() => router.push("/log-in"), 2000);
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "An error occurred"
+      );
     } finally {
-      setIsLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const resendCode = async () => {
-    try {
-      await fetch('/api/auth/resend-reset-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email })
-      })
-      toast.success('Reset code resent!')
-    } catch (error) {
-      toast.error('Failed to resend code')
+  const handleResend = async () => {
+    if (!email) {
+      setError("Email is required to resend token");
+      return;
     }
-  }
+
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/accounts/password_reset/resend/",
+        { email }
+      );
+      setSuccess(response.data.message);
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "An error occurred"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-pink-50">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
-            JC
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800">Reset Your Password</h2>
-          <p className="text-gray-600 mt-2">
-            We sent a reset code to <span className="font-medium">{email}</span>
-          </p>
+          <h1 className="text-3xl font-bold text-[#FC46AA] mb-2">JOSSEY SCHOOL</h1>
+          <h2 className="text-xl text-[#F699CD]">Reset Password</h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form className="space-y-6" onSubmit={handleReset}>
           <div>
-            <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
-              Reset Code
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email Address
             </label>
             <input
-              id="code"
-              type="text"
+              type="email"
+              id="email"
+              name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA]"
-              placeholder="Enter 6-digit code"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FC46AA] focus:border-[#FC46AA]"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="token" className="block text-sm font-medium text-gray-700">
+              Verification Token
+            </label>
+            <input
+              type="text"
+              id="token"
+              name="token"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FC46AA] focus:border-[#FC46AA]"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
               New Password
             </label>
             <input
-              id="password"
               type="password"
-              required
+              id="newPassword"
+              name="newPassword"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA]"
-              placeholder="Enter new password"
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FC46AA] focus:border-[#FC46AA]"
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-[#FC46AA] text-white py-2 rounded-md hover:bg-[#F699CD] transition-colors disabled:opacity-70"
-          >
-            {isLoading ? 'Resetting...' : 'Reset Password'}
-          </button>
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              Confirm New Password
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FC46AA] focus:border-[#FC46AA]"
+            />
+          </div>
+
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {success && <p className="text-green-500 text-sm">{success}</p>}
+
+          <div className="flex justify-between">
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={loading}
+              className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              Resend Token
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FC46AA] hover:bg-[#F699CD] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC46AA] ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              {loading ? "Processing..." : "Reset Password"}
+            </button>
+          </div>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <p>
-            Didn't receive a code?{' '}
-            <button
-              onClick={resendCode}
-              className="font-medium text-[#FC46AA] hover:text-[#F699CD]"
-            >
-              Resend code
-            </button>
-          </p>
-          <p className="mt-2">
-            <Link href="/login" className="font-medium text-[#FC46AA] hover:text-[#F699CD]">
-              Back to login
-            </Link>
-          </p>
+        <div className="mt-6 text-center">
+          <Link href="/log-in" className="text-sm text-[#FC46AA] hover:text-[#F699CD]">
+            Back to Login
+          </Link>
         </div>
       </div>
     </div>
-  )
+  );
 }

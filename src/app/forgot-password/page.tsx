@@ -1,83 +1,87 @@
-'use client'
-import { useState } from 'react'
-import { toast } from 'react-hot-toast'
-import Link from 'next/link'
+"use client";
+import { useState } from "react";
+import Link from "next/link";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
     try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email })
-      })
-
-      if (response.ok) {
-        toast.success('Reset code sent to your email!')
-        window.location.href = `/forgot-password/verify?email=${encodeURIComponent(email)}`
-      } else {
-        const error = await response.json()
-        toast.error(error.message || 'Failed to send reset code')
-      }
-    } catch (error) {
-      toast.error('Network error. Please try again.')
+      const response = await axios.post(
+        "http://localhost:8000/api/accounts/password_reset/",
+        { email }
+      );
+      setSuccess(response.data.message);
+      // Redirect to verify page with email as query parameter
+      router.push(`/verify-forgotpassword?email=${encodeURIComponent(email)}`);
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "An error occurred"
+      );
     } finally {
-      setIsLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-pink-50">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
-            JC
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800">Reset Your Password</h2>
-          <p className="text-gray-600 mt-2">
-            Enter your email to receive a reset code
-          </p>
+          <h1 className="text-3xl font-bold text-[#FC46AA] mb-2">JOSSEY SCHOOL</h1>
+          <h2 className="text-xl text-[#F699CD]">Forgot Password</h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email Address
             </label>
             <input
-              id="email"
               type="email"
-              required
+              id="email"
+              name="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA]"
-              placeholder="your@email.com"
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FC46AA] focus:border-[#FC46AA]"
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-[#FC46AA] text-white py-2 rounded-md hover:bg-[#F699CD] transition-colors disabled:opacity-70"
-          >
-            {isLoading ? 'Sending...' : 'Send Reset Code'}
-          </button>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {success && <p className="text-green-500 text-sm">{success}</p>}
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FC46AA] hover:bg-[#F699CD] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC46AA] ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              {loading ? "Sending..." : "Send Reset Link"}
+            </button>
+          </div>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <Link href="/login" className="font-medium text-[#FC46AA] hover:text-[#F699CD]">
-            Back to login
+        <div className="mt-6 text-center">
+          <Link href="/log-in" className="text-sm text-[#FC46AA] hover:text-[#F699CD]">
+            Back to Login
           </Link>
         </div>
       </div>
     </div>
-  )
+  );
 }

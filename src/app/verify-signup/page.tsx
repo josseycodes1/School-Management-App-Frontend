@@ -3,27 +3,27 @@
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios, { AxiosError } from 'axios';
-
-interface VerifyFormData {
-  token: string;
-  email: string;
-}
+import Link from 'next/link';
 
 export default function VerifySignup() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [verificationData, setVerificationData] = useState<VerifyFormData>({
+  const email = searchParams.get('email') || '';
+  
+  const [formData, setFormData] = useState({
     token: '',
-    email: searchParams.get('email') || ''
+    email: email
   });
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState('');
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setVerificationData({
-      ...verificationData,
+    setFormData({
+      ...formData,
       [name]: value
     });
   };
@@ -32,26 +32,56 @@ export default function VerifySignup() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setResendSuccess('');
 
     try {
       const response = await axios.post(
-        'http://localhost:8000/api/accounts/api/users/verify_email/',
-        verificationData
+        'http://localhost:8000/api/accounts/users/verify_email/',
+        {
+          token: formData.token,
+          email: formData.email
+        }
       );
-      
       setSuccess(true);
       setTimeout(() => {
         router.push('/log-in');
-      }, 3000);
+      }, 2000);
     } catch (err) {
       const error = err as AxiosError;
-      if (error.response?.data && typeof error.response.data === 'object' && 'error' in error.response.data) {
-        setError((error.response.data as { error: string }).error);
+      if (error.response?.data) {
+        const responseData = error.response.data as { error?: string };
+        setError(responseData.error || 'Verification failed. Please check your token and try again.');
       } else {
         setError('Verification failed. Please try again.');
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResending(true);
+    setError('');
+    setResendSuccess('');
+
+    try {
+      const response = await axios.post(
+        'http://localhost:8000/api/accounts/users/resend_verification/',
+        { email: formData.email }
+      );
+      
+      setResendSuccess('A new verification token has been sent to your email.');
+      setError('');
+    } catch (err) {
+      const error = err as AxiosError;
+      if (error.response?.data) {
+        const responseData = error.response.data as { error?: string };
+        setError(responseData.error || 'Failed to send new verification token.');
+      } else {
+        setError('Failed to send new verification token. Please try again.');
+      }
+    } finally {
+      setResending(false);
     }
   };
 
@@ -63,14 +93,8 @@ export default function VerifySignup() {
             JC
           </div>
           <h1 className="text-3xl font-bold text-[#FC46AA]">JOSSEYCODES</h1>
-          <p className="text-gray-600 mt-2">Verify your email</p>
+          <p className="text-gray-600 mt-2">Verify your email address</p>
         </div>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-            {error}
-          </div>
-        )}
 
         {success ? (
           <div className="text-center">
@@ -79,56 +103,72 @@ export default function VerifySignup() {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="email" className="block text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={verificationData.email}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
-                required
-              />
-            </div>
+          <>
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+                {error}
+              </div>
+            )}
 
-            <div className="mb-6">
-              <label htmlFor="token" className="block text-gray-700 mb-2">Verification Code</label>
-              <input
-                type="text"
-                id="token"
-                name="token"
-                value={verificationData.token}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
-                placeholder="Enter the code sent to your email"
-                required
-              />
-            </div>
+            {resendSuccess && (
+              <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
+                {resendSuccess}
+              </div>
+            )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#FC46AA] text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50"
-            >
-              {loading ? 'Verifying...' : 'Verify Email'}
-            </button>
-          </form>
+            <p className="mb-4 text-gray-600">
+              We've sent a verification token to <span className="font-semibold">{email}</span>.
+              Please paste the token below to verify your account.
+            </p>
+
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <label htmlFor="token" className="block text-gray-700 mb-2">
+                  Verification Token
+                </label>
+                <input
+                  type="text"
+                  id="token"
+                  name="token"
+                  value={formData.token}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+                  required
+                  placeholder="Paste your verification token here"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#FC46AA] text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50 mb-4"
+              >
+                {loading ? 'Verifying...' : 'Verify Email'}
+              </button>
+            </form>
+
+            <div className="text-center">
+              <p className="text-gray-600">
+                Didn't receive a token?{' '}
+                <button
+                  onClick={handleResend}
+                  disabled={resending}
+                  className="text-[#FC46AA] hover:underline focus:outline-none"
+                >
+                  {resending ? 'Sending...' : 'Send new token'}
+                </button>
+              </p>
+            </div>
+          </>
         )}
 
-        <div className="mt-4 text-center">
-          <p className="text-gray-600">
-            Didn't receive a code?{' '}
-            <button 
-              className="text-[#FC46AA] hover:underline"
-              onClick={() => {
-                alert('Please check your email again or contact support.');
-              }}
-            >
-              Resend code
-            </button>
-          </p>
+        <div className="mt-6 text-center">
+          <Link 
+            href="/log-in" 
+            className="text-[#FC46AA] hover:underline"
+          >
+            Back to login
+          </Link>
         </div>
       </div>
     </div>
