@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'react-hot-toast'
 import { z } from 'zod'
-import { motion } from 'framer-motion'
+import axios from 'axios'
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -27,24 +27,49 @@ export default function LoginPage() {
       // Validate form data
       loginSchema.parse(formData)
       
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
+      // Using axios to make the API call
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/login/`, formData, {
         headers: {
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
+        }
       })
 
-      if (response.ok) {
-        toast.success('Login successful!')
-        router.push('/dashboard')  // Updated navigation method
-      } else {
-        const error = await response.json()
-        toast.error(error.message || 'Login failed')
+        if (response.status === 200) {
+        const { user } = response.data
+        toast.success(`Welcome back, ${user.first_name || 'User'}!`)
+        
+        // Store user data and tokens in context/state/localStorage
+        localStorage.setItem('accessToken', response.data.access)
+        localStorage.setItem('refreshToken', response.data.refresh)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        localStorage.setItem('role', user.role); 
+
+          
+        switch(user.role) {
+          case 'admin':
+            router.push('/admin')
+            break
+          case 'teacher':
+            router.push('/teacher')
+            break
+          case 'student':
+            router.push('/student')
+            break
+          case 'parent':
+            router.push('/parent')
+            break
+          default:
+            // If role isn't specified or doesn't match, redirect to default dashboard
+            router.push('/dashboard')
+            break
+        }
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message)
+      } else if (axios.isAxiosError(error)) {
+        // Handle axios error
+        toast.error(error.response?.data?.message || 'Login failed')
       } else {
         toast.error('An error occurred. Please try again.')
       }
@@ -62,7 +87,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-pink-100 flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
@@ -122,7 +147,7 @@ export default function LoginPage() {
           </Link>
           <p className="mt-2">
             Don't have an account?{' '}
-            <Link href="/signup" className="font-medium text-[#FC46AA] hover:text-[#F699CD]">
+            <Link href="/sign-up" className="font-medium text-[#FC46AA] hover:text-[#F699CD]">
               Sign up
             </Link>
           </p>

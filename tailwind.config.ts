@@ -17,7 +17,7 @@ const config: Config = {
         lamaSky: "#F699CD",
         lamaSkyLight: "##F699CD",
         josseypink1: "#FC46AA",
-        josseypink2: "#F699CD",
+        josseypink2: "#2c2328ff",
         lamaYellow: "#FC46AA",
         lamaYellowLight: "#FC46AA",
       },

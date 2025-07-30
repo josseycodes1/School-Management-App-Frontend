@@ -1,161 +1,162 @@
-'use client'
-import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { toast } from 'react-hot-toast'
+'use client';
+
+import { useState, FormEvent, ChangeEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import axios, { AxiosError } from 'axios';
+
+interface SignUpFormData {
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+}
 
 export default function SignUp() {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+  const router = useRouter();
+  const [formData, setFormData] = useState<SignUpFormData>({
     email: '',
     password: '',
+    first_name: '',
+    last_name: '',
     role: 'student'
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  });
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+      [name]: value
+    });
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      })
-
-      if (response.ok) {
-        toast.success('Account created! Check your email for verification.')
-        router.push(`/verify?email=${formData.email}`)
+      const response = await axios.post('http://localhost:8000/api/accounts/users/', formData);
+      router.push(`/verify-signup?email=${encodeURIComponent(response.data.email)}`);
+    } catch (err) {
+      const error = err as AxiosError;
+      if (error.response?.data && typeof error.response.data === 'object' && 'email' in error.response.data) {
+        setError((error.response.data as { email: string[] }).email[0]);
       } else {
-        const error = await response.json()
-        toast.error(error.message || 'Signup failed')
+        setError('Signup failed. Please try again.');
       }
-    } catch (error) {
-      toast.error('Network error. Please try again.')
     } finally {
-      setIsLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center bg-pink-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
             JC
           </div>
-          <h2 className="text-2xl font-bold text-gray-800">Create Your Account</h2>
-          <p className="text-gray-600 mt-2">Join JosseyCodes Academy as</p>
+          <h1 className="text-3xl font-bold text-[#FC46AA]">JOSSEYCODES</h1>
+          <p className="text-gray-600 mt-2">Create your account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                First Name
-              </label>
-              <input
-                id="firstName"
-                name="firstName"
-                type="text"
-                required
-                value={formData.firstName}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA]"
-              />
-            </div>
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                Last Name
-              </label>
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                required
-                value={formData.lastName}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA]"
-              />
-            </div>
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+            {error}
           </div>
+        )}
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
-            </label>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-gray-700 mb-2">Email</label>
             <input
+              type="email"
               id="email"
               name="email"
-              type="email"
-              required
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+              required
             />
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
+          <div className="mb-4">
+            <label htmlFor="password" className="block text-gray-700 mb-2">Password</label>
             <input
+              type="password"
               id="password"
               name="password"
-              type="password"
-              required
-              minLength={8}
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+              minLength={8}
+              required
             />
           </div>
 
-          <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-              I am a
-            </label>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label htmlFor="first_name" className="block text-gray-700 mb-2">First Name</label>
+              <input
+                type="text"
+                id="first_name"
+                name="first_name"
+                value={formData.first_name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="last_name" className="block text-gray-700 mb-2">Last Name</label>
+              <input
+                type="text"
+                id="last_name"
+                name="last_name"
+                value={formData.last_name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label htmlFor="role" className="block text-gray-700 mb-2">Role</label>
             <select
               id="role"
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
             >
               <option value="student">Student</option>
-              <option value="parent">Parent</option>
               <option value="teacher">Teacher</option>
+              <option value="parent">Parent</option>
             </select>
           </div>
 
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full bg-[#FC46AA] text-white py-2 rounded-md hover:bg-[#F699CD] transition-colors disabled:opacity-70"
+            disabled={loading}
+            className="w-full bg-[#FC46AA] text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50"
           >
-            {isLoading ? 'Creating Account...' : 'Create Account'}
+            {loading ? 'Signing up...' : 'Sign Up'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link href="/login" className="font-medium text-[#FC46AA] hover:text-[#F699CD]">
-            Sign in
-          </Link>
-        </p>
+        <div className="mt-4 text-center">
+          <p className="text-gray-600">
+            Already have an account?{' '}
+            <a href="/log-in" className="text-[#FC46AA] hover:underline">
+              Log in
+            </a>
+          </p>
+        </div>
       </div>
     </div>
-  )
+  );
 }

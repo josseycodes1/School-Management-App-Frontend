@@ -1,135 +1,120 @@
-'use client'
+"use client";
 
 import { useEffect, useState } from "react";
-import FormModal from "@/components/FormModal";
-import Pagination from "@/components/Pagination";
-import Table from "@/components/Table";
-import TableSearch from "@/components/TableSearch";
-// import { parentsData, role } from "@/lib/data"; // for static data
-import Image from "next/image";
+import { useRouter } from 'next/navigation'; 
+import { toast } from 'react-hot-toast'; 
 
+// Define the shape of a parent
 type Parent = {
   id: number;
   name: string;
   email?: string;
-  students: string[];
+  students: string[]; // Should be an array
   phone: string;
   address: string;
 };
 
-const columns = [
-  {
-    header: "Info",
-    accessor: "info",
-  },
-  {
-    header: "Student Names",
-    accessor: "students",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Phone",
-    accessor: "phone",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Address",
-    accessor: "address",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
-];
-
-const ParentListPage = () => {
+export default function ParentList() {
   const [parentsData, setParentsData] = useState<Parent[]>([]);
-  const [role, setRole] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const router = useRouter()
 
-  useEffect(() => {
-    const fetchParents = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:8000/api/accounts/parents/", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+     
+  
+  
+  
+  
+  
+const fetchParents = async () => {
+  setLoading(true);
+  
+  try {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      toast.error("Please login again");
+      router.push("/login");
+      return;
+    }
 
-        if (!res.ok) throw new Error("Failed to fetch parents");
+    const res = await fetch("http://localhost:8000/api/accounts/parents/", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
 
-        const data = await res.json();
-        console.log("Fetched parent data:", data); // ✅ Add this
-        setParentsData(data);
-      } catch (error) {
-        console.error("Error fetching parents:", error);
-      }
-    };
+    // Handle 403 specifically
+    if (res.status === 403) {
+      throw new Error("You don't have permission to view parents");
+    }
 
-    // if we store role in localStorage
-    const userRole = localStorage.getItem("role") || "";
-    setRole(userRole);
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to fetch parents");
+    }
 
-    fetchParents();
-  }, []);
-
-  const renderRow = (item: Parent) => (
-    <tr
-      key={item.id}
-      className="border-b border-gray-200 even:bg-pink-100 text-sm hover:bg-josseypink1"
-    >
-      <td className="flex items-center gap-4 p-4">
-        <div className="flex flex-col">
-          <h3 className="font-semibold">{item.name}</h3>
-          <p className="text-xs text-gray-500">{item?.email}</p>
-        </div>
-      </td>
-      <td className="hidden md:table-cell">{item.students.join(", ")}</td>
-      <td className="hidden md:table-cell">{item.phone}</td>
-      <td className="hidden md:table-cell">{item.address}</td>
-      <td>
-        <div className="flex items-center gap-2">
-          {role === "admin" && (
-            <>
-              <FormModal table="parent" type="update" data={item} />
-              <FormModal table="parent" type="delete" id={item.id} />
-            </>
-          )}
-        </div>
-      </td>
-    </tr>
-  );
-
-  return (
-    <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
-      {/* TOP */}
-      <div className="flex items-center justify-between">
-        <h1 className="hidden md:block text-lg font-semibold">All Parents</h1>
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <TableSearch />
-          <div className="flex items-center gap-4 self-end">
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-josseypink1">
-              <Image src="/filter.png" alt="" width={14} height={14} />
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-josseypink1">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
-            {role === "admin" && (
-              <FormModal table="parent" type="create" />
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* LIST */}
-      <Table columns={columns} renderRow={renderRow} data={parentsData} />
-
-      {/* PAGINATION */}
-      <Pagination />
-    </div>
-  );
+    const data = await res.json();
+    setParentsData(data);
+    
+  } catch (error: unknown) {
+    console.error("Fetch error:", error);
+    if (error instanceof Error) {
+      toast.error(error.message);
+    } else {
+      toast.error("An unknown error occurred");
+    }
+  } finally {
+    setLoading(false);
+  }
 };
 
-export default ParentListPage;
+
+
+
+
+    useEffect(() => {
+      fetchParents();
+    }, []);
+
+    if (loading) {
+      return <p className="text-center mt-10 text-gray-600">Loading parents...</p>;
+    }
+
+  return (
+    <div className="p-4">
+      <h1 className="text-xl font-semibold mb-4">Parent List</h1>
+
+      {parentsData.length === 0 ? (
+        <p className="text-gray-600">No parents found.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white shadow rounded">
+            <thead>
+              <tr className="bg-gray-100 text-left text-sm text-gray-600 uppercase">
+                <th className="px-4 py-2">Name</th>
+                <th className="px-4 py-2 hidden md:table-cell">Email</th>
+                <th className="px-4 py-2 hidden md:table-cell">Students</th>
+                <th className="px-4 py-2 hidden md:table-cell">Phone</th>
+                <th className="px-4 py-2 hidden md:table-cell">Address</th>
+              </tr>
+            </thead>
+            <tbody>
+              {parentsData.map((item) => (
+                <tr key={item.id} className="border-t text-sm text-gray-700">
+                  <td className="px-4 py-2">{item.name}</td>
+                  <td className="px-4 py-2 hidden md:table-cell">{item.email || "N/A"}</td>
+                  <td className="px-4 py-2 hidden md:table-cell">
+                    {Array.isArray(item.students) ? item.students.join(", ") : "No students"}
+                  </td>
+                  <td className="px-4 py-2 hidden md:table-cell">{item.phone}</td>
+                  <td className="px-4 py-2 hidden md:table-cell">{item.address}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}

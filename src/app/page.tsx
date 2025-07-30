@@ -48,10 +48,10 @@ export default function Home() {
           <h1 className="text-2xl font-bold text-gray-800">JosseyCodes Academy</h1>
         </div>
         <div className="flex space-x-4">
-          <Link href="/login" className="px-4 py-2 text-[#FC46AA] font-medium hover:text-[#F699CD] transition-colors">
+          <Link href="/log-in" className="px-4 py-2 text-[#FC46AA] font-medium hover:text-[#F699CD] transition-colors">
             Login
           </Link>
-          <Link href="/signup" className="px-4 py-2 bg-[#FC46AA] text-white rounded-md hover:bg-[#F699CD] transition-colors">
+          <Link href="/sign-up" className="px-4 py-2 bg-[#FC46AA] text-white rounded-md hover:bg-[#F699CD] transition-colors">
             Sign Up
           </Link>
         </div>
@@ -66,7 +66,7 @@ export default function Home() {
           Quality education for students, comprehensive tools for parents, and powerful resources for teachers.
         </p>
         <div className="flex justify-center space-x-4">
-          <Link href="/signup" className="px-8 py-3 bg-[#FC46AA] text-white rounded-md hover:bg-[#F699CD] transition-colors font-medium">
+          <Link href="/sign-up" className="px-8 py-3 bg-[#FC46AA] text-white rounded-md hover:bg-[#F699CD] transition-colors font-medium">
             Get Started
           </Link>
           <Link href="/about" className="px-8 py-3 border border-[#FC46AA] text-[#FC46AA] rounded-md hover:bg-[#FC46AA]/10 transition-colors font-medium">

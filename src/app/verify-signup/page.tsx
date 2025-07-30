@@ -1,113 +1,136 @@
-'use client'
-import { useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { toast } from 'react-hot-toast'
-import Link from 'next/link'
+'use client';
 
-export default function Verify() {
-  const searchParams = useSearchParams()
-  const email = searchParams.get('email')
-  const [code, setCode] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+import { useState, FormEvent, ChangeEvent } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import axios, { AxiosError } from 'axios';
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+interface VerifyFormData {
+  token: string;
+  email: string;
+}
+
+export default function VerifySignup() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [verificationData, setVerificationData] = useState<VerifyFormData>({
+    token: '',
+    email: searchParams.get('email') || ''
+  });
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<boolean>(false);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setVerificationData({
+      ...verificationData,
+      [name]: value
+    });
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
     try {
-      const response = await fetch('/api/auth/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, code })
-      })
-
-      if (response.ok) {
-        toast.success('Account verified successfully!')
-        window.location.href = '/login'
+      const response = await axios.post(
+        'http://localhost:8000/api/accounts/api/users/verify_email/',
+        verificationData
+      );
+      
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/log-in');
+      }, 3000);
+    } catch (err) {
+      const error = err as AxiosError;
+      if (error.response?.data && typeof error.response.data === 'object' && 'error' in error.response.data) {
+        setError((error.response.data as { error: string }).error);
       } else {
-        const error = await response.json()
-        toast.error(error.message || 'Verification failed')
+        setError('Verification failed. Please try again.');
       }
-    } catch (error) {
-      toast.error('Network error. Please try again.')
     } finally {
-      setIsLoading(false)
+      setLoading(false);
     }
-  }
-
-  const resendCode = async () => {
-    try {
-      await fetch('/api/auth/resend-verification', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email })
-      })
-      toast.success('Verification code resent!')
-    } catch (error) {
-      toast.error('Failed to resend code')
-    }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center bg-pink-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
             JC
           </div>
-          <h2 className="text-2xl font-bold text-gray-800">Verify Your Account</h2>
-          <p className="text-gray-600 mt-2">
-            We sent a verification code to <span className="font-medium">{email}</span>
-          </p>
+          <h1 className="text-3xl font-bold text-[#FC46AA]">JOSSEYCODES</h1>
+          <p className="text-gray-600 mt-2">Verify your email</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
-              Verification Code
-            </label>
-            <input
-              id="code"
-              type="text"
-              required
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA]"
-              placeholder="Enter 6-digit code"
-            />
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+            {error}
           </div>
+        )}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-[#FC46AA] text-white py-2 rounded-md hover:bg-[#F699CD] transition-colors disabled:opacity-70"
-          >
-            {isLoading ? 'Verifying...' : 'Verify Account'}
-          </button>
-        </form>
+        {success ? (
+          <div className="text-center">
+            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
+              Email verified successfully! Redirecting to login...
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label htmlFor="email" className="block text-gray-700 mb-2">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={verificationData.email}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+                required
+              />
+            </div>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <p>
-            Didn't receive a code?{' '}
+            <div className="mb-6">
+              <label htmlFor="token" className="block text-gray-700 mb-2">Verification Code</label>
+              <input
+                type="text"
+                id="token"
+                name="token"
+                value={verificationData.token}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+                placeholder="Enter the code sent to your email"
+                required
+              />
+            </div>
+
             <button
-              onClick={resendCode}
-              className="font-medium text-[#FC46AA] hover:text-[#F699CD]"
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#FC46AA] text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50"
+            >
+              {loading ? 'Verifying...' : 'Verify Email'}
+            </button>
+          </form>
+        )}
+
+        <div className="mt-4 text-center">
+          <p className="text-gray-600">
+            Didn't receive a code?{' '}
+            <button 
+              className="text-[#FC46AA] hover:underline"
+              onClick={() => {
+                alert('Please check your email again or contact support.');
+              }}
             >
               Resend code
             </button>
           </p>
-          <p className="mt-2">
-            Wrong email?{' '}
-            <Link href="/signup" className="font-medium text-[#FC46AA] hover:text-[#F699CD]">
-              Sign up again
-            </Link>
-          </p>
         </div>
       </div>
     </div>
-  )
+  );
 }
