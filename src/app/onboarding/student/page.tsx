@@ -23,9 +23,26 @@ const bloodTypes = [
   'AB+', 'AB-', 'O+', 'O-'
 ];
 
+interface ProgressData {
+  completed: boolean;
+  progress: number;
+  required_fields: {
+    phone: boolean;
+    address: boolean;
+    gender: boolean;
+    birth_date: boolean;
+    admission_number: boolean;
+    class_level: boolean;
+    photo: boolean;
+    parent_name: boolean;
+    parent_contact: boolean;
+  };
+}
+
 export default function StudentOnboarding() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(true);
   const [formData, setFormData] = useState<FormData>({
     phone: '',
     address: '',
@@ -40,6 +57,21 @@ export default function StudentOnboarding() {
     parent_contact: ''
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [progress, setProgress] = useState<ProgressData>({
+    completed: false,
+    progress: 0,
+    required_fields: {
+      phone: false,
+      address: false,
+      gender: false,
+      birth_date: false,
+      admission_number: false,
+      class_level: false,
+      photo: false,
+      parent_name: false,
+      parent_contact: false
+    }
+  });
 
   // Check if user is already onboarded
   useEffect(() => {
@@ -51,18 +83,48 @@ export default function StudentOnboarding() {
           return;
         }
 
-        const response = await axios.get('http://localhost:8000/api/accounts/students/me/', {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        // Get onboarding progress
+        const progressRes = await axios.get(
+          'http://localhost:8000/api/accounts/students/onboarding/progress/', 
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
           }
-        });
+        );
+
+        setProgress(progressRes.data);
 
         // If onboarding is complete, redirect to dashboard
-        if (response.data.onboarding_complete) {
+        if (progressRes.data.completed) {
           router.push('/student');
+          return;
         }
+
+        // Pre-fill existing data if available
+        const profileRes = await axios.get(
+          'http://localhost:8000/api/accounts/students/onboarding/',
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        setFormData(prev => ({
+          ...prev,
+          ...profileRes.data,
+          photo: null // Reset photo to force re-upload
+        }));
+
+        if (profileRes.data.photo) {
+          setPreviewImage(`http://localhost:8000${profileRes.data.photo}`);
+        }
+
       } catch (error) {
         console.error('Error checking onboarding status:', error);
+      } finally {
+        setLoadingProgress(false);
       }
     };
 
@@ -183,9 +245,24 @@ export default function StudentOnboarding() {
         }
       );
 
-      toast.success('Onboarding completed successfully!');
-      // Redirect to dashboard after successful onboarding
-      router.push('/student');
+      // Check progress after submission
+      const progressRes = await axios.get(
+        'http://localhost:8000/api/accounts/students/onboarding/progress/',
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      setProgress(progressRes.data);
+
+      if (progressRes.data.completed) {
+        toast.success('Onboarding completed successfully!');
+        router.push('/student');
+      } else {
+        toast.success('Progress saved!');
+      }
 
     } catch (error: any) {
       console.error('Error:', error);
@@ -214,12 +291,38 @@ export default function StudentOnboarding() {
     }
   };
 
+  if (loadingProgress) {
+    return (
+      <div className="min-h-screen bg-pink-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="spinner border-4 border-[#FC46AA] border-t-transparent rounded-full w-12 h-12 animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-700">Checking onboarding status...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-pink-100 py-10 px-4">
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
-        {/* Header with pink background */}
+        {/* Header with pink background and progress tracker */}
         <div className="bg-[#FC46AA] py-4 px-6">
           <h1 className="text-2xl font-bold text-center text-white">Student Onboarding</h1>
+          <div className="mt-2">
+            <div className="flex justify-between text-sm text-white">
+              <span>Progress: {progress.progress}%</span>
+              <span>
+                {Object.values(progress.required_fields).filter(Boolean).length}/
+                {Object.keys(progress.required_fields).length} completed
+              </span>
+            </div>
+            <div className="w-full bg-white bg-opacity-30 rounded-full h-2 mt-1">
+              <div 
+                className="bg-white h-2 rounded-full" 
+                style={{ width: `${progress.progress}%` }}
+              ></div>
+            </div>
+          </div>
         </div>
         
         {/* Form content */}
@@ -229,7 +332,7 @@ export default function StudentOnboarding() {
             <h2 className="text-lg font-medium text-gray-900 mb-4">Personal Information</h2>
             
             <div className="grid grid-cols-1 gap-y-4 gap-x-6 sm:grid-cols-6">
-              <div className="sm:col-span-3">
+              <div className={`sm:col-span-3 ${!progress.required_fields.phone && 'border-l-4 border-red-500 pl-3'}`}>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
                   Phone Number *
                 </label>
@@ -244,7 +347,7 @@ export default function StudentOnboarding() {
                 />
               </div>
 
-              <div className="sm:col-span-3">
+              <div className={`sm:col-span-3 ${!progress.required_fields.gender && 'border-l-4 border-red-500 pl-3'}`}>
                 <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
                   Gender *
                 </label>
@@ -264,7 +367,7 @@ export default function StudentOnboarding() {
                 </select>
               </div>
 
-              <div className="sm:col-span-6">
+              <div className={`sm:col-span-6 ${!progress.required_fields.address && 'border-l-4 border-red-500 pl-3'}`}>
                 <label htmlFor="address" className="block text-sm font-medium text-gray-700">
                   Address *
                 </label>
@@ -279,7 +382,7 @@ export default function StudentOnboarding() {
                 />
               </div>
 
-              <div className="sm:col-span-3">
+              <div className={`sm:col-span-3 ${!progress.required_fields.birth_date && 'border-l-4 border-red-500 pl-3'}`}>
                 <label htmlFor="birth_date" className="block text-sm font-medium text-gray-700">
                   Birth Date *
                 </label>
@@ -319,7 +422,7 @@ export default function StudentOnboarding() {
             <h2 className="text-lg font-medium text-gray-900 mb-4">Parent/Guardian Information</h2>
             
             <div className="grid grid-cols-1 gap-y-4 gap-x-6 sm:grid-cols-6">
-              <div className="sm:col-span-3">
+              <div className={`sm:col-span-3 ${!progress.required_fields.parent_name && 'border-l-4 border-red-500 pl-3'}`}>
                 <label htmlFor="parent_name" className="block text-sm font-medium text-gray-700">
                   Parent/Guardian Name *
                 </label>
@@ -334,7 +437,7 @@ export default function StudentOnboarding() {
                 />
               </div>
 
-              <div className="sm:col-span-3">
+              <div className={`sm:col-span-3 ${!progress.required_fields.parent_contact && 'border-l-4 border-red-500 pl-3'}`}>
                 <label htmlFor="parent_contact" className="block text-sm font-medium text-gray-700">
                   Parent/Guardian Contact *
                 </label>
@@ -356,7 +459,7 @@ export default function StudentOnboarding() {
             <h2 className="text-lg font-medium text-gray-900 mb-4">Academic Information</h2>
             
             <div className="grid grid-cols-1 gap-y-4 gap-x-6 sm:grid-cols-6">
-              <div className="sm:col-span-3">
+              <div className={`sm:col-span-3 ${!progress.required_fields.admission_number && 'border-l-4 border-red-500 pl-3'}`}>
                 <label htmlFor="admission_number" className="block text-sm font-medium text-gray-700">
                   Admission Number *
                 </label>
@@ -371,7 +474,7 @@ export default function StudentOnboarding() {
                 />
               </div>
 
-              <div className="sm:col-span-3">
+              <div className={`sm:col-span-3 ${!progress.required_fields.class_level && 'border-l-4 border-red-500 pl-3'}`}>
                 <label htmlFor="class_level" className="block text-sm font-medium text-gray-700">
                   Class Level *
                 </label>
@@ -411,7 +514,7 @@ export default function StudentOnboarding() {
           </div>
 
           {/* Profile Photo Section */}
-          <div>
+          <div className={`${!progress.required_fields.photo && 'border-l-4 border-red-500 pl-3'}`}>
             <h2 className="text-lg font-medium text-gray-900 mb-4">Profile Photo *</h2>
             
             <div className="flex items-center">
@@ -460,7 +563,7 @@ export default function StudentOnboarding() {
               disabled={isSubmitting}
               className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FC46AA] hover:bg-[#e03d98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC46AA] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Submitting...' : 'Complete Onboarding'}
+              {isSubmitting ? 'Submitting...' : progress.completed ? 'Update Profile' : 'Complete Onboarding'}
             </button>
           </div>
         </form>
