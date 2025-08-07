@@ -19,6 +19,24 @@ export default function LoginPage() {
   })
   const [isLoading, setIsLoading] = useState(false)
 
+  const checkOnboardingProgress = async (role: string, accessToken: string) => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/${role}s/onboarding/progress/`, 
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        }
+      )
+      
+      return response.data.completed // Assuming this returns boolean
+    } catch (error) {
+      console.error('Error checking onboarding progress:', error)
+      return false // Default to false if there's an error
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -27,41 +45,36 @@ export default function LoginPage() {
       // Validate form data
       loginSchema.parse(formData)
       
-      // Using axios to make the API call
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/login/`, formData, {
-        headers: {
-          'Content-Type': 'application/json'
+      // Make login request
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/login/`, 
+        formData,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
         }
-      })
+      )
 
-        if (response.status === 200) {
-        const { user } = response.data
+      if (response.status === 200) {
+        const { user, access } = response.data
         toast.success(`Welcome back, ${user.first_name || 'User'}!`)
         
-        // Store user data and tokens in context/state/localStorage
-        localStorage.setItem('accessToken', response.data.access)
+        // Store user data and tokens
+        localStorage.setItem('accessToken', access)
         localStorage.setItem('refreshToken', response.data.refresh)
-        localStorage.setItem('user', JSON.stringify(response.data.user))
-        localStorage.setItem('role', user.role); 
+        localStorage.setItem('user', JSON.stringify(user))
+        localStorage.setItem('role', user.role)
 
-          
-        switch(user.role) {
-          case 'admin':
-            router.push('/admin')
-            break
-          case 'teacher':
-            router.push('/teacher')
-            break
-          case 'student':
-            router.push('/student')
-            break
-          case 'parent':
-            router.push('/parent')
-            break
-          default:
-            // If role isn't specified or doesn't match, redirect to default dashboard
-            router.push('/dashboard')
-            break
+        // Check onboarding progress
+        const isOnboardingComplete = await checkOnboardingProgress(user.role, access)
+        
+        if (isOnboardingComplete) {
+          // Redirect to dashboard if onboarding is complete
+          router.push(`/${user.role}`)
+        } else {
+          // Redirect to onboarding if not complete
+          router.push(`/onboarding/${user.role}`)
         }
       }
     } catch (error) {

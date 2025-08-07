@@ -18,11 +18,6 @@ export default function ParentList() {
   const [parentsData, setParentsData] = useState<Parent[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter()
-
-     
-  
-  
-  
   
   
 const fetchParents = async () => {
@@ -68,10 +63,6 @@ const fetchParents = async () => {
     setLoading(false);
   }
 };
-
-
-
-
 
     useEffect(() => {
       fetchParents();
