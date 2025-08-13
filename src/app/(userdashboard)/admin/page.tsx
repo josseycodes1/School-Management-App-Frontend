@@ -8,23 +8,31 @@ import FinanceChart from "@/components/FinanceChart";
 import UserCard from "@/components/UserCard";
 import axios from "axios";
 
+interface Counts {
+  students: number;
+  teachers: number;
+  parents: number;
+  male_students: number;
+  female_students: number;
+}
+
 const AdminPage = () => {
-  const [counts, setCounts] = useState({
+  const [counts, setCounts] = useState<Counts>({
     students: 0,
     teachers: 0,
     parents: 0,
+    male_students: 0,
+    female_students: 0,
   });
 
   useEffect(() => {
     axios
       .get("http://localhost:8000/api/accounts/user-counts/", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`, // JWT token
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       })
-      .then((res) => {
-        setCounts(res.data);
-      })
+      .then((res) => setCounts(res.data))
       .catch((err) => console.error("Error fetching counts:", err));
   }, []);
 
@@ -43,7 +51,10 @@ const AdminPage = () => {
         {/* MIDDLE CHARTS */}
         <div className="flex gap-4 flex-col lg:flex-row">
           <div className="w-full lg:w-1/3 h-[450px]">
-            <CountChart />
+            <CountChart
+              maleCount={counts.male_students}
+              femaleCount={counts.female_students}
+            />
           </div>
           <div className="w-full lg:w-2/3 h-[450px]">
             <AttendanceChart />
