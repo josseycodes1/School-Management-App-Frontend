@@ -66,6 +66,12 @@ export default function LoginPage() {
         localStorage.setItem('user', JSON.stringify(user))
         localStorage.setItem('role', user.role)
 
+          // If admin, go straight to dashboard
+        if (user.role === 'admin') {
+           router.push(`/${user.role}`)
+        return
+        }
+
         // Check onboarding progress
         const isOnboardingComplete = await checkOnboardingProgress(user.role, access)
         
