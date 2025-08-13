@@ -1,9 +1,9 @@
 "use client";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   BarChart,
   Bar,
-  Rectangle,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -11,36 +11,40 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import axios from "axios";
 
-const data = [
-  {
-    name: "Mon",
-    present: 60,
-    absent: 40,
-  },
-  {
-    name: "Tue",
-    present: 70,
-    absent: 60,
-  },
-  {
-    name: "Wed",
-    present: 90,
-    absent: 75,
-  },
-  {
-    name: "Thu",
-    present: 90,
-    absent: 75,
-  },
-  {
-    name: "Fri",
-    present: 65,
-    absent: 55,
-  },
-];
+interface AttendanceData {
+  name: string; // Mon, Tue, etc.
+  present: number;
+  absent: number;
+}
 
 const AttendanceChart = () => {
+  const [data, setData] = useState<AttendanceData[]>([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/api/attendance/weekly-summary/", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      })
+      .then((res) => {
+        const formatted = res.data.map((item: any) => {
+          const dayName = new Date(item.date).toLocaleDateString("en-US", {
+            weekday: "short", // Mon, Tue...
+          });
+          return {
+            name: dayName,
+            present: item.present,
+            absent: item.absent,
+          };
+        });
+        setData(formatted);
+      })
+      .catch((err) => console.error("Error fetching attendance data:", err));
+  }, []);
+
   return (
     <div className="bg-white rounded-lg p-4 h-full">
       <div className="flex justify-between items-center">
@@ -48,7 +52,7 @@ const AttendanceChart = () => {
         <Image src="/moreDark.png" alt="" width={20} height={20} />
       </div>
       <ResponsiveContainer width="100%" height="90%">
-        <BarChart width={500} height={300} data={data} barSize={20}>
+        <BarChart data={data} barSize={20}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ddd" />
           <XAxis
             dataKey="name"
@@ -77,7 +81,7 @@ const AttendanceChart = () => {
             legendType="circle"
             radius={[10, 10, 0, 0]}
           />
-        </BarChart >
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );
