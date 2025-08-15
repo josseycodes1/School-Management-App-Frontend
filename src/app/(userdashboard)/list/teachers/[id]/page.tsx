@@ -1,3 +1,4 @@
+"use client";
 import Announcements from "@/components/Announcements";
 import BigCalendar from "@/components/BigCalender";
 import FormModal from "@/components/FormModal";
