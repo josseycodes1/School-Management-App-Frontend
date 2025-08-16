@@ -30,7 +30,7 @@ const columns = [
 
 const AnnouncementListPage = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const role = typeof window !== "undefined" ? localStorage.getItem("role") : "student"; // Example, replace with actual role logic
+  const role = typeof window !== "undefined" ? localStorage.getItem("role") : "student";
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
@@ -76,8 +76,26 @@ const AnnouncementListPage = () => {
         <div className="flex items-center gap-2">
           {role === "admin" && (
             <>
-              <FormModal table="announcement" type="update" data={item} />
-              <FormModal table="announcement" type="delete" id={item.id} />
+              <FormModal 
+                table="announcement" 
+                type="update" 
+                data={item}
+                trigger={
+                  <button className="p-2 bg-josseypink1 text-white rounded hover:bg-josseypink2">
+                    <Image src="/update.png" alt="Edit" width={16} height={16} />
+                  </button>
+                }
+              />
+              <FormModal 
+                table="announcement" 
+                type="delete" 
+                id={item.id}
+                trigger={
+                  <button className="p-2 bg-josseypink1 text-white rounded hover:bg-josseypink2">
+                    <Image src="/delete.png" alt="Delete" width={16} height={16} />
+                  </button>
+                }
+              />
             </>
           )}
         </div>
@@ -99,7 +117,19 @@ const AnnouncementListPage = () => {
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-josseypink1">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            {role === "admin" && <FormModal table="announcement" type="create" />}
+            {role === "admin" && (
+              <FormModal 
+                table="announcement" 
+                type="create"
+                className="px-4 py-2 bg-josseypink1 text-white rounded-lg hover:bg-josseypink2"
+                buttonStyle="flex items-center justify-center"
+                trigger={
+                  <span className="px-4 py-2 bg-josseypink1 text-white rounded-lg hover:bg-josseypink2">
+                    Add Announcement
+                  </span>
+                }
+              />
+            )}
           </div>
         </div>
       </div>
