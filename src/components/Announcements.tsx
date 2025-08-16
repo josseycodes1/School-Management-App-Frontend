@@ -17,7 +17,7 @@ interface Announcement {
   audiences: Audience[];
 }
 
-const Announcements = () => {
+const Announcements = ({ limit = 3 }: { limit?: number }) => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const router = useRouter();
 
@@ -29,25 +29,32 @@ const Announcements = () => {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
         });
-        setAnnouncements(res.data);
+        // Get only the first 'limit' announcements, sorted by date (newest first)
+        const sortedAnnouncements = res.data.sort(
+          (a: Announcement, b: Announcement) => 
+            new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+        );
+        setAnnouncements(sortedAnnouncements.slice(0, limit));
       } catch (err) {
         console.error("Error fetching announcements:", err);
       }
     };
 
     fetchAnnouncements();
-  }, []);
+  }, [limit]);
 
   return (
     <div className="bg-white p-4 rounded-md">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Announcements</h1>
-       <button>
-        <span className="text-xs text-gray-400 cursor-pointer hover:bg-josseypink1 p-2" 
-       onClick={() => router.push("/list/announcements")}>
-        View All
-        </span>
-       </button>
+        <button>
+          <span 
+            className="text-xs text-gray-400 cursor-pointer hover:bg-josseypink1 p-2" 
+            onClick={() => router.push("/list/announcements")}
+          >
+            View All
+          </span>
+        </button>
       </div>
 
       <div className="flex flex-col gap-4 mt-4">
