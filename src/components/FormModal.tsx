@@ -21,16 +21,33 @@ const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), {
   )
 });
 
+const EventForm = dynamic(() => import("./forms/EventForm"), {
+  loading: () => (
+    <div className="p-8 text-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-josseypink1 mx-auto"></div>
+    </div>
+  )
+});
+
+const StudentForm = dynamic(() => import("./forms/StudentForm"), {
+  loading: () => (
+    <div className="p-8 text-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-josseypink1 mx-auto"></div>
+    </div>
+  )
+});
+
 type FormModalProps = {
   table: string;
   type: "create" | "update" | "delete" | "view";
-  id?: number;
+  id?: string; 
   data?: any;
   onSuccess?: (data: any) => void;
   onClose?: () => void;
   className?: string;
   buttonStyle?: string;
   trigger?: React.ReactNode;
+  onDelete?: (id: string) => void;
 };
 
 const FormModal = ({
@@ -39,6 +56,7 @@ const FormModal = ({
   id,
   data,
   onSuccess,
+  onClose,
   className = "",
   buttonStyle = "",
   trigger,
@@ -48,28 +66,33 @@ const FormModal = ({
   const handleSuccess = (data: any) => {
     onSuccess?.(data);
     setIsOpen(false);
+    onClose?.();
   };
 
   const getButtonText = () => {
     if (trigger) return null;
     
     if (table === "teacher") {
-      return type === "create" ? "Add New Teacher" : 
-             type === "update" ? "Edit" : 
-             type === "delete" ? "Delete" : "View";
+      return type === "create" ? "Add Teacher" : "Edit";
     } else if (table === "announcement") {
-      return type === "create" ? "Add Announcement" : 
-             type === "update" ? "Edit" : 
-             type === "delete" ? "Delete" : "View";
+      return type === "create" ? "Add Announcement" : "Edit";
+    } else if (table === "event") {
+      return type === "create" ? "Add Event" : "Edit";
+    } else if (table === "student") {
+      return type === "create" ? "Add Student" : "Edit";
     }
     return "";
   };
 
   const getDeleteMessage = () => {
     if (table === "teacher") {
-      return "Are you sure you want to permanently delete this teacher record? This action cannot be undone.";
+      return "Are you sure you want to delete this teacher?";
     } else if (table === "announcement") {
-      return "Are you sure you want to permanently delete this announcement? This action cannot be undone.";
+      return "Are you sure you want to delete this announcement?";
+    } else if (table === "event") {
+      return "Are you sure you want to delete this event?";
+    } else if (table === "student") {
+      return "Are you sure you want to delete this student?";
     }
     return "";
   };
@@ -79,6 +102,10 @@ const FormModal = ({
       return `http://localhost:8000/api/accounts/teachers/${id}/`;
     } else if (table === "announcement") {
       return `http://localhost:8000/api/announcements/${id}/`;
+    } else if (table === "event") {
+      return `http://localhost:8000/api/events/${id}/`;
+    } else if (table === "student") {
+      return `http://localhost:8000/api/accounts/students/${id}/`;
     }
     return "";
   };
@@ -129,8 +156,7 @@ const FormModal = ({
                             }
                           }
                         );
-                        onSuccess?.({ id });
-                        setIsOpen(false);
+                        handleSuccess({ id });
                       } catch (error) {
                         console.error("Delete failed:", error);
                       }
@@ -144,7 +170,10 @@ const FormModal = ({
             ) : type === "view" ? (
               <div className="p-6">
                 <h2 className="text-2xl font-bold mb-6">
-                  {table === "teacher" ? "Teacher Details" : "Announcement Details"}
+                  {table === "teacher" ? "Teacher Details" : 
+                   table === "announcement" ? "Announcement Details" : 
+                   table === "event" ? "Event Details" :
+                   "Student Details"}
                 </h2>
                 <div className="flex justify-end">
                   <button
@@ -167,6 +196,22 @@ const FormModal = ({
                 )}
                 {table === "announcement" && (
                   <AnnouncementForm
+                    type={type}
+                    data={data}
+                    onSuccess={handleSuccess}
+                    onClose={() => setIsOpen(false)}
+                  />
+                )}
+                {table === "event" && (
+                  <EventForm
+                    type={type}
+                    data={data}
+                    onSuccess={handleSuccess}
+                    onClose={() => setIsOpen(false)}
+                  />
+                )}
+                {table === "student" && (
+                  <StudentForm
                     type={type}
                     data={data}
                     onSuccess={handleSuccess}

@@ -6,15 +6,16 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import FormModal from "@/components/FormModal";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
 type EventItem = {
-  id: number;
+  id: string;
   title: string;
   description: string;
-  date: string;        // ISO string from backend
+  date: string;
   location?: string;
   created_at?: string;
   updated_at?: string;
@@ -27,6 +28,7 @@ const EventCalendar = () => {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const role = typeof window !== "undefined" ? localStorage.getItem("role") : "student";
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -36,7 +38,6 @@ const EventCalendar = () => {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
         });
-        // res.data is expected to be an array of events
         setEvents(Array.isArray(res.data) ? res.data : res.data?.results || []);
       } catch (err) {
         console.error("Error fetching events:", err);
@@ -48,7 +49,6 @@ const EventCalendar = () => {
     fetchEvents();
   }, []);
 
-  // Compute upcoming events: date >= now, sort ascending, take top 3
   const upcoming = useMemo(() => {
     const now = new Date();
     return events
@@ -82,13 +82,27 @@ const EventCalendar = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold my-4">Events</h1>
-        <button
-          aria-label="See more events"
-          className="p-1 rounded-md hover:bg-josseypink1 "
-          onClick={() => router.push("/list/events")}
-        >
-          <Image src="/moreDark.png" alt="more" width={20} height={20} />
-        </button>
+        <div className="flex items-center gap-2">
+          {role === "admin" && (
+            <FormModal
+              table="event"
+              type="create"
+              className="p-1 rounded-md hover:bg-josseypink1"
+              trigger={
+                <button className="p-1 rounded-md hover:bg-josseypink1">
+                  <Image src="/add.png" alt="Add" width={20} height={20} />
+                </button>
+              }
+            />
+          )}
+          <button
+            aria-label="See more events"
+            className="p-1 rounded-md hover:bg-josseypink1"
+            onClick={() => router.push("/list/events")}
+          >
+            <Image src="/more.png" alt="more" width={20} height={20} />
+          </button>
+        </div>
       </div>
 
       {/* Event List */}
@@ -105,19 +119,42 @@ const EventCalendar = () => {
             >
               <div className="flex items-center justify-between">
                 <h1 className="font-semibold text-gray-700">{event.title}</h1>
-                {/* Keep the original “time” spot on the right */}
-                <span className="text-gray-300 text-xs">
-                  {formatTime(event.date)}
-                </span>
+                <div className="flex gap-2">
+                  {role === "admin" && (
+                    <>
+                      <FormModal
+                        table="event"
+                        type="update"
+                        data={event}
+                        trigger={
+                          <button className="p-1 rounded-md hover:bg-josseypink1">
+                            <Image src="/update.png" alt="Edit" width={16} height={16} />
+                          </button>
+                        }
+                      />
+                      <FormModal
+                        table="event"
+                        type="delete"
+                        id={event.id}
+                        trigger={
+                          <button className="p-1 rounded-md hover:bg-red-100">
+                            <Image src="/delete.png" alt="Delete" width={16} height={16} />
+                          </button>
+                        }
+                      />
+                    </>
+                  )}
+                  <span className="text-gray-300 text-xs">
+                    {formatTime(event.date)}
+                  </span>
+                </div>
               </div>
 
-              {/* Description */}
               <p className="mt-2 text-gray-500 text-sm">{event.description}</p>
 
-              {/* Date + Location (optional) */}
               <div className="mt-2 text-xs text-gray-400 flex flex-wrap gap-2">
                 <span>📅 {formatDay(event.date)}</span>
-                {event.location ? <span>• 📍 {event.location}</span> : null}
+                {event.location && <span>• 📍 {event.location}</span>}
               </div>
             </div>
           ))

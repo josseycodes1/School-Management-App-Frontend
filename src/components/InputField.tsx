@@ -12,6 +12,7 @@ type InputFieldProps = {
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
   className?: string; // Added className prop
   wrapperClassName?: string; // Added for wrapper div
+  placeholder?: string;
 };
 
 const InputField = ({

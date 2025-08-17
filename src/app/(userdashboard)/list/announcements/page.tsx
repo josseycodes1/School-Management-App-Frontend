@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import FormModal from "@/components/FormModal";
-import Pagination from "@/components/Pagination";
-import Table from "@/components/Table";
-import TableSearch from "@/components/TableSearch";
+import axios from "axios";
 import Image from "next/image";
+import FormModal from "@/components/FormModal";
+import { role } from "@/lib/data";
+import { useRouter } from 'next/navigation';
+import TableSearch from "@/components/TableSearch";
+import Pagination from "@/components/Pagination";
 
 type Audience = {
   student_first_name?: string | null;
@@ -14,131 +16,188 @@ type Audience = {
 };
 
 type Announcement = {
-  id: number;
+  id: string;
   title: string;
   message: string;
   start_date: string;
   audiences: Audience[];
 };
 
-const columns = [
-  { header: "Title", accessor: "title" },
-  { header: "Message", accessor: "message", className: "hidden md:table-cell" },
-  { header: "Date", accessor: "start_date", className: "hidden md:table-cell" },
-  { header: "Actions", accessor: "action" },
-];
-
 const AnnouncementListPage = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const role = typeof window !== "undefined" ? localStorage.getItem("role") : "student";
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/announcements/", {
+        const res = await axios.get("http://localhost:8000/api/announcements/", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
         });
-        const data = await res.json();
-        setAnnouncements(data);
+        setAnnouncements(Array.isArray(res.data) ? res.data : res.data?.results || []);
       } catch (err) {
-        console.error("Error fetching announcements:", err);
+        setError("Failed to load announcements");
+      } finally {
+        setLoading(false);
       }
     };
-
     fetchAnnouncements();
   }, []);
 
-  const renderRow = (item: Announcement) => (
-    <tr
-      key={item.id}
-      className="border-b border-gray-200 even:bg-pink-100 text-sm hover:bg-josseypink1"
-    >
-      <td className="flex flex-col gap-1 p-4">
-        <span>{item.title}</span>
-        <span className="text-xs text-white">
-          {item.audiences.length > 0 &&
-            [
-              item.audiences.some(a => a.student_first_name) ? "Students" : null,
-              item.audiences.some(a => a.teacher_first_name) ? "Teachers" : null,
-              item.audiences.some(a => a.parent_first_name) ? "Parents" : null,
-            ]
-              .filter(Boolean)
-              .join(", ")}
-        </span>
-      </td>
-      <td className="hidden md:table-cell">{item.message}</td>
-      <td className="hidden md:table-cell">
-        {new Date(item.start_date).toLocaleDateString()}
-      </td>
-      <td>
-        <div className="flex items-center gap-2">
-          {role === "admin" && (
-            <>
-              <FormModal 
-                table="announcement" 
-                type="update" 
-                data={item}
-                trigger={
-                  <button className="p-2 bg-josseypink1 text-white rounded hover:bg-josseypink2">
-                    <Image src="/update.png" alt="Edit" width={16} height={16} />
-                  </button>
-                }
-              />
-              <FormModal 
-                table="announcement" 
-                type="delete" 
-                id={item.id}
-                trigger={
-                  <button className="p-2 bg-josseypink1 text-white rounded hover:bg-josseypink2">
-                    <Image src="/delete.png" alt="Delete" width={16} height={16} />
-                  </button>
-                }
-              />
-            </>
-          )}
-        </div>
-      </td>
-    </tr>
+  const handleSuccess = (updatedAnnouncement: Announcement, type: "create" | "update" | "delete") => {
+    if (type === "create") {
+      setAnnouncements([updatedAnnouncement, ...announcements]);
+    } else if (type === "update") {
+      setAnnouncements(announcements.map(a => 
+        a.id === updatedAnnouncement.id ? updatedAnnouncement : a
+      ));
+    } else if (type === "delete") {
+      setAnnouncements(announcements.filter(a => a.id !== updatedAnnouncement.id));
+    }
+  };
+
+  const filteredAnnouncements = announcements.filter(announcement => 
+    announcement.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    announcement.message.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const formatAudience = (audiences: Audience[]) => {
+    return [
+      audiences.some(a => a.student_first_name) ? "Students" : null,
+      audiences.some(a => a.teacher_first_name) ? "Teachers" : null,
+      audiences.some(a => a.parent_first_name) ? "Parents" : null,
+    ].filter(Boolean).join(", ");
+  };
+
+  if (loading) return (
+    <div className="flex justify-center items-center h-64">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-josseypink1"></div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="bg-pink-100 border-l-4 border-josseypink1 p-4 mb-4">
+      <div className="flex items-center text-josseypink1">
+        <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+        </svg>
+        {error}
+      </div>
+    </div>
   );
 
   return (
-    <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
-      {/* TOP */}
-      <div className="flex items-center justify-between">
-        <h1 className="hidden md:block text-lg font-semibold">All Announcements</h1>
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <TableSearch />
-          <div className="flex items-center gap-4 self-end">
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-josseypink1">
-              <Image src="/filter.png" alt="" width={14} height={14} />
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-josseypink1">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
-            {role === "admin" && (
-              <FormModal 
-                table="announcement" 
-                type="create"
-                className="px-4 py-2 bg-josseypink1 text-white rounded-lg hover:bg-josseypink2"
-                buttonStyle="flex items-center justify-center"
-                trigger={
-                  <span className="px-4 py-2 bg-josseypink1 text-white rounded-lg hover:bg-josseypink2">
-                    Add Announcement
-                  </span>
-                }
-              />
-            )}
-          </div>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Announcement Management</h1>
+        <div className="flex items-center gap-4">
+          <TableSearch 
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Search announcements..."
+          />
+          {role === "admin" && (
+            <FormModal 
+              table="announcement" 
+              type="create"
+              onSuccess={(data) => handleSuccess(data, "create")}
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg"
+            />
+          )}
         </div>
       </div>
 
-      {/* LIST */}
-      <Table columns={columns} renderRow={renderRow} data={announcements} />
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Audience</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredAnnouncements.length > 0 ? (
+              filteredAnnouncements.map((announcement) => (
+                <tr key={announcement.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {announcement.title}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                    {announcement.message}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-josseypink1 text-white">
+                      {formatAudience(announcement.audiences)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(announcement.start_date).toLocaleDateString("en-US", {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end space-x-2">
+                      <button 
+                        onClick={() => router.push(`/list/announcements/${announcement.id}`)}
+                        className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
+                      >
+                        <Image src="/view.png" alt="View" width={16} height={16} />
+                      </button>
+                      {role === "admin" && (
+                        <>
+                          <FormModal
+                            table="announcement"
+                            type="update"
+                            data={announcement}
+                            onSuccess={(updatedAnnouncement) => 
+                              handleSuccess(updatedAnnouncement, "update")
+                            }
+                            trigger={
+                              <button className="text-josseypink1 hover:text-josseypink2 bg-josseypink1 p-1">
+                                <Image src="/update.png" alt="Update" width={16} height={16} />
+                              </button>
+                            }
+                          />
+                          <FormModal
+                            table="announcement"
+                            type="delete"
+                            id={announcement.id}
+                            onSuccess={() => handleSuccess(announcement, "delete")}
+                            trigger={
+                              <button className="text-josseypink1 hover:text-josseypink2 bg-josseypink1 p-1">
+                                <Image src="/delete.png" alt="Delete" width={16} height={16} />
+                              </button>
+                            }
+                          />
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
+                  No announcements found matching your search
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-      {/* PAGINATION */}
-      <Pagination />
+      <div className="mt-4">
+        <Pagination />
+      </div>
     </div>
   );
 };
