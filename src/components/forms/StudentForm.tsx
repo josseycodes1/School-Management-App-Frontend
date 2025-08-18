@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import InputField from "../InputField";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios, { AxiosResponse } from "axios";
 
 const schema = z.object({
@@ -94,270 +94,296 @@ const StudentForm = ({
     }
   });
 
+  useEffect(() => {
+    if (data?.photo) {
+      setPreviewImage(data.photo);
+    }
+  }, [data]);
+
   const profilePhoto = watch("profilePhoto");
 
   // Handle image preview
-  if (profilePhoto?.[0] && !previewImage) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      setPreviewImage(reader.result as string);
-    };
-    reader.readAsDataURL(profilePhoto[0]);
-  }
+  useEffect(() => {
+    if (profilePhoto?.[0]) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(profilePhoto[0]);
+    }
+  }, [profilePhoto]);
 
-const onSubmit = handleSubmit(async (formData) => {
-  setIsSubmitting(true);
-  try {
-    const formPayload = new FormData();
-    
-    // Append all form data with proper type checking
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value === undefined || value === null) return;
+  const onSubmit = handleSubmit(async (formData) => {
+    setIsSubmitting(true);
+    try {
+      const formPayload = new FormData();
       
-      if (key === "profilePhoto" && value instanceof FileList && value[0]) {
-        formPayload.append(key, value[0]);
-      } else if (typeof value === 'string' || value instanceof Blob) {
-        formPayload.append(key, value);
-      } else if (typeof value === 'number' || typeof value === 'boolean') {
-        formPayload.append(key, String(value));  // Use String() instead of toString()
-      } else if (typeof value === 'object') {
-        // Handle case where value might be an object (like for dates)
-        formPayload.append(key, String(value));
-      }
-    });
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value === undefined || value === null) return;
+        
+        if (key === "profilePhoto" && value instanceof FileList && value[0]) {
+          formPayload.append(key, value[0]);
+        } else if (typeof value === 'string' || value instanceof Blob) {
+          formPayload.append(key, value);
+        } else if (typeof value === 'number' || typeof value === 'boolean') {
+          formPayload.append(key, String(value));
+        } else if (typeof value === 'object') {
+          formPayload.append(key, String(value));
+        }
+      });
 
-    const endpoint = type === "create" 
-      ? "http://localhost:8000/api/accounts/students/" 
-      : `http://localhost:8000/api/accounts/students/${data?.id}/`;
+      const endpoint = type === "create" 
+        ? "http://localhost:8000/api/accounts/students/" 
+        : `http://localhost:8000/api/accounts/students/${data?.id}/`;
 
-    const method = type === "create" ? "POST" : "PUT";
+      const method = type === "create" ? "POST" : "PUT";
 
-    const response: AxiosResponse<StudentProfile> = await axios({
-      method,
-      url: endpoint,
-      data: formPayload,
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-      }
-    });
+      const response: AxiosResponse<StudentProfile> = await axios({
+        method,
+        url: endpoint,
+        data: formPayload,
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+        }
+      });
 
-    onSuccess?.(response.data);
-    reset();
-    onClose?.();
-  } catch (error) {
-    console.error("Form submission error:", error);
-  } finally {
-    setIsSubmitting(false);
-  }
-});
+      onSuccess?.(response.data);
+      reset();
+      onClose?.();
+    } catch (error) {
+      console.error("Form submission error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  });
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
 
   return (
-    <div className="bg-white rounded-lg p-6 max-h-[90vh] overflow-y-auto">
-      <h1 className="text-2xl font-bold text-josseypink1 mb-6">
-        {type === "create" ? "Add New Student" : "Edit Student"}
-      </h1>
-      
-      <form className="flex flex-col gap-6" onSubmit={onSubmit}>
-        {/* Section Headers */}
-        <div className="border-b border-gray-200 pb-2">
-          <h2 className="text-lg font-semibold text-gray-700">Authentication Information</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <InputField
-            label="Username*"
-            name="username"
-            register={register}
-            error={errors.username}
-            placeholder="johndoe123"
-          />
-          <InputField
-            label="Email*"
-            name="email"
-            type="email"
-            register={register}
-            error={errors.email}
-            placeholder="student@school.edu"
-          />
-          {type === "create" && (
-            <InputField
-              label="Password*"
-              name="password"
-              type="password"
-              register={register}
-              error={errors.password}
-              placeholder="••••••••"
-            />
-          )}
-        </div>
-
-        <div className="border-b border-gray-200 pb-2 mt-4">
-          <h2 className="text-lg font-semibold text-gray-700">Personal Information</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <InputField
-            label="First Name*"
-            name="firstName"
-            register={register}
-            error={errors.firstName}
-            placeholder="John"
-          />
-          <InputField
-            label="Last Name*"
-            name="lastName"
-            register={register}
-            error={errors.lastName}
-            placeholder="Doe"
-          />
-          <InputField
-            label="Phone*"
-            name="phone"
-            register={register}
-            error={errors.phone}
-            placeholder="+1234567890"
-          />
-          <InputField
-            label="Address*"
-            name="address"
-            register={register}
-            error={errors.address}
-            placeholder="123 Main St"
-          />
-          <InputField
-            label="Blood Type*"
-            name="bloodType"
-            register={register}
-            error={errors.bloodType}
-            placeholder="A+"
-          />
-          <InputField
-            label="Birth Date*"
-            name="birthDate"
-            type="date"
-            register={register}
-            error={errors.birthDate}
-          />
-          <div className="flex flex-col gap-2">
-            <label className="text-sm text-gray-600">Gender*</label>
-            <select
-              className="border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-josseypink1 focus:border-transparent"
-              {...register("gender")}
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="bg-josseypink1 text-white p-4 rounded-t-lg">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">
+              {type === "create" ? "Add New Student" : "Edit Student Details"}
+            </h2>
+            <button 
+              onClick={onClose}
+              className="text-white hover:text-pink100"
             >
-              <option value="M">Male</option>
-              <option value="F">Female</option>
-              <option value="O">Other</option>
-              <option value="N">Prefer not to say</option>
-            </select>
-            {errors.gender && (
-              <p className="text-xs text-red-500">{errors.gender.message}</p>
-            )}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
 
-        <div className="border-b border-gray-200 pb-2 mt-4">
-          <h2 className="text-lg font-semibold text-gray-700">Academic Information</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <InputField
-            label="Admission Number*"
-            name="admissionNumber"
-            register={register}
-            error={errors.admissionNumber}
-            placeholder="20230001"
-          />
-          <InputField
-            label="Class Level*"
-            name="classLevel"
-            register={register}
-            error={errors.classLevel}
-            placeholder="Grade 10"
-          />
-        </div>
-
-        <div className="border-b border-gray-200 pb-2 mt-4">
-          <h2 className="text-lg font-semibold text-gray-700">Parent/Guardian Information</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InputField
-            label="Parent/Guardian Name*"
-            name="parentName"
-            register={register}
-            error={errors.parentName}
-            placeholder="Jane Doe"
-          />
-          <InputField
-            label="Parent/Guardian Contact*"
-            name="parentContact"
-            register={register}
-            error={errors.parentContact}
-            placeholder="+1234567890"
-          />
-        </div>
-
-        <div className="border-b border-gray-200 pb-2 mt-4">
-          <h2 className="text-lg font-semibold text-gray-700">Profile Photo</h2>
-        </div>
-
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-josseypink1">
-            {previewImage ? (
-              <Image
-                src={previewImage}
-                alt="Profile preview"
-                fill
-                className="object-cover"
-              />
-            ) : data?.photo ? (
-              <Image
-                src={data.photo}
-                alt="Current profile"
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-500">No image</span>
+        <form onSubmit={onSubmit} className="p-6">
+          <div className="mb-6 flex items-center space-x-6">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full border-4 border-pink100 overflow-hidden bg-gray-100 flex items-center justify-center">
+                {previewImage ? (
+                  <Image
+                    src={previewImage}
+                    alt="Profile Preview"
+                    width={96}
+                    height={96}
+                    className="object-cover w-full h-full"
+                  />
+                ) : (
+                  <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                )}
               </div>
-            )}
+              <label className="absolute -bottom-2 right-0 bg-josseypink2 text-white p-1 rounded-full cursor-pointer hover:bg-josseypink1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                </svg>
+                <input
+                  type="file"
+                  className="hidden"
+                  {...register("profilePhoto")}
+                  onChange={handleImageChange}
+                  accept="image/*"
+                />
+              </label>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 mb-1">Upload a clear photo</p>
+              <p className="text-xs text-gray-400">JPG, PNG (Max 2MB)</p>
+            </div>
           </div>
-          <label className="cursor-pointer bg-josseypink1 text-white px-4 py-2 rounded-lg hover:bg-josseypink2 transition-colors">
-            Upload Photo
-            <input
-              type="file"
-              className="hidden"
-              accept="image/*"
-              {...register("profilePhoto")}
-            />
-          </label>
-          {errors.profilePhoto && (
-            <p className="text-xs text-red-500">{errors.profilePhoto.message}</p>
-          )}
-        </div>
 
-        <div className="flex justify-end gap-4 pt-6">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-6 py-2 bg-josseypink1 text-white rounded-lg hover:bg-josseypink2 disabled:bg-gray-400 flex items-center gap-2"
-          >
-            {isSubmitting && (
-              <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Authentication Information */}
+            <InputField
+              label="Username*"
+              name="username"
+              register={register}
+              error={errors.username}
+              wrapperClassName="w-full"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+            />
+            <InputField
+              label="Email*"
+              name="email"
+              type="email"
+              register={register}
+              error={errors.email}
+              wrapperClassName="w-full"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+            />
+            {type === "create" && (
+              <InputField
+                label="Password*"
+                name="password"
+                type="password"
+                register={register}
+                error={errors.password}
+                wrapperClassName="w-full"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+              />
             )}
-            {type === "create" ? "Create Student" : "Update Student"}
-          </button>
-        </div>
-      </form>
+
+            {/* Personal Information */}
+            <InputField
+              label="First Name*"
+              name="firstName"
+              register={register}
+              error={errors.firstName}
+              wrapperClassName="w-full"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+            />
+            <InputField
+              label="Last Name*"
+              name="lastName"
+              register={register}
+              error={errors.lastName}
+              wrapperClassName="w-full"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+            />
+            <InputField
+              label="Phone*"
+              name="phone"
+              register={register}
+              error={errors.phone}
+              wrapperClassName="w-full"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+            />
+            <InputField
+              label="Address*"
+              name="address"
+              register={register}
+              error={errors.address}
+              wrapperClassName="w-full"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+            />
+            <InputField
+              label="Blood Type*"
+              name="bloodType"
+              register={register}
+              error={errors.bloodType}
+              wrapperClassName="w-full"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+            />
+            <div className="w-full">
+              <label className="block mb-2 text-sm font-medium text-gray-900">Birth Date*</label>
+              <input
+                type="date"
+                {...register("birthDate")}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+              />
+              {errors.birthDate && (
+                <p className="mt-1 text-sm text-red-600">{errors.birthDate.message}</p>
+              )}
+            </div>
+            <div className="w-full">
+              <label className="block mb-2 text-sm font-medium text-gray-900">Gender*</label>
+              <select
+                {...register("gender")}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+              >
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="O">Other</option>
+                <option value="N">Prefer not to say</option>
+              </select>
+              {errors.gender && (
+                <p className="mt-1 text-sm text-red-600">{errors.gender.message}</p>
+              )}
+            </div>
+
+            {/* Academic Information */}
+            <InputField
+              label="Admission Number*"
+              name="admissionNumber"
+              register={register}
+              error={errors.admissionNumber}
+              wrapperClassName="w-full"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+            />
+            <InputField
+              label="Class Level*"
+              name="classLevel"
+              register={register}
+              error={errors.classLevel}
+              wrapperClassName="w-full"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+            />
+
+            {/* Parent/Guardian Information */}
+            <InputField
+              label="Parent/Guardian Name*"
+              name="parentName"
+              register={register}
+              error={errors.parentName}
+              wrapperClassName="w-full"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+            />
+            <InputField
+              label="Parent/Guardian Contact*"
+              name="parentContact"
+              register={register}
+              error={errors.parentContact}
+              wrapperClassName="w-full"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-4 mt-8 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-pink100"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-5 py-2.5 text-sm font-medium text-white bg-josseypink1 rounded-lg hover:bg-josseypink2 focus:outline-none focus:ring-4 focus:ring-pink100 disabled:opacity-70 flex items-center justify-center"
+            >
+              {isSubmitting && (
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              {type === "create" ? "Create Student" : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
