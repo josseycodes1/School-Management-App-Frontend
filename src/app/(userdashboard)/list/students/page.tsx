@@ -20,6 +20,7 @@ type Student = {
   address: string;
   class_level: string;
   gender?: string;
+  photo?: string;
 };
 
 const StudentListPage = () => {
@@ -29,26 +30,6 @@ const StudentListPage = () => {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
-
-  // Pexels photo URLs
-  const pexelsPhotos = {
-    male: [
-      "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg",
-      "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg",
-      "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg"
-    ],
-    female: [
-      "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg",
-      "https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg",
-      "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg"
-    ]
-  };
-
-  const getRandomPexelsPhoto = (gender?: string) => {
-    const genderKey = gender?.toLowerCase() === "female" ? "female" : "male";
-    const photos = pexelsPhotos[genderKey];
-    return photos[Math.floor(Math.random() * photos.length)];
-  };
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -149,95 +130,103 @@ const StudentListPage = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredStudents.length > 0 ? (
-              filteredStudents.map((student) => {
-                const photoUrl = getRandomPexelsPhoto(student.gender);
-                return (
-                  <tr key={student.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <img
-                            src={photoUrl}
+              filteredStudents.map((student) => (
+                <tr key={student.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        {student.photo ? (
+                          <Image
+                            src={student.photo}
                             alt={`${student.user.first_name}'s profile`}
-                            className="rounded-full object-cover h-10 w-10"
+                            width={40}
+                            height={40}
+                            className="rounded-full"
+                            unoptimized={student.photo.startsWith('http://localhost')}
                           />
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {student.user.first_name} {student.user.last_name}
+                        ) : (
+                          <div className="rounded-full bg-gray-200 w-10 h-10 flex items-center justify-center">
+                            <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                            </svg>
                           </div>
-                          <div className="text-sm text-gray-500">{student.user.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {student.admission_number}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-josseypink1 text-white">
-                        {student.class_level}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div>{student.phone || "N/A"}</div>
-                      <div className="text-xs text-gray-400">{student.address || "No address"}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2">
-                        <button 
-                          onClick={() => router.push(`/list/students/${student.id}`)}
-                          className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
-                        >
-                          <Image 
-                            src="/view.png" 
-                            alt="View" 
-                            width={16} 
-                            height={16} 
-                            className="w-4 h-4"
-                          />
-                        </button>
-                        {role === "admin" && (
-                          <>
-                            <FormModal
-                              table="student"
-                              type="update"
-                              data={student}
-                              onSuccess={(updatedStudent) => 
-                                setStudents(students.map(s => 
-                                  s.id === updatedStudent.id ? updatedStudent : s
-                                ))
-                              }
-                              trigger={
-                                <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
-                                  <Image 
-                                    src="/update.png" 
-                                    alt="Update" 
-                                    width={16} 
-                                    height={16} 
-                                    className="w-4 h-4"
-                                  />
-                                </button>
-                              }
-                            />
-                            <button 
-                              onClick={() => setDeleteConfirm(student.id)}
-                              className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
-                            >
-                              <Image 
-                                src="/delete.png" 
-                                alt="Delete" 
-                                width={16} 
-                                height={16} 
-                                className="w-4 h-4"
-                              />
-                            </button>
-                          </>
                         )}
                       </div>
-                    </td>
-                  </tr>
-                );
-              })
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {student.user.first_name} {student.user.last_name}
+                        </div>
+                        <div className="text-sm text-gray-500">{student.user.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {student.admission_number}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-josseypink1 text-white">
+                      {student.class_level}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div>{student.phone || "N/A"}</div>
+                    <div className="text-xs text-gray-400">{student.address || "No address"}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end space-x-2">
+                      <button 
+                        onClick={() => router.push(`/list/students/${student.id}`)}
+                        className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
+                      >
+                        <Image 
+                          src="/view.png" 
+                          alt="View" 
+                          width={16} 
+                          height={16} 
+                          className="w-4 h-4"
+                        />
+                      </button>
+                      {role === "admin" && (
+                        <>
+                          <FormModal
+                            table="student"
+                            type="update"
+                            data={student}
+                            onSuccess={(updatedStudent) => 
+                              setStudents(students.map(s => 
+                                s.id === updatedStudent.id ? updatedStudent : s
+                              ))
+                            }
+                            trigger={
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
+                                <Image 
+                                  src="/update.png" 
+                                  alt="Update" 
+                                  width={16} 
+                                  height={16} 
+                                  className="w-4 h-4"
+                                />
+                              </button>
+                            }
+                          />
+                          <button 
+                            onClick={() => setDeleteConfirm(student.id)}
+                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
+                          >
+                            <Image 
+                              src="/delete.png" 
+                              alt="Delete" 
+                              width={16} 
+                              height={16} 
+                              className="w-4 h-4"
+                            />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
             ) : (
               <tr>
                 <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
@@ -249,7 +238,6 @@ const StudentListPage = () => {
         </table>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">

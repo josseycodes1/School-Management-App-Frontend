@@ -82,6 +82,7 @@ const StudentForm = ({
     formState: { errors },
     reset,
     watch,
+    setValue,
   } = useForm<Inputs>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -102,7 +103,6 @@ const StudentForm = ({
 
   const profilePhoto = watch("profilePhoto");
 
-  // Handle image preview
   useEffect(() => {
     if (profilePhoto?.[0]) {
       const reader = new FileReader();
@@ -160,11 +160,8 @@ const StudentForm = ({
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(e.target.files[0]);
+      const fileList = e.target.files;
+      setValue("profilePhoto", fileList);
     }
   };
 
@@ -198,6 +195,7 @@ const StudentForm = ({
                     width={96}
                     height={96}
                     className="object-cover w-full h-full"
+                    unoptimized={previewImage.startsWith('blob:')}
                   />
                 ) : (
                   <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
@@ -212,9 +210,8 @@ const StudentForm = ({
                 <input
                   type="file"
                   className="hidden"
-                  {...register("profilePhoto")}
-                  onChange={handleImageChange}
                   accept="image/*"
+                  onChange={handleImageChange}
                 />
               </label>
             </div>
@@ -225,7 +222,6 @@ const StudentForm = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Authentication Information */}
             <InputField
               label="Username*"
               name="username"
@@ -255,7 +251,6 @@ const StudentForm = ({
               />
             )}
 
-            {/* Personal Information */}
             <InputField
               label="First Name*"
               name="firstName"
@@ -323,7 +318,6 @@ const StudentForm = ({
               )}
             </div>
 
-            {/* Academic Information */}
             <InputField
               label="Admission Number*"
               name="admissionNumber"
@@ -341,7 +335,6 @@ const StudentForm = ({
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
             />
 
-            {/* Parent/Guardian Information */}
             <InputField
               label="Parent/Guardian Name*"
               name="parentName"
