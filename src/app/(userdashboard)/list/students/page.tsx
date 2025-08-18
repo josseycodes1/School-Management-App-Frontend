@@ -29,9 +29,11 @@ const StudentListPage = () => {
   const [error, setError] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    setIsMounted(true);
     const fetchStudents = async () => {
       try {
         const accessToken = localStorage.getItem("accessToken");
@@ -74,6 +76,8 @@ const StudentListPage = () => {
     student.admission_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (!isMounted) return null;
 
   if (loading) return (
     <div className="flex justify-center items-center h-64">
@@ -135,22 +139,17 @@ const StudentListPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        {student.photo ? (
-                          <Image
-                            src={student.photo}
-                            alt={`${student.user.first_name}'s profile`}
-                            width={40}
-                            height={40}
-                            className="rounded-full"
-                            unoptimized={student.photo.startsWith('http://localhost')}
-                          />
-                        ) : (
-                          <div className="rounded-full bg-gray-200 w-10 h-10 flex items-center justify-center">
-                            <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                        )}
+                        <Image
+                          src={student.photo || "/avatar.png"}
+                          alt={`${student.user.first_name}'s profile`}
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                          unoptimized={student.photo?.startsWith('http://localhost')}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/avatar.png';
+                          }}
+                        />
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
@@ -184,6 +183,9 @@ const StudentListPage = () => {
                           width={16} 
                           height={16} 
                           className="w-4 h-4"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
                         />
                       </button>
                       {role === "admin" && (
@@ -205,6 +207,9 @@ const StudentListPage = () => {
                                   width={16} 
                                   height={16} 
                                   className="w-4 h-4"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
                                 />
                               </button>
                             }
@@ -219,6 +224,9 @@ const StudentListPage = () => {
                               width={16} 
                               height={16} 
                               className="w-4 h-4"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
                             />
                           </button>
                         </>
