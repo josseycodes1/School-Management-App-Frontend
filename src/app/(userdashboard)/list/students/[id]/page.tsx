@@ -22,6 +22,7 @@ interface StudentData {
   gender: string;
   blood_type: string;
   birth_date: string;
+  photo: string | null; // Photo can be string or null
   class_level: string;
   attendance_rate?: number;
   grade?: string;
@@ -54,11 +55,10 @@ const SingleStudentPage = () => {
         
         const studentData = {
           ...response.data,
-          // Remove any photo reference from backend data
-          attendance_rate: 90,
-          grade: "6th",
-          lessons_count: 18,
-          class_name: "6A"
+          attendance_rate: response.data.attendance_rate || 90,
+          grade: response.data.grade || "6th",
+          lessons_count: response.data.lessons_count || 18,
+          class_name: response.data.class_name || "6A"
         };
         
         setStudent(studentData);
@@ -127,11 +127,14 @@ const SingleStudentPage = () => {
           <div className="bg-josseypink1 py-6 px-4 rounded-md flex-1 flex gap-4">
             <div className="w-1/3">
               <Image
-                src="/avatar.png"  /* Always use local avatar.png */
+                src={student.photo ? `http://localhost:8000${student.photo}` : "/avatar.png"}
                 alt={`${student.user.first_name}'s profile`}
                 width={144}
                 height={144}
                 className="w-36 h-36 rounded-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/avatar.png';
+                }}
               />
             </div>
             <div className="w-2/3 flex flex-col justify-between gap-4">
