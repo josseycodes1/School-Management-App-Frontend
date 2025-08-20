@@ -37,7 +37,7 @@ const StudentForm = dynamic(() => import("./forms/StudentForm"), {
   )
 });
 
-const ClassForm = dynamic(() => import("./forms/ClassForm"), {
+const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
   loading: () => (
     <div className="p-8 text-center">
       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-josseypink1 mx-auto"></div>
@@ -88,8 +88,8 @@ const FormModal = ({
       return type === "create" ? "Add Event" : "Edit";
     } else if (table === "student") {
       return type === "create" ? "Add Student" : "Edit";
-    } else if (table === "class") {
-      return type === "create" ? "Add Class" : "Edit";
+    } else if (table === "subject") {
+      return type === "create" ? "Add Subject" : "Edit";
     }
     return "";
   };
@@ -103,8 +103,8 @@ const FormModal = ({
       return "Are you sure you want to delete this event?";
     } else if (table === "student") {
       return "Are you sure you want to delete this student?";
-    } else if (table === "class") {
-      return "Are you sure you want to delete this class?";
+    } else if (table === "subject") {
+      return "Are you sure you want to delete this subject?";
     }
     return "";
   };
@@ -118,8 +118,8 @@ const FormModal = ({
       return `http://localhost:8000/api/events/${id}/`;
     } else if (table === "student") {
       return `http://localhost:8000/api/accounts/students/${id}/`;
-    } else if (table === "class") {
-      return `http://localhost:8000/api/accounts/classes/${id}/`;
+    } else if (table === "subject") {
+      return `http://localhost:8000/api/accounts/subjects/${id}/`;
     }
     return "";
   };
@@ -187,7 +187,7 @@ const FormModal = ({
                   {table === "teacher" ? "Teacher Details" : 
                    table === "announcement" ? "Announcement Details" : 
                    table === "event" ? "Event Details" :
-                   table === "class" ? "Class Details" :
+                   table === "subject" ? "Subject Details" :
                    "Student Details"}
                 </h2>
                 <div className="flex justify-end">
@@ -233,8 +233,8 @@ const FormModal = ({
                     onClose={() => setIsOpen(false)}
                   />
                 )}
-                {table === "class" && (
-                  <ClassForm
+                {table === "subject" && (
+                  <SubjectForm
                     type={type}
                     data={data}
                     onSuccess={handleSuccess}

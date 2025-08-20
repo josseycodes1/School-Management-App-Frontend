@@ -1,75 +1,261 @@
-import FormModal from "@/components/FormModal";
-import Pagination from "@/components/Pagination";
-import Table from "@/components/Table";
-import TableSearch from "@/components/TableSearch";
-import { role, subjectsData } from "@/lib/data";
+"use client";
+
+import { useState, useEffect } from "react";
+import axios from "axios";
 import Image from "next/image";
+import FormModal from "@/components/FormModal";
+import TableSearch from "@/components/TableSearch";
+import { useRouter } from 'next/navigation';
+import { role } from "@/lib/data";
 
 type Subject = {
-  id: number;
+  id: string;
   name: string;
-  teachers: string[];
+  teacher: {
+    id: string;
+    user: {
+      first_name: string;
+      last_name: string;
+      email: string;
+    };
+  } | null;
+  assigned_class: number;
+  assigned_class_name: string;
+  created_at: string;
 };
 
-const columns = [
-  {
-    header: "Subject Name",
-    accessor: "name",
-  },
-  {
-    header: "Teachers",
-    accessor: "teachers",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
-];
-
 const SubjectListPage = () => {
-  const renderRow = (item: Subject) => (
-    <tr
-      key={item.id}
-      className="border-b border-gray-200 even:bg-pink-100 text-sm hover:bg-lamaPurpleLight"
-    >
-      <td className="flex items-center gap-4 p-4">{item.name}</td>
-      <td className="hidden md:table-cell">{item.teachers.join(",")}</td>
-      <td>
-        <div className="flex items-center gap-2">
-          {role === "admin" && (
-            <>
-              <FormModal table="subject" type="update" data={item} />
-              <FormModal table="subject" type="delete" id={item.id} />
-            </>
-          )}
-        </div>
-      </td>
-    </tr>
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setIsMounted(true);
+    const fetchSubjects = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) throw new Error("No access token found");
+
+        const res = await axios.get("http://localhost:8000/api/accounts/subjects/", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+        setSubjects(res.data);
+      } catch (err) {
+        setError("Failed to load subjects");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSubjects();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) throw new Error("No access token found");
+
+      await axios.delete(`http://localhost:8000/api/accounts/subjects/${id}/`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+      setSubjects(subjects.filter(s => s.id !== id));
+      setDeleteConfirm(null);
+    } catch (err) {
+      setError("Delete failed");
+    }
+  };
+
+  const filteredSubjects = subjects.filter(subject => 
+    subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (subject.teacher && 
+      `${subject.teacher.user.first_name} ${subject.teacher.user.last_name}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())) ||
+    subject.assigned_class_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (!isMounted) return null;
+
+  if (loading) return (
+    <div className="flex justify-center items-center h-64">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-josseypink1"></div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="bg-pink-100 border-l-4 border-josseypink1 p-4 mb-4">
+      <div className="flex items-center text-josseypink1">
+        <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+        </svg>
+        {error}
+      </div>
+    </div>
   );
 
   return (
-    <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
-      {/* TOP */}
-      <div className="flex items-center justify-between">
-        <h1 className="hidden md:block text-lg font-semibold">All Subjects</h1>
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <TableSearch />
-          <div className="flex items-center gap-4 self-end">
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/filter.png" alt="" width={14} height={14} />
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
-            {role === "admin" && <FormModal table="teacher" type="create" />}
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-gray-800">Subject Management</h1>
+        
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
+          <div className="w-full md:w-64">
+            <TableSearch 
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search subjects..."
+            />
           </div>
+          
+          {role === "admin" && (
+            <FormModal 
+              table="subject" 
+              type="create" 
+              onSuccess={(newSubject) => setSubjects([...subjects, newSubject])}
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap"
+            />
+          )}
         </div>
       </div>
-      {/* LIST */}
-      <Table columns={columns} renderRow={renderRow} data={subjectsData} />
-      {/* PAGINATION */}
-      <Pagination />
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teacher</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredSubjects.length > 0 ? (
+              filteredSubjects.map((subject) => (
+                <tr key={subject.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {subject.name}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {subject.teacher ? (
+                      <div>
+                        <div className="text-sm text-gray-900">
+                          {subject.teacher.user.first_name} {subject.teacher.user.last_name}
+                        </div>
+                        <div className="text-sm text-gray-500">{subject.teacher.user.email}</div>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-gray-400">No teacher assigned</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {subject.assigned_class_name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end space-x-2">
+                      <button 
+                        onClick={() => router.push(`/list/subjects/${subject.id}`)}
+                        className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
+                      >
+                        <Image 
+                          src="/view.png" 
+                          alt="View" 
+                          width={16} 
+                          height={16} 
+                          className="w-4 h-4"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </button>
+                      {role === "admin" && (
+                        <>
+                          <FormModal
+                            table="subject"
+                            type="update"
+                            data={subject}
+                            onSuccess={(updatedSubject) => 
+                              setSubjects(subjects.map(s => 
+                                s.id === updatedSubject.id ? updatedSubject : s
+                              ))
+                            }
+                            trigger={
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
+                                <Image 
+                                  src="/update.png" 
+                                  alt="Update" 
+                                  width={16} 
+                                  height={16} 
+                                  className="w-4 h-4"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              </button>
+                            }
+                          />
+                          <button 
+                            onClick={() => setDeleteConfirm(subject.id)}
+                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
+                          >
+                            <Image 
+                              src="/delete.png" 
+                              alt="Delete" 
+                              width={16} 
+                              height={16} 
+                              className="w-4 h-4"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
+                  No subjects found matching your search
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-medium mb-4">Confirm Deletion</h3>
+            <p className="mb-6">Are you sure you want to delete this subject? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(deleteConfirm)}
+                className="px-4 py-2 bg-josseypink1 text-white rounded-md hover:bg-josseypink2"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
