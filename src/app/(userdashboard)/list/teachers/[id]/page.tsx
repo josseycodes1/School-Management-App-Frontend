@@ -35,7 +35,7 @@ const SingleTeacherPage = () => {
     const fetchTeacher = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/accounts/teachers/${id}/`,
+          `http://josseycodes-academy.onrender.com/api/accounts/teachers/${id}/`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("accessToken")}`

@@ -27,7 +27,7 @@ export default function LogoutButton({
     toast.success('You have been successfully logged out!')
     
     // Redirect to login page
-    router.push('/login')
+    router.push('/log-in')
   }
 
   const buttonClass = variant === 'primary' 

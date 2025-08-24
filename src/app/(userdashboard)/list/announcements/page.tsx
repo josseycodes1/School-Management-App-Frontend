@@ -33,7 +33,7 @@ const AnnouncementListPage = () => {
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/api/announcements/", {
+        const res = await axios.get("http://josseycodes-academy.onrender.com/api/announcements/", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },

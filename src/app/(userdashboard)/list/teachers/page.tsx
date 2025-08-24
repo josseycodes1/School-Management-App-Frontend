@@ -29,7 +29,7 @@ const TeacherListPage = () => {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/api/accounts/teachers/", {
+        const res = await axios.get("https://josseycodes-academy.onrender.com/api/accounts/teachers/", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`
           }
@@ -46,7 +46,7 @@ const TeacherListPage = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      await axios.delete(`http://localhost:8000/api/accounts/teachers/${id}/`, {
+      await axios.delete(`https://josseycodes-academy.onrender.com/api/accounts/teachers/${id}/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`
         }

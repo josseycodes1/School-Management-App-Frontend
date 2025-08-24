@@ -79,7 +79,7 @@ export default function StudentOnboarding() {
       try {
         const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
         if (!token) {
-          router.push('/login');
+          router.push('/log-in');
           return;
         }
 
@@ -230,7 +230,7 @@ export default function StudentOnboarding() {
       const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
       if (!token) {
         toast.error('Authentication token not found. Please login again.');
-        router.push('/login');
+        router.push('/log-in');
         return;
       }
 
