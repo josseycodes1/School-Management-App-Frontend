@@ -49,7 +49,7 @@ const ExamForm = dynamic(() => import("./forms/ExamForm"), {
 type FormModalProps = {
   table: string;
   type: "create" | "update" | "delete" | "view";
-  id?: string; 
+  id?: string | number; 
   data?: any;
   onSuccess?: (data: any) => void;
   onClose?: () => void;
