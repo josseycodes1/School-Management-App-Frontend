@@ -1,11 +1,12 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import axios from "axios";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function VerifyForgotPassword() {
+function VerifyForgotPasswordContent() {
   const [token, setToken] = useState("");
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -17,7 +18,6 @@ export default function VerifyForgotPassword() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Get email from query parameters if it exists
     const emailParam = searchParams.get("email");
     if (emailParam) {
       setEmail(decodeURIComponent(emailParam));
@@ -38,11 +38,7 @@ export default function VerifyForgotPassword() {
     try {
       const response = await axios.post(
         "http://localhost:8000/api/accounts/password_reset/verify/",
-        {
-          token,
-          email,
-          new_password: newPassword,
-        }
+        { token, email, new_password: newPassword }
       );
       setSuccess(response.data.message);
       setTimeout(() => router.push("/log-in"), 2000);
@@ -100,7 +96,6 @@ export default function VerifyForgotPassword() {
             <input
               type="email"
               id="email"
-              name="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -115,7 +110,6 @@ export default function VerifyForgotPassword() {
             <input
               type="text"
               id="token"
-              name="token"
               value={token}
               onChange={(e) => setToken(e.target.value)}
               required
@@ -130,7 +124,6 @@ export default function VerifyForgotPassword() {
             <input
               type="password"
               id="newPassword"
-              name="newPassword"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
@@ -145,7 +138,6 @@ export default function VerifyForgotPassword() {
             <input
               type="password"
               id="confirmPassword"
-              name="confirmPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -161,7 +153,7 @@ export default function VerifyForgotPassword() {
               type="button"
               onClick={handleResend}
               disabled={loading}
-              className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ${
+              className={`py-2 px-4 rounded-md text-sm font-medium text-white bg-gray-500 hover:bg-gray-600 ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
@@ -170,7 +162,7 @@ export default function VerifyForgotPassword() {
             <button
               type="submit"
               disabled={loading}
-              className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FC46AA] hover:bg-[#F699CD] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC46AA] ${
+              className={`py-2 px-4 rounded-md text-sm font-medium text-white bg-[#FC46AA] hover:bg-[#F699CD] ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
@@ -186,5 +178,14 @@ export default function VerifyForgotPassword() {
         </div>
       </div>
     </div>
+  );
+}
+
+// ✅ Outer wrapper that fixes Suspense issue
+export default function VerifyForgotPasswordPage() {
+  return (
+    <Suspense fallback={<div>Loading reset form...</div>}>
+      <VerifyForgotPasswordContent />
+    </Suspense>
   );
 }
