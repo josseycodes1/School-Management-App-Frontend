@@ -1,58 +1,59 @@
-'use client';
+"use client";
 
-import { useState, FormEvent, ChangeEvent } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import axios, { AxiosError } from 'axios';
-import Link from 'next/link';
+import { Suspense } from "react";
+import { useState, FormEvent, ChangeEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import axios, { AxiosError } from "axios";
+import Link from "next/link";
 
-export default function VerifySignup() {
+function VerifySignupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get('email') || '';
-  
+  const email = searchParams.get("email") || "";
+
   const [formData, setFormData] = useState({
-    token: '',
-    email: email
+    token: "",
+    email: email,
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [resending, setResending] = useState(false);
-  const [resendSuccess, setResendSuccess] = useState('');
+  const [resendSuccess, setResendSuccess] = useState("");
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setResendSuccess('');
+    setError("");
+    setResendSuccess("");
 
     try {
-      const response = await axios.post(
-        'http://localhost:8000/api/accounts/users/verify_email/',
-        {
-          token: formData.token,
-          email: formData.email
-        }
-      );
+      await axios.post("http://localhost:8000/api/accounts/users/verify_email/", {
+        token: formData.token,
+        email: formData.email,
+      });
       setSuccess(true);
       setTimeout(() => {
-        router.push('/log-in');
+        router.push("/log-in");
       }, 2000);
     } catch (err) {
       const error = err as AxiosError;
       if (error.response?.data) {
         const responseData = error.response.data as { error?: string };
-        setError(responseData.error || 'Verification failed. Please check your token and try again.');
+        setError(
+          responseData.error ||
+            "Verification failed. Please check your token and try again."
+        );
       } else {
-        setError('Verification failed. Please try again.');
+        setError("Verification failed. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -61,24 +62,21 @@ export default function VerifySignup() {
 
   const handleResend = async () => {
     setResending(true);
-    setError('');
-    setResendSuccess('');
+    setError("");
+    setResendSuccess("");
 
     try {
-      const response = await axios.post(
-        'http://localhost:8000/api/accounts/users/resend_verification/',
-        { email: formData.email }
-      );
-      
-      setResendSuccess('A new verification token has been sent to your email.');
-      setError('');
+      await axios.post("http://localhost:8000/api/accounts/users/resend_verification/", {
+        email: formData.email,
+      });
+      setResendSuccess("A new verification token has been sent to your email.");
     } catch (err) {
       const error = err as AxiosError;
       if (error.response?.data) {
         const responseData = error.response.data as { error?: string };
-        setError(responseData.error || 'Failed to send new verification token.');
+        setError(responseData.error || "Failed to send new verification token.");
       } else {
-        setError('Failed to send new verification token. Please try again.');
+        setError("Failed to send new verification token. Please try again.");
       }
     } finally {
       setResending(false);
@@ -117,8 +115,9 @@ export default function VerifySignup() {
             )}
 
             <p className="mb-4 text-gray-600">
-              We've sent a verification token to <span className="font-semibold">{email}</span>.
-              Please paste the token below to verify your account.
+              We've sent a verification token to{" "}
+              <span className="font-semibold">{email}</span>. Please paste the
+              token below to verify your account.
             </p>
 
             <form onSubmit={handleSubmit}>
@@ -143,19 +142,19 @@ export default function VerifySignup() {
                 disabled={loading}
                 className="w-full bg-[#FC46AA] text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50 mb-4"
               >
-                {loading ? 'Verifying...' : 'Verify Email'}
+                {loading ? "Verifying..." : "Verify Email"}
               </button>
             </form>
 
             <div className="text-center">
               <p className="text-gray-600">
-                Didn't receive a token?{' '}
+                Didn't receive a token?{" "}
                 <button
                   onClick={handleResend}
                   disabled={resending}
                   className="text-[#FC46AA] hover:underline focus:outline-none"
                 >
-                  {resending ? 'Sending...' : 'Send new token'}
+                  {resending ? "Sending..." : "Send new token"}
                 </button>
               </p>
             </div>
@@ -163,14 +162,19 @@ export default function VerifySignup() {
         )}
 
         <div className="mt-6 text-center">
-          <Link 
-            href="/log-in" 
-            className="text-[#FC46AA] hover:underline"
-          >
+          <Link href="/log-in" className="text-[#FC46AA] hover:underline">
             Back to login
           </Link>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifySignupPage() {
+  return (
+    <Suspense fallback={<div>Loading verification page...</div>}>
+      <VerifySignupContent />
+    </Suspense>
   );
 }
