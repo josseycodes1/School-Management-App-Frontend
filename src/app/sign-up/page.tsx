@@ -62,9 +62,15 @@ export default function SignUp() {
       
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`, 
-        submitData
+        submitData,
+        {
+          timeout: 30000, // 30 second timeout
+        }
       );
+      
+      // Keep the button disabled until navigation completes
       router.push(`/verify-signup?email=${encodeURIComponent(response.data.email)}`);
+      
     } catch (err) {
       const error = err as AxiosError;
       if (error.response?.data && typeof error.response.data === 'object') {
@@ -73,15 +79,22 @@ export default function SignUp() {
           setError(responseData.email[0]);
         } else if (responseData.message) {
           setError(responseData.message);
+        } else if (error.code === 'ECONNABORTED') {
+          setError('Request timeout. Please try again.');
         } else {
           setError('Signup failed. Please try again.');
         }
+      } else if (error.code === 'ECONNABORTED') {
+        setError('Request timeout. Please try again.');
+      } else if (error.message === 'Network Error') {
+        setError('Network error. Please check your connection.');
       } else {
         setError('Signup failed. Please try again.');
       }
-    } finally {
       setLoading(false);
     }
+    // Note: We don't setLoading(false) here on success because we want to keep
+    // the button disabled until the navigation completes
   };
 
   return (
@@ -112,6 +125,7 @@ export default function SignUp() {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
               required
+              disabled={loading}
             />
           </div>
 
@@ -127,11 +141,13 @@ export default function SignUp() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD] pr-10"
                 minLength={6}
                 required
+                disabled={loading}
               />
               <button
                 type="button"
                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 onClick={() => setShowPassword(!showPassword)}
+                disabled={loading}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -150,11 +166,13 @@ export default function SignUp() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD] pr-10"
                 minLength={6}
                 required
+                disabled={loading}
               />
               <button
                 type="button"
                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                disabled={loading}
               >
                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -172,6 +190,7 @@ export default function SignUp() {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
                 required
+                disabled={loading}
               />
             </div>
             <div>
@@ -184,6 +203,7 @@ export default function SignUp() {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -196,6 +216,7 @@ export default function SignUp() {
               value={formData.role}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+              disabled={loading}
             >
               <option value="student">Student</option>
               <option value="teacher">Teacher</option>
@@ -207,7 +228,7 @@ export default function SignUp() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#FC46AA] text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50"
+            className="w-full bg-[#FC46AA] text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Signing up...' : 'Sign Up'}
           </button>
