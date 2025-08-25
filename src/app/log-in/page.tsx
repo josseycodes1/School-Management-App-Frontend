@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { toast } from 'react-hot-toast'
 import { z } from 'zod'
 import axios from 'axios'
+import { Eye, EyeOff } from 'lucide-react'
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -17,6 +18,7 @@ export default function LoginPage() {
     email: '',
     password: ''
   })
+  const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const checkOnboardingProgress = async (role: string, accessToken: string) => {
@@ -36,6 +38,9 @@ export default function LoginPage() {
       return false // Default to false if there's an error
     }
   }
+
+  console.log('Backend URL:', process.env.NEXT_PUBLIC_BACKEND_URL)
+  console.log('Login attempt to:', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/login/`)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,10 +71,10 @@ export default function LoginPage() {
         localStorage.setItem('user', JSON.stringify(user))
         localStorage.setItem('role', user.role)
 
-          // If admin, go straight to dashboard
+        // If admin, go straight to dashboard
         if (user.role === 'admin') {
-           router.push(`/${user.role}`)
-        return
+          router.push(`/${user.role}`)
+          return
         }
 
         // Check onboarding progress
@@ -88,9 +93,20 @@ export default function LoginPage() {
         toast.error(error.errors[0].message)
       } else if (axios.isAxiosError(error)) {
         // Handle axios error
-        toast.error(error.response?.data?.message || 'Login failed')
+        const errorMessage = error.response?.data?.message || 
+                            error.response?.data?.detail || 
+                            'Login failed'
+        toast.error(errorMessage)
+        
+        // Log detailed error for debugging
+        console.error('Login error:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          url: error.config?.url
+        })
       } else {
         toast.error('An error occurred. Please try again.')
+        console.error('Unexpected error:', error)
       }
     } finally {
       setIsLoading(false)
@@ -139,16 +155,25 @@ export default function LoginPage() {
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Password
             </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA]"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                required
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA] pr-10"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <button

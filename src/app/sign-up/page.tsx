@@ -3,10 +3,12 @@
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import axios, { AxiosError } from 'axios';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface SignUpFormData {
   email: string;
   password: string;
+  confirmPassword: string;
   first_name: string;
   last_name: string;
   role: string;
@@ -17,10 +19,13 @@ export default function SignUp() {
   const [formData, setFormData] = useState<SignUpFormData>({
     email: '',
     password: '',
+    confirmPassword: '',
     first_name: '',
     last_name: '',
     role: 'student'
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
@@ -37,13 +42,40 @@ export default function SignUp() {
     setLoading(true);
     setError('');
 
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    // Validate password length
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await axios.post('http://localhost:8000/api/accounts/users/', formData);
+      // Remove confirmPassword from the data sent to the server
+      const { confirmPassword, ...submitData } = formData;
+      
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`, 
+        submitData
+      );
       router.push(`/verify-signup?email=${encodeURIComponent(response.data.email)}`);
     } catch (err) {
       const error = err as AxiosError;
-      if (error.response?.data && typeof error.response.data === 'object' && 'email' in error.response.data) {
-        setError((error.response.data as { email: string[] }).email[0]);
+      if (error.response?.data && typeof error.response.data === 'object') {
+        const responseData = error.response.data as any;
+        if (responseData.email) {
+          setError(responseData.email[0]);
+        } else if (responseData.message) {
+          setError(responseData.message);
+        } else {
+          setError('Signup failed. Please try again.');
+        }
       } else {
         setError('Signup failed. Please try again.');
       }
@@ -85,16 +117,48 @@ export default function SignUp() {
 
           <div className="mb-4">
             <label htmlFor="password" className="block text-gray-700 mb-2">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
-              minLength={8}
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD] pr-10"
+                minLength={6}
+                required
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="confirmPassword" className="block text-gray-700 mb-2">Confirm Password</label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD] pr-10"
+                minLength={6}
+                required
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-4">
@@ -136,6 +200,7 @@ export default function SignUp() {
               <option value="student">Student</option>
               <option value="teacher">Teacher</option>
               <option value="parent">Parent</option>
+              <option value="admin">Admin</option>
             </select>
           </div>
 

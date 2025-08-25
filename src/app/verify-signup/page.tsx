@@ -36,10 +36,13 @@ function VerifySignupContent() {
     setResendSuccess("");
 
     try {
-      await axios.post("http://localhost:8000/api/accounts/users/verify_email/", {
-        token: formData.token,
-        email: formData.email,
-      });
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/verify_email/`, 
+        {
+          token: formData.token,
+          email: formData.email,
+        }
+      );
       setSuccess(true);
       setTimeout(() => {
         router.push("/log-in");
@@ -47,10 +50,10 @@ function VerifySignupContent() {
     } catch (err) {
       const error = err as AxiosError;
       if (error.response?.data) {
-        const responseData = error.response.data as { error?: string };
+        const responseData = error.response.data as { error?: string; message?: string };
         setError(
-          responseData.error ||
-            "Verification failed. Please check your token and try again."
+          responseData.error || responseData.message ||
+          "Verification failed. Please check your token and try again."
         );
       } else {
         setError("Verification failed. Please try again.");
@@ -66,15 +69,18 @@ function VerifySignupContent() {
     setResendSuccess("");
 
     try {
-      await axios.post("http://localhost:8000/api/accounts/users/resend_verification/", {
-        email: formData.email,
-      });
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/resend_verification/`, 
+        {
+          email: formData.email,
+        }
+      );
       setResendSuccess("A new verification token has been sent to your email.");
     } catch (err) {
       const error = err as AxiosError;
       if (error.response?.data) {
-        const responseData = error.response.data as { error?: string };
-        setError(responseData.error || "Failed to send new verification token.");
+        const responseData = error.response.data as { error?: string; message?: string };
+        setError(responseData.error || responseData.message || "Failed to send new verification token.");
       } else {
         setError("Failed to send new verification token. Please try again.");
       }
