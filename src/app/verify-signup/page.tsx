@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useState, FormEvent, ChangeEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios, { AxiosError } from "axios";
@@ -21,6 +21,12 @@ function VerifySignupContent() {
   const [resending, setResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState("");
 
+  useEffect(() => {
+    if (!emailFromUrl) {
+      setError("No email provided in URL.");
+    }
+  }, [emailFromUrl]);
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -28,19 +34,24 @@ function VerifySignupContent() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!formData.token) return;
     setLoading(true);
     setError("");
     setResendSuccess("");
 
     try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      if (!backendUrl) throw new Error("Backend URL not set.");
+
       await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/verify_email/`, 
+        `${backendUrl}/api/accounts/users/verify_email/`,
         {
           token: formData.token,
           email: formData.email,
         },
         { headers: { "Content-Type": "application/json" } }
       );
+
       setSuccess(true);
       setTimeout(() => router.push("/log-in"), 2000);
     } catch (err) {
@@ -62,10 +73,15 @@ function VerifySignupContent() {
     setResendSuccess("");
 
     try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      if (!backendUrl) throw new Error("Backend URL not set.");
+
       await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/resend_verification/`, 
-        { email: formData.email }
+        `${backendUrl}/api/accounts/users/resend_verification/`,
+        { email: formData.email },
+        { headers: { "Content-Type": "application/json" } }
       );
+
       setResendSuccess("A new verification token has been sent to your email.");
     } catch (err) {
       const error = err as AxiosError;
