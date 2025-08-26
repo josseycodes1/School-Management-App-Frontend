@@ -38,6 +38,10 @@ function VerifySignUpContent() {
         formData,
         {
           timeout: 30000,
+          headers: {
+            // Explicitly set content type
+            'Content-Type': 'application/json',
+          },
         }
       );
       
@@ -50,9 +54,16 @@ function VerifySignUpContent() {
       
     } catch (err) {
       const error = err as AxiosError;
-      if (error.response?.data && typeof error.response.data === 'object') {
+      console.error('Verification error:', error.response?.data || error.message);
+      
+      if (error.response?.status === 401) {
+        // This suggests a backend permission configuration issue
+        setError('Server configuration error. Please contact support.');
+      } else if (error.response?.data && typeof error.response.data === 'object') {
         const responseData = error.response.data as any;
-        if (responseData.error) {
+        if (responseData.detail) {
+          setError(responseData.detail);
+        } else if (responseData.error) {
           setError(responseData.error);
         } else if (responseData.message) {
           setError(responseData.message);
@@ -78,7 +89,6 @@ function VerifySignUpContent() {
     
     try {
       // First, we need to get the user ID by email
-      // This is a workaround since your resend_verification endpoint requires user ID
       const userResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
         {
