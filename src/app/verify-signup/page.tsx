@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
+import { useState, FormEvent, ChangeEvent, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios, { AxiosError } from 'axios';
 
-export default function VerifySignUp() {
+// Create a component that uses useSearchParams
+function VerifySignUpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailFromParams = searchParams.get('email');
@@ -17,12 +18,6 @@ export default function VerifySignUp() {
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
   const [resending, setResending] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!emailFromParams) {
-      router.push('/sign-up');
-    }
-  }, [emailFromParams, router]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -82,16 +77,32 @@ export default function VerifySignUp() {
     setError('');
     
     try {
-      // This endpoint needs to be implemented in your backend
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/resend_verification/`,
-        { email: formData.email },
+      // First, we need to get the user ID by email
+      // This is a workaround since your resend_verification endpoint requires user ID
+      const userResponse = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
         {
+          params: { email: formData.email },
           timeout: 30000,
         }
       );
       
-      setSuccess('Verification token sent successfully. Please check your email.');
+      if (userResponse.data.results && userResponse.data.results.length > 0) {
+        const userId = userResponse.data.results[0].id;
+        
+        // Now call the resend verification endpoint with the user ID
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/${userId}/resend_verification/`,
+          {},
+          {
+            timeout: 30000,
+          }
+        );
+        
+        setSuccess('Verification token sent successfully. Please check your email.');
+      } else {
+        setError('User not found. Please try signing up again.');
+      }
     } catch (err) {
       const error = err as AxiosError;
       if (error.response?.data && typeof error.response.data === 'object') {
@@ -104,6 +115,12 @@ export default function VerifySignUp() {
       setResending(false);
     }
   };
+
+  // Redirect if no email parameter
+  if (!emailFromParams) {
+    router.push('/sign-up');
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-pink-100">
@@ -176,5 +193,24 @@ export default function VerifySignUp() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Main component that wraps the content in Suspense
+export default function VerifySignUp() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-pink-100">
+        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
+          <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
+            JC
+          </div>
+          <h1 className="text-3xl font-bold text-[#FC46AA]">JOSSEYCODES</h1>
+          <p className="text-gray-600 mt-4">Loading verification page...</p>
+        </div>
+      </div>
+    }>
+      <VerifySignUpContent />
+    </Suspense>
   );
 }
