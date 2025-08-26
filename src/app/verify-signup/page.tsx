@@ -1,99 +1,109 @@
-"use client";
+'use client';
 
-import { Suspense, useEffect } from "react";
-import { useState, FormEvent, ChangeEvent } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import axios, { AxiosError } from "axios";
-import Link from "next/link";
+import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import axios, { AxiosError } from 'axios';
 
-function VerifySignupContent() {
+export default function VerifySignUp() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const emailFromUrl = searchParams.get("email") || "";
-
-  const [formData, setFormData] = useState({
-    token: "",
-    email: emailFromUrl,
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [resending, setResending] = useState(false);
-  const [resendSuccess, setResendSuccess] = useState("");
+  const emailFromParams = searchParams.get('email');
+  
+  const [token, setToken] = useState<string>('');
+  const [email, setEmail] = useState<string>(emailFromParams || '');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<string>('');
+  const [resending, setResending] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!emailFromUrl) {
-      setError("No email provided in URL.");
+    if (!emailFromParams) {
+      router.push('/sign-up');
     }
-  }, [emailFromUrl]);
+  }, [emailFromParams, router]);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleTokenChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setToken(e.target.value);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!formData.token) return;
     setLoading(true);
-    setError("");
-    setResendSuccess("");
+    setError('');
+    setSuccess('');
+
+    if (!token) {
+      setError('Please enter the verification token');
+      setLoading(false);
+      return;
+    }
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-      if (!backendUrl) throw new Error("Backend URL not set.");
-
-      await axios.post(
-        `${backendUrl}/api/accounts/users/verify_email/`,
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/verify_email/`,
         {
-          token: formData.token,
-          email: formData.email,
+          email,
+          token
         },
-        { headers: { "Content-Type": "application/json" } }
+        {
+          timeout: 30000,
+        }
       );
-
-      setSuccess(true);
-      setTimeout(() => router.push("/log-in"), 2000);
+      
+      setSuccess(response.data.message || 'Email verified successfully');
+      
+      // Redirect to login after a short delay
+      setTimeout(() => {
+        router.push('/log-in');
+      }, 2000);
+      
     } catch (err) {
       const error = err as AxiosError;
-      if (error.response?.data) {
-        const data = error.response.data as { error?: string; message?: string };
-        setError(data.error || data.message || "Verification failed. Check your token.");
+      if (error.response?.data && typeof error.response.data === 'object') {
+        const responseData = error.response.data as any;
+        if (responseData.token) {
+          setError(responseData.token[0]);
+        } else if (responseData.email) {
+          setError(responseData.email[0]);
+        } else if (responseData.message) {
+          setError(responseData.message);
+        } else if (error.code === 'ECONNABORTED') {
+          setError('Request timeout. Please try again.');
+        } else {
+          setError('Verification failed. Please try again.');
+        }
+      } else if (error.code === 'ECONNABORTED') {
+        setError('Request timeout. Please try again.');
+      } else if (error.message === 'Network Error') {
+        setError('Network error. Please check your connection.');
       } else {
-        setError("Verification failed. Please try again.");
+        setError('Verification failed. Please try again.');
       }
-    } finally {
       setLoading(false);
     }
   };
 
-  const handleResend = async () => {
+  const handleResendToken = async () => {
     setResending(true);
-    setError("");
-    setResendSuccess("");
-
+    setError('');
+    
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-      if (!backendUrl) throw new Error("Backend URL not set.");
-
+      // This endpoint might need to be created on your backend
       await axios.post(
-        `${backendUrl}/api/accounts/users/resend_verification/`,
-        { email: formData.email },
-        { headers: { "Content-Type": "application/json" } }
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/resend_verification/`,
+        { email },
+        {
+          timeout: 30000,
+        }
       );
-
-      setResendSuccess("A new verification token has been sent to your email.");
+      
+      setSuccess('A new verification token has been sent to your email.');
     } catch (err) {
       const error = err as AxiosError;
-      if (error.response?.data) {
-        const data = error.response.data as { error?: string; message?: string };
-        setError(data.error || data.message || "Failed to send new token.");
-      } else {
-        setError("Failed to send new token. Please try again.");
-      }
-    } finally {
-      setResending(false);
+      setError('Failed to resend verification token. Please try again.');
     }
+    
+    setResending(false);
   };
 
   return (
@@ -107,90 +117,64 @@ function VerifySignupContent() {
           <p className="text-gray-600 mt-2">Verify your email address</p>
         </div>
 
-        {success ? (
-          <div className="text-center">
-            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
-              Email verified successfully! Redirecting to login...
-            </div>
+        <p className="text-gray-600 mb-6 text-center">
+          We've sent a verification token to <span className="font-semibold">{email}</span>. 
+          Please paste the token below to verify your account.
+        </p>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+            {error}
           </div>
-        ) : (
-          <>
-            {error && (
-              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-                {error}
-              </div>
-            )}
-
-            {resendSuccess && (
-              <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
-                {resendSuccess}
-              </div>
-            )}
-
-            <p className="mb-4 text-gray-600">
-              We've sent a verification token to{" "}
-              <span className="font-semibold">{formData.email || emailFromUrl}</span>. Please paste the
-              token below to verify your account.
-            </p>
-
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label htmlFor="token" className="block text-gray-700 mb-2">
-                  Verification Token
-                </label>
-                <input
-                  type="text"
-                  id="token"
-                  name="token"
-                  value={formData.token}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
-                  required
-                  placeholder="Paste your verification token here"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full py-2 px-4 mb-4 rounded-md text-white transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50
-                  ${loading ? "bg-pink-300 cursor-not-allowed" : "bg-[#FC46AA] hover:bg-[#F699CD]"}
-                `}
-              >
-                {loading ? "Verifying..." : "Verify Email"}
-              </button>
-            </form>
-
-            <div className="text-center">
-              <p className="text-gray-600">
-                Didn't receive a token?{" "}
-                <button
-                  onClick={handleResend}
-                  disabled={resending}
-                  className={`text-[#FC46AA] hover:underline focus:outline-none
-                    ${resending ? "text-pink-300 cursor-not-allowed" : ""}`}
-                >
-                  {resending ? "Sending..." : "Send new token"}
-                </button>
-              </p>
-            </div>
-          </>
         )}
 
-        <div className="mt-6 text-center">
-          <Link href="/log-in" className="text-[#FC46AA] hover:underline">
+        {success && (
+          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
+            {success}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-6">
+            <label htmlFor="token" className="block text-gray-700 mb-2">Verification Token</label>
+            <input
+              type="text"
+              id="token"
+              value={token}
+              onChange={handleTokenChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+              placeholder="Paste your verification token here"
+              required
+              disabled={loading}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#FC46AA] text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+          >
+            {loading ? 'Verifying...' : 'Verify Email'}
+          </button>
+        </form>
+
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={handleResendToken}
+            disabled={resending}
+            className="text-[#FC46AA] hover:underline disabled:opacity-50 text-center"
+          >
+            {resending ? 'Sending...' : 'Didn\'t receive a token? Send new token'}
+          </button>
+          
+          <button
+            onClick={() => router.push('/log-in')}
+            className="text-[#FC46AA] hover:underline text-center"
+          >
             Back to login
-          </Link>
+          </button>
         </div>
       </div>
     </div>
-  );
-}
-
-export default function VerifySignupPage() {
-  return (
-    <Suspense fallback={<div>Loading verification page...</div>}>
-      <VerifySignupContent />
-    </Suspense>
   );
 }
