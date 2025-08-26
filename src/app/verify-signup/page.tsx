@@ -38,7 +38,8 @@ function VerifySignupContent() {
         {
           token: formData.token,
           email: formData.email,
-        }
+        },
+        { headers: { "Content-Type": "application/json" } }
       );
       setSuccess(true);
       setTimeout(() => router.push("/log-in"), 2000);
