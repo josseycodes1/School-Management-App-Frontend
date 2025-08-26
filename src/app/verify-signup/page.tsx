@@ -1,17 +1,18 @@
 'use client';
 
-import { useState, FormEvent, ChangeEvent, useEffect, Suspense } from 'react';
+import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios, { AxiosError } from 'axios';
 
-// Create a component that uses useSearchParams
-function VerifySignUpContent() {
+export default function VerifySignUp() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailFromParams = searchParams.get('email');
   
-  const [token, setToken] = useState<string>('');
-  const [email, setEmail] = useState<string>(emailFromParams || '');
+  const [formData, setFormData] = useState({
+    email: emailFromParams || '',
+    token: ''
+  });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
@@ -23,31 +24,25 @@ function VerifySignUpContent() {
     }
   }, [emailFromParams, router]);
 
-  const handleTokenChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setToken(e.target.value);
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setSuccess('');
-
-    if (!token) {
-      setError('Please enter the verification token');
-      setLoading(false);
-      return;
-    }
 
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/verify_email/`,
+        formData,
         {
-          email,
-          token
-        },
-        {
-          timeout: 90000,
+          timeout: 30000,
         }
       );
       
@@ -62,10 +57,8 @@ function VerifySignUpContent() {
       const error = err as AxiosError;
       if (error.response?.data && typeof error.response.data === 'object') {
         const responseData = error.response.data as any;
-        if (responseData.token) {
-          setError(responseData.token[0]);
-        } else if (responseData.email) {
-          setError(responseData.email[0]);
+        if (responseData.error) {
+          setError(responseData.error);
         } else if (responseData.message) {
           setError(responseData.message);
         } else if (error.code === 'ECONNABORTED') {
@@ -89,22 +82,27 @@ function VerifySignUpContent() {
     setError('');
     
     try {
-      // This endpoint might need to be created on your backend
-      await axios.post(
+      // This endpoint needs to be implemented in your backend
+      const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/resend_verification/`,
-        { email },
+        { email: formData.email },
         {
           timeout: 30000,
         }
       );
       
-      setSuccess('A new verification token has been sent to your email.');
+      setSuccess('Verification token sent successfully. Please check your email.');
     } catch (err) {
       const error = err as AxiosError;
-      setError('Failed to resend verification token. Please try again.');
+      if (error.response?.data && typeof error.response.data === 'object') {
+        const responseData = error.response.data as any;
+        setError(responseData.error || 'Failed to resend token. Please try again.');
+      } else {
+        setError('Failed to resend token. Please try again.');
+      }
+    } finally {
+      setResending(false);
     }
-    
-    setResending(false);
   };
 
   return (
@@ -119,7 +117,7 @@ function VerifySignUpContent() {
         </div>
 
         <p className="text-gray-600 mb-6 text-center">
-          We've sent a verification token to <span className="font-semibold">{email}</span>. 
+          We've sent a verification token to <span className="font-semibold">{formData.email}</span>. 
           Please paste the token below to verify your account.
         </p>
 
@@ -141,65 +139,42 @@ function VerifySignUpContent() {
             <input
               type="text"
               id="token"
-              value={token}
-              onChange={handleTokenChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+              name="token"
+              value={formData.token}
+              onChange={handleChange}
               placeholder="Paste your verification token here"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
               required
-              disabled={loading}
+              disabled={loading || success !== ''}
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || success !== ''}
             className="w-full bg-[#FC46AA] text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
           >
-            {loading ? 'Verifying...' : 'Verify Email'}
+            {loading ? 'Verifying...' : success ? 'Verified Successfully!' : 'Verify Email'}
           </button>
         </form>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3 mt-4">
           <button
             onClick={handleResendToken}
-            disabled={resending}
-            className="text-[#FC46AA] hover:underline disabled:opacity-50 text-center"
+            disabled={resending || success !== ''}
+            className="text-[#FC46AA] hover:underline disabled:opacity-50 disabled:cursor-not-allowed text-center"
           >
             {resending ? 'Sending...' : 'Didn\'t receive a token? Send new token'}
           </button>
           
           <button
             onClick={() => router.push('/log-in')}
-            className="text-[#FC46AA] hover:underline text-center"
+            className="text-gray-600 hover:underline text-center"
           >
             Back to login
           </button>
         </div>
       </div>
     </div>
-  );
-}
-
-// Loading component
-function VerifySignUpLoading() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-pink-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
-        <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
-          JC
-        </div>
-        <h1 className="text-3xl font-bold text-[#FC46AA]">JOSSEYCODES</h1>
-        <p className="text-gray-600 mt-4">Loading verification page...</p>
-      </div>
-    </div>
-  );
-}
-
-// Main component with Suspense boundary
-export default function VerifySignUp() {
-  return (
-    <Suspense fallback={<VerifySignUpLoading />}>
-      <VerifySignUpContent />
-    </Suspense>
   );
 }
