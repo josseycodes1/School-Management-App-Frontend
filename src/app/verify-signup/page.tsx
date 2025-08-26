@@ -37,7 +37,7 @@ function VerifySignupContent() {
 
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/verify_email/`, 
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}api/accounts/users/verify_email/`, 
         {
           token: formData.token,
           email: formData.email,
@@ -70,7 +70,7 @@ function VerifySignupContent() {
 
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/resend_verification/`, 
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}api/accounts/users/resend_verification/`, 
         {
           email: formData.email,
         }
