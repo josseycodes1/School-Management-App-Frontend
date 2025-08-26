@@ -10,11 +10,11 @@ export default function PortalAccess() {
           Existing parents, students, and staff can access our portal for grades, assignments, and school communications.
         </p>
         <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-          <Link href="/portal-login" className="px-6 py-3 bg-white text-[#FC46AA] rounded-md hover:bg-gray-100 transition-colors font-medium">
-            Portal Login
+          <Link href="/log-in" className="px-6 py-3 bg-white text-[#FC46AA] rounded-md hover:bg-gray-100 transition-colors font-medium">
+            Log In
           </Link>
-          <Link href="/portal-help" className="px-6 py-3 border border-white text-white rounded-md hover:bg-white/10 transition-colors font-medium">
-            Portal Help
+          <Link href="/sign-up" className="px-6 py-3 border border-white text-white rounded-md hover:bg-white/10 transition-colors font-medium">
+            Sign Up
           </Link>
         </div>
       </div>
