@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
+import { useState, FormEvent, ChangeEvent, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios, { AxiosError } from 'axios';
 
-export default function VerifySignUp() {
+// Create a component that uses useSearchParams
+function VerifySignUpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailFromParams = searchParams.get('email');
@@ -46,7 +47,7 @@ export default function VerifySignUp() {
           token
         },
         {
-          timeout: 30000,
+          timeout: 90000,
         }
       );
       
@@ -176,5 +177,29 @@ export default function VerifySignUp() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading component
+function VerifySignUpLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-pink-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
+        <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
+          JC
+        </div>
+        <h1 className="text-3xl font-bold text-[#FC46AA]">JOSSEYCODES</h1>
+        <p className="text-gray-600 mt-4">Loading verification page...</p>
+      </div>
+    </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function VerifySignUp() {
+  return (
+    <Suspense fallback={<VerifySignUpLoading />}>
+      <VerifySignUpContent />
+    </Suspense>
   );
 }
