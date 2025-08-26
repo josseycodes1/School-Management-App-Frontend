@@ -9,11 +9,11 @@ import Link from "next/link";
 function VerifySignupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email") || "";
+  const emailFromUrl = searchParams.get("email") || "";
 
   const [formData, setFormData] = useState({
     token: "",
-    email: email,
+    email: emailFromUrl,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -23,10 +23,7 @@ function VerifySignupContent() {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -37,24 +34,19 @@ function VerifySignupContent() {
 
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}api/accounts/users/verify_email/`, 
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/verify_email/`, 
         {
           token: formData.token,
           email: formData.email,
         }
       );
       setSuccess(true);
-      setTimeout(() => {
-        router.push("/log-in");
-      }, 2000);
+      setTimeout(() => router.push("/log-in"), 2000);
     } catch (err) {
       const error = err as AxiosError;
       if (error.response?.data) {
-        const responseData = error.response.data as { error?: string; message?: string };
-        setError(
-          responseData.error || responseData.message ||
-          "Verification failed. Please check your token and try again."
-        );
+        const data = error.response.data as { error?: string; message?: string };
+        setError(data.error || data.message || "Verification failed. Check your token.");
       } else {
         setError("Verification failed. Please try again.");
       }
@@ -70,19 +62,17 @@ function VerifySignupContent() {
 
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}api/accounts/users/resend_verification/`, 
-        {
-          email: formData.email,
-        }
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/resend_verification/`, 
+        { email: formData.email }
       );
       setResendSuccess("A new verification token has been sent to your email.");
     } catch (err) {
       const error = err as AxiosError;
       if (error.response?.data) {
-        const responseData = error.response.data as { error?: string; message?: string };
-        setError(responseData.error || responseData.message || "Failed to send new verification token.");
+        const data = error.response.data as { error?: string; message?: string };
+        setError(data.error || data.message || "Failed to send new token.");
       } else {
-        setError("Failed to send new verification token. Please try again.");
+        setError("Failed to send new token. Please try again.");
       }
     } finally {
       setResending(false);
@@ -122,7 +112,7 @@ function VerifySignupContent() {
 
             <p className="mb-4 text-gray-600">
               We've sent a verification token to{" "}
-              <span className="font-semibold">{email}</span>. Please paste the
+              <span className="font-semibold">{formData.email || emailFromUrl}</span>. Please paste the
               token below to verify your account.
             </p>
 
@@ -146,7 +136,9 @@ function VerifySignupContent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#FC46AA] text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50 mb-4"
+                className={`w-full py-2 px-4 mb-4 rounded-md text-white transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50
+                  ${loading ? "bg-pink-300 cursor-not-allowed" : "bg-[#FC46AA] hover:bg-[#F699CD]"}
+                `}
               >
                 {loading ? "Verifying..." : "Verify Email"}
               </button>
@@ -158,7 +150,8 @@ function VerifySignupContent() {
                 <button
                   onClick={handleResend}
                   disabled={resending}
-                  className="text-[#FC46AA] hover:underline focus:outline-none"
+                  className={`text-[#FC46AA] hover:underline focus:outline-none
+                    ${resending ? "text-pink-300 cursor-not-allowed" : ""}`}
                 >
                   {resending ? "Sending..." : "Send new token"}
                 </button>
