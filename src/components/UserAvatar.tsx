@@ -28,7 +28,7 @@ export default function UserAvatar({ size = 36, className = "" }: UserAvatarProp
       height={size}
       className={`rounded-full ${className}`}
       onError={(e) => {
-        // If image fails to load, fall back to default avatar
+        //if image fails to load, fall back to default avatar
         const target = e.target as HTMLImageElement
         target.src = "/avatar.png"
       }}

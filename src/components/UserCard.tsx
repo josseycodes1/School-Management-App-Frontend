@@ -2,7 +2,7 @@ import Image from "next/image";
 
 interface UserCardProps {
   type: string;
-  count: number; // ✅ Add this
+  count: number; 
 }
 
 const UserCard = ({ type, count }: UserCardProps) => {

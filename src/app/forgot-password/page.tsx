@@ -19,7 +19,7 @@ export default function ForgotPassword() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/accounts/password_reset/",
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/password_reset/`,
         { email }
       );
       setSuccess(response.data.message);

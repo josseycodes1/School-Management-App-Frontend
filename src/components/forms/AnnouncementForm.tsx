@@ -49,8 +49,8 @@ const AnnouncementForm = ({
   const onSubmit = async (formData: FormData) => {
     try {
       const endpoint = type === "create" 
-        ? "http://localhost:8000/api/announcements/" 
-        : `http://localhost:8000/api/announcements/${data?.id}/`;
+        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/announcements/` 
+        : `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/announcements/${data?.id}/`;
 
       const response = await axios({
         method: type === "create" ? "post" : "put",

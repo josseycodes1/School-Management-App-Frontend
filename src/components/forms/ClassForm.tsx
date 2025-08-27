@@ -47,11 +47,15 @@ const ClassForm = ({
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) return;
 
-        const res = await axios.get("http://localhost:8000/api/accounts/teachers/", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           }
-        });
+        );
+
         setTeachers(res.data);
       } catch (err) {
         console.error("Failed to load teachers");
@@ -75,9 +79,10 @@ const ClassForm = ({
   const onSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
     try {
-      const endpoint = type === "create" 
-        ? "http://localhost:8000/api/accounts/classes/" 
-        : `http://localhost:8000/api/accounts/classes/${data?.id}/`;
+      const endpoint =
+        type === "create"
+          ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/classes/`
+          : `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/classes/${data?.id}/`;
 
       const payload = {
         name: formData.name,

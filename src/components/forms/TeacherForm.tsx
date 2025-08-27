@@ -62,9 +62,10 @@ const TeacherForm = ({
         if (value) formPayload.append(key, value);
       });
 
-      const endpoint = type === "create" 
-        ? "http://localhost:8000/api/accounts/teachers/" 
-        : `http://localhost:8000/api/accounts/teachers/${data?.id}/`;
+      const endpoint = type === "create"
+        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/`
+        : `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/${data?.id}/`;
+
 
       const response = await axios({
         method: type === "create" ? "post" : "put",

@@ -5,7 +5,7 @@ import axios, { AxiosError } from 'axios';
 
 interface ResendVerificationProps {
   email: string;
-  isPasswordReset?: boolean; // Flag to distinguish between signup and password reset
+  isPasswordReset?: boolean; 
 }
 
 export function ResendVerification({ email, isPasswordReset = false }: ResendVerificationProps) {
@@ -22,15 +22,15 @@ export function ResendVerification({ email, isPasswordReset = false }: ResendVer
       let response;
       
       if (isPasswordReset) {
-        // For password reset flow
+        //for password reset flow
         response = await axios.post(
-          'http://localhost:8000/api/accounts/password_reset/resend/',
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/password_reset/resend/`,
           { email }
         );
       } else {
-        // For signup verification flow
+        //for signup verification flow
         response = await axios.post(
-          'http://localhost:8000/api/accounts/users/resend_verification/',
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/resend_verification/`,
           { email }
         );
       }

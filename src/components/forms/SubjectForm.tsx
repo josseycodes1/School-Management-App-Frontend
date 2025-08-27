@@ -55,13 +55,13 @@ const SubjectForm = ({
         if (!accessToken) return;
 
         // Fetch teachers
-        const teachersRes = await axios.get("http://localhost:8000/api/accounts/teachers/", {
+        const teachersRes = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         });
         setTeachers(teachersRes.data);
 
         // Fetch classes
-        const classesRes = await axios.get("http://localhost:8000/api/accounts/classes/", {
+        const classesRes = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/classes/`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         });
         setClasses(classesRes.data);
@@ -89,9 +89,10 @@ const SubjectForm = ({
   const onSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
     try {
-      const endpoint = type === "create" 
-        ? "http://localhost:8000/api/accounts/subjects/" 
-        : `http://localhost:8000/api/accounts/subjects/${data?.id}/`;
+      const endpoint = type === "create"
+        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/subjects/`
+        : `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/subjects/${data?.id}/`;
+
 
       const payload = {
         name: formData.name,

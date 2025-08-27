@@ -25,12 +25,12 @@ const Announcements = ({ limit = 3 }: { limit?: number }) => {
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/api/announcements/", {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/announcements/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
         });
-        // Get only the first 'limit' announcements, sorted by date (newest first)
+        //get only the first 'limit' announcements, sorted by date (newest first)
         const sortedAnnouncements = res.data.sort(
           (a: Announcement, b: Announcement) => 
             new Date(b.start_date).getTime() - new Date(a.start_date).getTime()

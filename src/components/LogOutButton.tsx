@@ -17,16 +17,16 @@ export default function LogoutButton({
   const router = useRouter()
 
   const handleLogout = () => {
-    // Clear all user data from localStorage
+    //clear all user data from localStorage
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('user')
     localStorage.removeItem('role')
     
-    // Show success message
+    //show success message
     toast.success('You have been successfully logged out!')
     
-    // Redirect to login page
+    //redirect to login page
     router.push('/log-in')
   }
 

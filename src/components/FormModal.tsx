@@ -111,20 +111,21 @@ const FormModal = ({
     return "";
   };
 
-  const getDeleteEndpoint = () => {
-    if (table === "teacher") {
-      return `http://localhost:8000/api/accounts/teachers/${id}/`;
-    } else if (table === "announcement") {
-      return `http://localhost:8000/api/announcements/${id}/`;
-    } else if (table === "event") {
-      return `http://localhost:8000/api/events/${id}/`;
-    } else if (table === "student") {
-      return `http://localhost:8000/api/accounts/students/${id}/`;
-    } else if (table === "exam") {
-      return `http://localhost:8000/api/assessment/exams/${id}/`;
-    }
-    return "";
-  };
+const getDeleteEndpoint = () => {
+  if (table === "teacher") {
+    return `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/${id}/`;
+  } else if (table === "announcement") {
+    return `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/announcements/${id}/`;
+  } else if (table === "event") {
+    return `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/events/${id}/`;
+  } else if (table === "student") {
+    return `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/${id}/`;
+  } else if (table === "exam") {
+    return `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessment/exams/${id}/`;
+  }
+  return "";
+};
+
 
   const handleDelete = async () => {
     setIsDeleting(true);

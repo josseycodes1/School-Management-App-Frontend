@@ -14,9 +14,7 @@ const Navbar = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    // Implement search functionality
     console.log("Searching for:", searchQuery)
-    // You can redirect to search results page or filter content
   }
 
   return (
@@ -68,7 +66,6 @@ const Navbar = () => {
         {/* User Avatar */}
         <UserAvatar size={36} />
         
-        {/* Logout Button (optional - you can place it elsewhere if preferred) */}
         <div className="hidden md:block">
           <LogoutButton variant="text" className="text-xs">
             Logout

@@ -51,9 +51,11 @@ const EventForm = ({
 
   const onSubmit = async (formData: FormData) => {
     try {
-      const endpoint = type === "create" 
-        ? "http://localhost:8000/api/events/" 
-        : `http://localhost:8000/api/events/${data?.id}/`;
+      const endpoint =
+        type === "create"
+          ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/events/`
+          : `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/events/${data?.id}/`;
+
 
       const response = await axios({
         method: type === "create" ? "post" : "put",

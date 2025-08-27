@@ -75,9 +75,10 @@ const StudentForm = ({
         }
       });
 
-      const endpoint = type === "create" 
-        ? "http://localhost:8000/api/accounts/students/" 
-        : `http://localhost:8000/api/accounts/students/${data?.id}/`;
+      const endpoint = type === "create"
+        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/`
+        : `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/${data?.id}/`;
+
 
       const response = await axios({
         method: type === "create" ? "post" : "put",

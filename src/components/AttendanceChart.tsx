@@ -24,7 +24,7 @@ const AttendanceChart = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/attendance/weekly-summary/", {
+      .get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/attendance/weekly-summary/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },

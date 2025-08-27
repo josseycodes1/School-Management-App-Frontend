@@ -73,7 +73,7 @@ const ExamForm = ({
         setError("");
 
         // Fetch subjects
-        const subjectsRes = await axios.get("http://localhost:8000/api/accounts/subjects/", {
+        const subjectsRes = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/subjects/`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         });
         
@@ -85,7 +85,7 @@ const ExamForm = ({
         setSubjects(subjectsData);
 
         // Fetch teachers
-        const teachersRes = await axios.get("http://localhost:8000/api/accounts/teachers/", {
+        const teachersRes = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         });
         
@@ -142,9 +142,9 @@ const ExamForm = ({
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) throw new Error("No access token found");
 
-      const endpoint = type === "create" 
-        ? "http://localhost:8000/api/assessment/exams/" 
-        : `http://localhost:8000/api/assessment/exams/${data?.id}/`;
+      const endpoint = type === "create"
+        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessment/exams/`
+        : `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessment/exams/${data?.id}/`;
 
       const method = type === "create" ? "post" : "put";
 

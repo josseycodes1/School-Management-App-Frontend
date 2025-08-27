@@ -1,12 +1,10 @@
 import { useState, ReactNode } from 'react';
 
-// Define types for the step configuration
 interface Step {
   name: string;
   component: React.ComponentType<StepComponentProps>;
 }
 
-// Define props for step components
 interface StepComponentProps {
   data: any;
   onNext: (stepData: any) => void;
@@ -15,7 +13,6 @@ interface StepComponentProps {
   onSubmit: () => void;
 }
 
-// Define props for OnboardingLayout
 interface OnboardingLayoutProps {
   role: string;
   steps: Step[];

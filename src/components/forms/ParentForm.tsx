@@ -70,9 +70,10 @@ const ParentForm = ({
         occupation: formData.occupation,
       };
 
-      const endpoint = type === "create" 
-        ? "http://localhost:8000/api/accounts/parents/" 
-        : `http://localhost:8000/api/accounts/parents/${data?.id}/`;
+      const endpoint = type === "create"
+        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/`
+        : `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/${data?.id}/`;
+
 
       const method = type === "create" ? "post" : "put";
 

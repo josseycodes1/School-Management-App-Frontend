@@ -37,7 +37,7 @@ function VerifyForgotPasswordContent() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/accounts/password_reset/verify/",
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/password_reset/verify/`,
         { token, email, new_password: newPassword }
       );
       setSuccess(response.data.message);
@@ -65,7 +65,7 @@ function VerifyForgotPasswordContent() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/accounts/password_reset/resend/",
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/password_reset/resend/`,
         { email }
       );
       setSuccess(response.data.message);

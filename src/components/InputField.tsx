@@ -5,13 +5,13 @@ import { FieldError, UseFormRegister } from "react-hook-form";
 type InputFieldProps = {
   label: string;
   type?: string;
-  register: UseFormRegister<any> | any; // More flexible type
+  register: UseFormRegister<any> | any; 
   name: string;
   defaultValue?: string;
   error?: FieldError;
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
-  className?: string; // Added className prop
-  wrapperClassName?: string; // Added for wrapper div
+  className?: string;
+  wrapperClassName?: string;
   placeholder?: string;
 };
 
@@ -23,8 +23,8 @@ const InputField = ({
   defaultValue,
   error,
   inputProps,
-  className = "", // Input field className
-  wrapperClassName = "flex flex-col gap-2 w-full md:w-1/4" // Default wrapper style
+  className = "",
+  wrapperClassName = "flex flex-col gap-2 w-full md:w-1/4"
 }: InputFieldProps) => {
   return (
     <div className={wrapperClassName}>
