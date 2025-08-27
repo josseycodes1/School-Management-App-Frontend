@@ -60,7 +60,7 @@ export default function ParentOnboarding() {
 
         // Get onboarding progress
         const progressRes = await axios.get(
-          'http://localhost:8000/api/accounts/parents/onboarding/progress/',
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/onboarding/progress/`,
           { headers: { Authorization: `Bearer ${token}` } }
         )
         
@@ -74,7 +74,7 @@ export default function ParentOnboarding() {
 
         // Pre-fill existing data
         const profileRes = await axios.get(
-          'http://localhost:8000/api/accounts/parents/onboarding/',
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/onboarding/`,
           { headers: { Authorization: `Bearer ${token}` } }
         )
         
@@ -91,7 +91,7 @@ export default function ParentOnboarding() {
         }))
 
         if (profileRes.data.photo) {
-          setPreviewImage(`http://localhost:8000${profileRes.data.photo}`)
+          setPreviewImage(`${process.env.NEXT_PUBLIC_BACKEND_URL}${profileRes.data.photo}`);
         }
 
       } catch (error) {
@@ -177,7 +177,7 @@ export default function ParentOnboarding() {
       if (formData.photo) formPayload.append('photo', formData.photo)
 
       await axios.patch(
-        'http://localhost:8000/api/accounts/parents/onboarding/',
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/onboarding/`,
         formPayload,
         {
           headers: {
@@ -189,7 +189,7 @@ export default function ParentOnboarding() {
 
       // Verify completion status
       const progressRes = await axios.get(
-        'http://localhost:8000/api/accounts/parents/onboarding/progress/',
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/onboarding/progress/`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
 

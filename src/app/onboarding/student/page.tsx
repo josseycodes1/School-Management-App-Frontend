@@ -85,7 +85,7 @@ export default function StudentOnboarding() {
 
         // Get onboarding progress
         const progressRes = await axios.get(
-          'http://localhost:8000/api/accounts/students/onboarding/progress/', 
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/onboarding/progress/`, 
           {
             headers: {
               'Authorization': `Bearer ${token}`
@@ -103,7 +103,7 @@ export default function StudentOnboarding() {
 
         // Pre-fill existing data if available
         const profileRes = await axios.get(
-          'http://localhost:8000/api/accounts/students/onboarding/',
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/onboarding/`,
           {
             headers: {
               'Authorization': `Bearer ${token}`
@@ -118,7 +118,7 @@ export default function StudentOnboarding() {
         }));
 
         if (profileRes.data.photo) {
-          setPreviewImage(`http://localhost:8000${profileRes.data.photo}`);
+          setPreviewImage(`${process.env.NEXT_PUBLIC_BACKEND_URL}${profileRes.data.photo}`);
         }
 
       } catch (error) {
@@ -235,7 +235,8 @@ export default function StudentOnboarding() {
       }
 
       const response = await axios.patch(
-        'http://localhost:8000/api/accounts/students/onboarding/',
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/onboarding/`,
+
         formPayload,
         {
           headers: {
@@ -247,7 +248,7 @@ export default function StudentOnboarding() {
 
       // Check progress after submission
       const progressRes = await axios.get(
-        'http://localhost:8000/api/accounts/students/onboarding/progress/',
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/onboarding/progress/`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
