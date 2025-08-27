@@ -64,7 +64,7 @@ export default function SignUp() {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
         submitData,
         {
-          timeout: 500000, // 500 second timeout
+          timeout: 10000, // 10 second timeout
           headers: {
             'Content-Type': 'application/json',
           },
