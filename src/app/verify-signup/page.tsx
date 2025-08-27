@@ -1,23 +1,31 @@
 'use client';
 
-import { useState, FormEvent, ChangeEvent, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, FormEvent, ChangeEvent, Suspense, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import axios, { AxiosError } from 'axios';
 
-// Create a component that uses useSearchParams
+// Create a component that uses localStorage
 function VerifySignUpContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const emailFromParams = searchParams.get('email');
-  
   const [formData, setFormData] = useState({
-    email: emailFromParams || '',
+    email: '',
     token: ''
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
   const [resending, setResending] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Get email from localStorage on component mount
+    const storedEmail = localStorage.getItem('signupEmail');
+    if (storedEmail) {
+      setFormData(prev => ({ ...prev, email: storedEmail }));
+    } else {
+      // Redirect if no email in localStorage
+      router.push('/sign-up');
+    }
+  }, [router]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -46,6 +54,9 @@ function VerifySignUpContent() {
       );
       
       setSuccess(response.data.message || 'Email verified successfully');
+      
+      // Clean up localStorage after successful verification
+      localStorage.removeItem('signupEmail');
       
       // Redirect to login after a short delay
       setTimeout(() => {
@@ -93,7 +104,7 @@ function VerifySignUpContent() {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
         {
           params: { email: formData.email },
-          timeout: 30000,
+          timeout: 90000,
         }
       );
       
@@ -126,12 +137,6 @@ function VerifySignUpContent() {
     }
   };
 
-  // Redirect if no email parameter
-  if (!emailFromParams) {
-    router.push('/sign-up');
-    return null;
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-pink-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
@@ -143,10 +148,14 @@ function VerifySignUpContent() {
           <p className="text-gray-600 mt-2">Verify your email address</p>
         </div>
 
-        <p className="text-gray-600 mb-6 text-center">
-          We've sent a verification token to <span className="font-semibold">{formData.email}</span>. 
-          Please paste the token below to verify your account.
-        </p>
+        {formData.email ? (
+          <p className="text-gray-600 mb-6 text-center">
+            We've sent a verification token to <span className="font-semibold">{formData.email}</span>. 
+            Please paste the token below to verify your account.
+          </p>
+        ) : (
+          <p className="text-gray-600 mb-6 text-center">Loading your email...</p>
+        )}
 
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">

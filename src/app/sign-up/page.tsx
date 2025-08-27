@@ -68,8 +68,11 @@ export default function SignUp() {
         }
       );
       
-      // Keep the button disabled until navigation completes
-      router.push(`/verify-signup?email=${encodeURIComponent(response.data.email)}`);
+      // Store email in localStorage before navigation
+      localStorage.setItem('signupEmail', response.data.email);
+      
+      // Navigate to verify page
+      router.push('/verify-signup');
       
     } catch (err) {
       const error = err as AxiosError;
