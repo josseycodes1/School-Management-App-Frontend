@@ -1,220 +1,93 @@
 'use client';
 
-import { useState, FormEvent, ChangeEvent, useEffect, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
-import axios, { AxiosError } from 'axios';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useSearchParams, useRouter } from "next/navigation";
 
-function VerifySignUpContent() {
+export default function VerifySignupPage() {
+  const [otp, setOtp] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [message, setMessage] = useState("");
+  const searchParams = useSearchParams();
   const router = useRouter();
-  
-  const [formData, setFormData] = useState({
-    email: '',
-    token: ''
-  });
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
-  const [resending, setResending] = useState<boolean>(false);
 
-  // Load email from localStorage
+  const email = searchParams.get("email");
+
   useEffect(() => {
-    const savedEmail = localStorage.getItem("signupEmail");
-    if (savedEmail) {
-      setFormData((prev) => ({ ...prev, email: savedEmail }));
-    } else {
-      router.push('/sign-up');
+    if (!email) {
+      setMessage("Email is missing from the link.");
     }
-  }, [router]);
+  }, [email]);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
+  const handleVerify = async () => {
+    if (!otp || !email) {
+      setMessage("Please enter OTP and ensure email exists.");
+      return;
+    }
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+    setIsVerifying(true);
+    setMessage("");
 
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/verify_email/`,
-        formData,
-        {
-          timeout: 30000,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
+        { email, otp }
       );
-      
-      setSuccess(response.data.message || 'Email verified successfully');
 
-      // Cleanup and redirect
-      setTimeout(() => {
-        localStorage.removeItem("signupEmail");
-        router.push('/log-in');
-      }, 2000);
+      setIsVerified(true);
+      setMessage(response.data.message || "Verified successfully!");
 
-    } catch (err) {
-      const error = err as AxiosError;
-      console.error('Verification error:', error.response?.data || error.message);
-
-      if (error.response?.status === 401) {
-        setError('Server configuration error. Please contact support.');
-      } else if (error.response?.data && typeof error.response.data === 'object') {
-        const responseData = error.response.data as any;
-        if (responseData.detail) {
-          setError(responseData.detail);
-        } else if (responseData.error) {
-          setError(responseData.error);
-        } else if (responseData.message) {
-          setError(responseData.message);
-        } else {
-          setError('Verification failed. Please try again.');
-        }
-      } else {
-        setError('Verification failed. Please try again.');
-      }
-      setLoading(false);
+      // Redirect after 2s
+      setTimeout(() => router.push("/login"), 2000);
+    } catch (error: any) {
+      setMessage(
+        error.response?.data?.error || "Verification failed. Try again."
+      );
+    } finally {
+      setIsVerifying(false);
     }
   };
 
-  const handleResendToken = async () => {
-  setResending(true);
-  setError('');
-  
-    try {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/resend_verification/`,
-        { email: formData.email },
-        {
-          timeout: 30000,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      setSuccess('Verification token sent successfully. Please check your email.');
-    } catch (err) {
-      const error = err as AxiosError;
-      if (error.response?.data && typeof error.response.data === 'object') {
-        const responseData = error.response.data as any;
-        setError(responseData.error || 'Failed to resend token. Please try again.');
-      } else {
-        setError('Failed to resend token. Please try again.');
-      }
-    } finally {
-      setResending(false);
-    }
-};
-
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-pink-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
-            JC
-          </div>
-          <h1 className="text-3xl font-bold text-[#FC46AA]">JOSSEYCODES</h1>
-          <p className="text-gray-600 mt-2">Verify your email address</p>
-        </div>
-
-        <p className="text-gray-600 mb-6 text-center">
-          We've sent a verification token to <span className="font-semibold">{formData.email}</span>. 
-          Please paste the token below to verify your account.
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
+        <h1 className="text-xl font-bold text-center mb-4">Verify Your Email</h1>
+        <p className="text-center text-gray-600 mb-4">
+          Enter the 6-digit OTP sent to <span className="font-medium">{email}</span>
         </p>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
-            {success}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          {/* Hidden or read-only email field */}
-          <input
-            type="hidden"
-            name="email"
-            value={formData.email}
-            readOnly
-          />
-
-          <div className="mb-6">
-            <label htmlFor="token" className="block text-gray-700 mb-2">Verification Token</label>
-            <input
-              type="text"
-              id="token"
-              name="token"
-              value={formData.token}
-              onChange={handleChange}
-              placeholder="Paste your verification token here"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading || success !== ''}
-            className="w-full bg-[#FC46AA] text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-          >
-            {loading ? 'Verifying...' : success ? 'Verified Successfully!' : 'Verify Email'}
-          </button>
-        </form>
-
-        <div className="flex flex-col gap-3 mt-4">
-        <div className="flex items-center justify-center gap-2">
-          <span className="text-gray-600">Didn't receive a token?</span>
-          <button
-            onClick={handleResendToken}
-            disabled={resending || success !== ''}
-            className="text-[#FC46AA] font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {resending ? 'Sending...' : 'Resend'}
-          </button>
-        </div>
+        <input
+          type="text"
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}
+          maxLength={6}
+          placeholder="Enter OTP"
+          className="w-full border rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
 
         <button
-          onClick={() => router.push('/log-in')}
-          className="text-gray-600 hover:underline text-center"
+          onClick={handleVerify}
+          disabled={isVerifying || isVerified}
+          className={`w-full py-2 px-4 rounded-lg text-white font-semibold ${
+            isVerifying
+              ? "bg-gray-400 cursor-not-allowed"
+              : isVerified
+              ? "bg-green-500"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
         >
-          Back to login
+          {isVerifying
+            ? "Verifying..."
+            : isVerified
+            ? "Verified successfully"
+            : "Verify"}
         </button>
-      </div>
 
+        {message && (
+          <p className="text-center mt-4 text-sm text-gray-700">{message}</p>
+        )}
       </div>
     </div>
-  );
-}
-
-// Main wrapper with Suspense
-export default function VerifySignUp() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-pink-100">
-        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
-          <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
-            JC
-          </div>
-          <h1 className="text-3xl font-bold text-[#FC46AA]">JOSSEYCODES</h1>
-          <p className="text-gray-600 mt-4">Loading verification page...</p>
-        </div>
-      </div>
-    }>
-      <VerifySignUpContent />
-    </Suspense>
   );
 }
