@@ -162,7 +162,7 @@ function VerifySignUpContent() {
               placeholder="Paste your verification token here"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
               required
-              disabled={loading || success !== ''}
+              disabled={loading}
             />
           </div>
 
