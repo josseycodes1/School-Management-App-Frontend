@@ -30,23 +30,39 @@ const AnnouncementListPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchAnnouncements = async () => {
-      try {
-        const res = await axios.get("http://josseycodes-academy.onrender.com/api/announcements/", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        });
-        setAnnouncements(Array.isArray(res.data) ? res.data : res.data?.results || []);
-      } catch (err) {
-        setError("Failed to load announcements");
-      } finally {
-        setLoading(false);
+useEffect(() => {
+  const fetchAnnouncements = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      console.log("Token being used:", token);
+
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/announcements/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      console.log("API raw response:", res.data);
+
+      // Handle pagination vs non-pagination cleanly
+      if (Array.isArray(res.data)) {
+        setAnnouncements(res.data);
+      } else if (res.data.results) {
+        setAnnouncements(res.data.results);
+      } else {
+        setAnnouncements([]); // fallback
       }
-    };
-    fetchAnnouncements();
-  }, []);
+    } catch (err: any) {
+      console.error("API Error:", err.response?.data || err.message);
+      setError("Failed to load announcements");
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchAnnouncements();
+}, []);
+
 
   const handleSuccess = (updatedAnnouncement: Announcement, type: "create" | "update" | "delete") => {
     if (type === "create") {
