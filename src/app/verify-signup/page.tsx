@@ -84,33 +84,22 @@ function VerifySignUpContent() {
   };
 
   const handleResendToken = async () => {
-    setResending(true);
-    setError('');
-    
+  setResending(true);
+  setError('');
+  
     try {
-      const userResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/resend_verification/`,
+        { email: formData.email },
         {
-          params: { email: formData.email },
-          timeout: 90000,
+          timeout: 30000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }
       );
-      
-      if (userResponse.data.results && userResponse.data.results.length > 0) {
-        const userId = userResponse.data.results[0].id;
 
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/${userId}/resend_verification/`,
-          {},
-          {
-            timeout: 30000,
-          }
-        );
-        
-        setSuccess('Verification token sent successfully. Please check your email.');
-      } else {
-        setError('User not found. Please try signing up again.');
-      }
+      setSuccess('Verification token sent successfully. Please check your email.');
     } catch (err) {
       const error = err as AxiosError;
       if (error.response?.data && typeof error.response.data === 'object') {
@@ -122,7 +111,8 @@ function VerifySignUpContent() {
     } finally {
       setResending(false);
     }
-  };
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-pink-100">
@@ -186,21 +176,25 @@ function VerifySignUpContent() {
         </form>
 
         <div className="flex flex-col gap-3 mt-4">
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-gray-600">Didn't receive a token?</span>
           <button
             onClick={handleResendToken}
             disabled={resending || success !== ''}
-            className="text-[#FC46AA] hover:underline disabled:opacity-50 disabled:cursor-not-allowed text-center"
+            className="text-[#FC46AA] font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {resending ? 'Sending...' : 'Didn\'t receive a token? Send new token'}
-          </button>
-          
-          <button
-            onClick={() => router.push('/log-in')}
-            className="text-gray-600 hover:underline text-center"
-          >
-            Back to login
+            {resending ? 'Sending...' : 'Resend'}
           </button>
         </div>
+
+        <button
+          onClick={() => router.push('/log-in')}
+          className="text-gray-600 hover:underline text-center"
+        >
+          Back to login
+        </button>
+      </div>
+
       </div>
     </div>
   );

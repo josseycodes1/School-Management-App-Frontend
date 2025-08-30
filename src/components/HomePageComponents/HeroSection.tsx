@@ -10,10 +10,10 @@ export default function HeroSection() {
         Preparing students from JSS1 to SS3 for academic success and character development in a nurturing environment.
       </p>
       <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-        <Link href="/home" className="px-6 py-3 bg-[#FC46AA] text-white rounded-md hover:bg-[#F699CD] transition-colors font-medium">
+        <Link href="/" className="px-6 py-3 bg-[#FC46AA] text-white rounded-md hover:bg-[#F699CD] transition-colors font-medium">
           Begin Admission Process
         </Link>
-        <Link href="/home" className="px-6 py-3 border border-[#FC46AA] text-[#FC46AA] rounded-md hover:bg-[#FC46AA]/10 transition-colors font-medium">
+        <Link href="/" className="px-6 py-3 border border-[#FC46AA] text-[#FC46AA] rounded-md hover:bg-[#FC46AA]/10 transition-colors font-medium">
           Schedule a School Tour
         </Link>
       </div>
