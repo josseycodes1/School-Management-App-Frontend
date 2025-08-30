@@ -34,18 +34,25 @@ const AnnouncementListPage = () => {
     const fetchAnnouncements = async () => {
       try {
         const token = localStorage.getItem("accessToken");
-        console.log("Token being used:", token);
+        if (!token) {
+          setError("No access token found. Please log in again.");
+          setLoading(false);
+          return;
+        }
+
+        console.log("🔑 Token being used:", token);
 
         const res = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/announcements/`,
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
 
-        console.log("API raw response:", res.data);
+        console.log("✅ API raw response:", res.data);
 
-        // Handle both paginated & non-paginated responses
         if (Array.isArray(res.data)) {
           setAnnouncements(res.data);
         } else if (res.data.results) {
@@ -54,12 +61,16 @@ const AnnouncementListPage = () => {
           setAnnouncements([]);
         }
       } catch (err: any) {
-        console.error("API Error:", err.response?.data || err.message);
-        setError("Failed to load announcements");
+        console.error("❌ API Error:", err.response?.data || err.message);
+        setError(
+          err.response?.data?.detail ||
+            "Failed to load announcements. Please try again."
+        );
       } finally {
         setLoading(false);
       }
     };
+
     fetchAnnouncements();
   }, []);
 
