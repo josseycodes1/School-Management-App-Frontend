@@ -1,6 +1,7 @@
 'use client'
 
 import Image from "next/image"
+import { useState } from "react"
 import { useUserData } from "@/hooks/useUserData"
 
 interface UserAvatarProps {
@@ -8,8 +9,11 @@ interface UserAvatarProps {
   className?: string
 }
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://school-management-app.onrender.com"
+
 export default function UserAvatar({ size = 36, className = "" }: UserAvatarProps) {
   const { userData, loading } = useUserData()
+  const [error, setError] = useState(false)
 
   if (loading) {
     return (
@@ -20,18 +24,19 @@ export default function UserAvatar({ size = 36, className = "" }: UserAvatarProp
     )
   }
 
+  // If error loading image or no profile_image, show default avatar
+  const imageUrl = !error && userData?.profile_image
+    ? `${BASE_URL}${userData.profile_image}`
+    : "/avatar.png"
+
   return (
     <Image 
-      src={userData?.profile_image || "/avatar.png"} 
+      src={imageUrl} 
       alt="User avatar" 
       width={size}
       height={size}
       className={`rounded-full ${className}`}
-      onError={(e) => {
-        //if image fails to load, fall back to default avatar
-        const target = e.target as HTMLImageElement
-        target.src = "/avatar.png"
-      }}
+      onError={() => setError(true)}
     />
   )
 }

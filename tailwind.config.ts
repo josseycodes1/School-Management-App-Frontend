@@ -13,6 +13,11 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      
+      images: {
+        domains: ["josseycodes-academy.onrender.com"],
+      },
+
       colors: {
         lamaSky: "#F699CD",
         lamaSkyLight: "#F699CD",
