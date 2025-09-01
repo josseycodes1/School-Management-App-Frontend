@@ -189,8 +189,6 @@ const StudentListPage = () => {
                               height={40}
                               className="rounded-full"
                             />
-
-
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">

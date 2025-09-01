@@ -8,8 +8,6 @@ interface UserAvatarProps {
   className?: string
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://school-management-app.onrender.com"
-
 export default function UserAvatar({ size = 36, className = "" }: UserAvatarProps) {
   const { userData, loading } = useUserData()
 
@@ -22,10 +20,8 @@ export default function UserAvatar({ size = 36, className = "" }: UserAvatarProp
     )
   }
 
-  // If the user has a profile image, prepend the base URL
-  const imageUrl = userData?.profile_image
-    ? `${BASE_URL}${userData.profile_image}`
-    : "/avatar.png"
+  // Use Cloudinary URL directly if available
+  const imageUrl = userData?.profile_image || "/avatar.png"
 
   return (
     <Image 
@@ -34,6 +30,7 @@ export default function UserAvatar({ size = 36, className = "" }: UserAvatarProp
       width={size}
       height={size}
       className={`rounded-full ${className}`}
+      unoptimized // ✅ prevents Next from trying to proxy Cloudinary images
       onError={(e) => {
         const target = e.target as HTMLImageElement
         target.src = "/avatar.png"

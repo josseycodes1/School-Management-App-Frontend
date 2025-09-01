@@ -91,8 +91,8 @@ export default function ParentOnboarding() {
         }))
 
         if (profileRes.data.photo) {
-          setPreviewImage(`${process.env.NEXT_PUBLIC_BACKEND_URL}${profileRes.data.photo}`);
-        }
+        setPreviewImage(profileRes.data.photo); // it's already a full Cloudinary URL
+      }
 
       } catch (error) {
         console.error('Progress check error:', error)
