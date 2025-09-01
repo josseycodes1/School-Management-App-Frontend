@@ -27,7 +27,7 @@ const AdminPage = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/accounts/user-counts/", {
+      .get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/user-counts/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
