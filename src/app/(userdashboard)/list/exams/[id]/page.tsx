@@ -1,4 +1,4 @@
-// app/list/exams/[id]/page.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -75,7 +75,7 @@ const ExamDetailPage = () => {
 
         // Fetch exam details
         const examRes = await axios.get(
-          `http://localhost:8000/api/assessment/exams/${examId}/`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessment/exams/${examId}/`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -87,7 +87,7 @@ const ExamDetailPage = () => {
         // Fetch results for this exam
         try {
           const resultsRes = await axios.get(
-            `http://localhost:8000/api/assessment/results/?exam=${examId}`,
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessment/results/?exam=${examId}`,
             {
               headers: {
                 Authorization: `Bearer ${accessToken}`,

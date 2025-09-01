@@ -1,4 +1,4 @@
-// app/list/exams/page.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -48,7 +48,7 @@ const ExamListPage = () => {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) throw new Error("No access token found");
 
-        const res = await axios.get("http://localhost:8000/api/assessment/exams/", {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessment/exams/`, {
           headers: {
             Authorization: `Bearer ${accessToken}`
           }
@@ -69,7 +69,7 @@ const ExamListPage = () => {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) throw new Error("No access token found");
 
-      await axios.delete(`http://localhost:8000/api/assessment/exams/${id}/`, {
+      await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessment/exams/${id}/`, {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
