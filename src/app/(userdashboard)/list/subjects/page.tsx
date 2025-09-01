@@ -40,11 +40,15 @@ const SubjectListPage = () => {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) throw new Error("No access token found");
 
-        const res = await axios.get("http://localhost:8000/api/accounts/subjects/", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        });
+
+    const res = await axios.get(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/subjects/`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
         setSubjects(res.data);
       } catch (err) {
         setError("Failed to load subjects");
@@ -60,7 +64,7 @@ const SubjectListPage = () => {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) throw new Error("No access token found");
 
-      await axios.delete(`http://localhost:8000/api/accounts/subjects/${id}/`, {
+      await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/subjects/${id}/`, {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }

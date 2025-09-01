@@ -19,7 +19,7 @@ const SubjectDetailPage = () => {
           const accessToken = localStorage.getItem('accessToken');
           if (!accessToken) throw new Error('No access token found');
 
-          const res = await axios.get(`http://localhost:8000/api/accounts/subjects/${id}/`, {
+          const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/subjects/${id}/`, {
             headers: {
               Authorization: `Bearer ${accessToken}`
             }
