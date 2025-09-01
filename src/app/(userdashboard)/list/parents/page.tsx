@@ -1,3 +1,4 @@
+// app/list/parents/page.tsx (fixed)
 "use client";
 
 import { useEffect, useState } from "react";
@@ -38,6 +39,7 @@ export default function ParentListPage() {
 
   const fetchParents = async () => {
     setLoading(true);
+    
     try {
       const token = localStorage.getItem("accessToken");
       if (!token) {
@@ -65,6 +67,7 @@ export default function ParentListPage() {
 
       const data = await res.json();
       setParentsData(data);
+      
     } catch (error: unknown) {
       console.error("Fetch error:", error);
       if (error instanceof Error) {
@@ -128,29 +131,28 @@ export default function ParentListPage() {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-      {/* Header with Add Parent button */}
+      {/* Fixed header section - matches teacher page layout */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Parent Management</h1>
-        {role === "admin" && (
-          <FormModal 
-            table="parent" 
-            type="create" 
-            onSuccess={(newParent) => setParentsData([...parentsData, newParent])}
-            className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg"
-          />
-        )}
+        <div className="flex items-center gap-4">
+          <div className="w-64">
+            <TableSearch 
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search parents..."
+            />
+          </div>
+          {role === "admin" && (
+            <FormModal 
+              table="parent" 
+              type="create" 
+              onSuccess={(newParent) => setParentsData([...parentsData, newParent])}
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg"
+            />
+          )}
+        </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="mb-4 w-full md:w-64">
-        <TableSearch 
-          value={searchTerm}
-          onChange={setSearchTerm}
-          placeholder="Search parents..."
-        />
-      </div>
-
-      {/* Parents Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -199,6 +201,7 @@ export default function ParentListPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
+                      {/* View button - routes to parent detail page */}
                       <button 
                         onClick={() => router.push(`/list/parents/${parent.id}`)}
                         className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
@@ -208,6 +211,7 @@ export default function ParentListPage() {
                           alt="View" 
                           width={16} 
                           height={16} 
+                          className="w-4 h-4"
                         />
                       </button>
                       
@@ -229,6 +233,7 @@ export default function ParentListPage() {
                                   alt="Update" 
                                   width={16} 
                                   height={16} 
+                                  className="w-4 h-4"
                                 />
                               </button>
                             }
@@ -242,6 +247,7 @@ export default function ParentListPage() {
                               alt="Delete" 
                               width={16} 
                               height={16} 
+                              className="w-4 h-4"
                             />
                           </button>
                         </>
@@ -261,7 +267,6 @@ export default function ParentListPage() {
         </table>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
