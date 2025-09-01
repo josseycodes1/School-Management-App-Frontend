@@ -35,13 +35,14 @@ const SingleTeacherPage = () => {
     const fetchTeacher = async () => {
       try {
         const response = await axios.get(
-          `http://josseycodes-academy.onrender.com/api/accounts/teachers/${id}/`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/${id}/`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("accessToken")}`
             }
           }
         );
+
         setTeacher(response.data);
       } catch (err) {
         setError("Failed to load teacher data");

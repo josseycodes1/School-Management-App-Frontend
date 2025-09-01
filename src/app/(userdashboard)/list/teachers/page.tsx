@@ -29,7 +29,7 @@ const TeacherListPage = () => {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        const res = await axios.get("https://josseycodes-academy.onrender.com/api/accounts/teachers/", {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`
           }
