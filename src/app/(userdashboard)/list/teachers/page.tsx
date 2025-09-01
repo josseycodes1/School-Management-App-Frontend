@@ -46,7 +46,7 @@ const TeacherListPage = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      await axios.delete(`https://josseycodes-academy.onrender.com/api/accounts/teachers/${id}/`, {
+      await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/${id}/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`
         }

@@ -134,7 +134,14 @@ export default function ParentListPage() {
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">Parent Management</h1>
-        
+            {role === "admin" && (
+            <FormModal 
+              table="parent" 
+              type="create" 
+              onSuccess={(newParent) => setParentsData([...parentsData, newParent])}
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap"
+            />
+          )}
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
           <div className="w-full md:w-64">
             <TableSearch 
@@ -143,15 +150,6 @@ export default function ParentListPage() {
               placeholder="Search parents..."
             />
           </div>
-          
-          {role === "admin" && (
-            <FormModal 
-              table="parent" 
-              type="create" 
-              onSuccess={(newParent) => setParentsData([...parentsData, newParent])}
-              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap"
-            />
-          )}
         </div>
       </div>
 
