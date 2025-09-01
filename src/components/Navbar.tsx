@@ -10,17 +10,30 @@ import LogoutButton from "@/components/LogOutButton"
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const { userData, loading: userLoading } = useUserData()
-  const { unreadCount, loading: announcementsLoading } = useAnnouncements()
+  const { unreadCount } = useAnnouncements()
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     console.log("Searching for:", searchQuery)
   }
 
+  // ✅ Handle full name with fallback
+  const fullName = userData
+    ? `${userData.first_name || ""} ${userData.last_name || ""}`.trim() || "Admin User"
+    : "Guest"
+
+  // ✅ Handle role with fallback
+  const role = userData
+    ? userData.role || "admin"
+    : "Unknown"
+
   return (
     <div className='flex items-center justify-between p-4'>
       {/* SEARCH BAR */}
-      <form onSubmit={handleSearch} className='hidden md:flex items-center gap-2 text-xs rounded-full ring-[1.5px] ring-gray-300 px-2'>
+      <form
+        onSubmit={handleSearch}
+        className='hidden md:flex items-center gap-2 text-xs rounded-full ring-[1.5px] ring-gray-300 px-2'
+      >
         <Image src="/search.png" alt="Search" width={14} height={14}/>
         <input 
           type="text" 
@@ -54,10 +67,10 @@ const Navbar = () => {
           ) : (
             <>
               <span className="text-xs leading-3 font-medium">
-                {userData ? `${userData.first_name} ${userData.last_name}` : 'Guest'}
+                {fullName}
               </span>
               <span className="text-[10px] text-gray-500 text-right capitalize">
-                {userData?.role || 'Unknown'}
+                {role}
               </span>
             </>
           )}
@@ -66,9 +79,14 @@ const Navbar = () => {
         {/* User Avatar */}
         <UserAvatar size={36} />
         
+        {/* Stylish Logout */}
         <div className="hidden md:block">
-          <LogoutButton variant="text" className="text-xs">
-            Logout
+          <LogoutButton
+            variant="text"
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 rounded-full shadow-sm transition"
+          >
+            <Image src="/logout.png" alt="Logout" width={14} height={14} />
+            <span>Logout</span>
           </LogoutButton>
         </div>
       </div>

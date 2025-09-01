@@ -12,8 +12,8 @@ import Footer from '@/components/HomePageComponents/Footer'
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
-      <AboutUs />
       <Navbar />
+      <AboutUs />
       <PortalAccess />
       <Stats />
       <Features />
