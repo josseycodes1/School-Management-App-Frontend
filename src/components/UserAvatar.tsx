@@ -20,7 +20,7 @@ export default function UserAvatar({ size = 36, className = "" }: UserAvatarProp
     )
   }
 
-  // Use Cloudinary URL directly if available
+  //use cloudinary URL directly if available
   const imageUrl = userData?.profile_image || "/avatar.png"
 
   return (
@@ -30,7 +30,7 @@ export default function UserAvatar({ size = 36, className = "" }: UserAvatarProp
       width={size}
       height={size}
       className={`rounded-full ${className}`}
-      unoptimized // ✅ prevents Next from trying to proxy Cloudinary images
+      unoptimized
       onError={(e) => {
         const target = e.target as HTMLImageElement
         target.src = "/avatar.png"

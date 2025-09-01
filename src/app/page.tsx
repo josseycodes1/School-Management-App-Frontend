@@ -1,4 +1,3 @@
-// app/page.tsx
 import Navbar from '@/components/HomePageComponents/Navbar'
 import HeroSection from '@/components/HomePageComponents/HeroSection'
 import AboutUs from '@/components/HomePageComponents/AboutUs'
@@ -13,13 +12,13 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
+      <HeroSection />
       <AboutUs />
       <PortalAccess />
       <Stats />
       <Features />
       <Programs />
       <Testimonials />
-      <HeroSection />
       <CallToAction />
       <Footer />
     </div>

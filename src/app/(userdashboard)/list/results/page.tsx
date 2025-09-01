@@ -13,7 +13,6 @@ interface Exam {
     name: string;
   };
   teacher?: any;
-  // Add other exam properties as needed
 }
 
 interface Assignment {
@@ -24,7 +23,6 @@ interface Assignment {
     name: string;
   };
   teacher?: any;
-  // Add other assignment properties as needed
 }
 
 interface Result {
@@ -63,7 +61,7 @@ const StudentResultsPage = () => {
           return;
         }
 
-        // First get student info
+        //first get student info
         const studentRes = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/me/`, {
           headers: {
             Authorization: `Bearer ${accessToken}`
@@ -72,7 +70,7 @@ const StudentResultsPage = () => {
 
         setStudentInfo(studentRes.data);
 
-        // Then fetch results from your specific API endpoint
+        //then fetch results from specific API endpoint
         const resultsRes = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessment/results/`, {
           headers: {
             Authorization: `Bearer ${accessToken}`
@@ -91,7 +89,7 @@ const StudentResultsPage = () => {
     fetchStudentResults();
   }, [router]);
 
-  // Function to determine grade color
+  //function to determine grade color
   const getGradeColor = (grade: string) => {
     switch (grade.toUpperCase()) {
       case 'A':
@@ -113,12 +111,12 @@ const StudentResultsPage = () => {
     }
   };
 
-  // Calculate percentage
+  // clculate percentage
   const calculatePercentage = (obtained: number, total: number) => {
     return ((obtained / total) * 100).toFixed(1);
   };
 
-  // Get assessment type and title
+  //get assessment type and title
   const getAssessmentInfo = (result: Result) => {
     if (result.exam) {
       return {
@@ -140,7 +138,7 @@ const StudentResultsPage = () => {
     };
   };
 
-  // Calculate overall performance
+  //calculate overall performance
   const calculateOverallPerformance = () => {
     if (results.length === 0) return { average: 0, totalAssessments: 0, highestSubject: null };
 

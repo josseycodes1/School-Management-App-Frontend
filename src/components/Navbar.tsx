@@ -17,12 +17,12 @@ const Navbar = () => {
     console.log("Searching for:", searchQuery)
   }
 
-  // ✅ Handle full name with fallback
+  //handle full name with fallback
   const fullName = userData
     ? `${userData.first_name || ""} ${userData.last_name || ""}`.trim() || "Admin User"
     : "Guest"
 
-  // ✅ Handle role with fallback
+  //handle role with fallback
   const role = userData
     ? userData.role || "admin"
     : "Unknown"
@@ -79,7 +79,7 @@ const Navbar = () => {
         {/* User Avatar */}
         <UserAvatar size={36} />
         
-        {/* Stylish Logout */}
+        {/* Logout */}
         <div className="hidden md:block">
           <LogoutButton
             variant="text"

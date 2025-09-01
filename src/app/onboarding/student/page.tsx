@@ -73,7 +73,7 @@ export default function StudentOnboarding() {
     }
   });
 
-  // Check if user is already onboarded
+  //check if user is already onboarded
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       try {
@@ -83,7 +83,7 @@ export default function StudentOnboarding() {
           return;
         }
 
-        // Get onboarding progress
+        //get onboarding progress
         const progressRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/onboarding/progress/`, 
           {
@@ -95,13 +95,13 @@ export default function StudentOnboarding() {
 
         setProgress(progressRes.data);
 
-        // If onboarding is complete, redirect to dashboard
+        //if onboarding is complete, redirect to dashboard
         if (progressRes.data.completed) {
           router.push('/student');
           return;
         }
 
-        // Pre-fill existing data if available
+        //pre-fill existing data if available
         const profileRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/onboarding/`,
           {
@@ -114,11 +114,11 @@ export default function StudentOnboarding() {
         setFormData(prev => ({
           ...prev,
           ...profileRes.data,
-          photo: null // Reset photo to force re-upload
+          photo: null
         }));
 
         if (profileRes.data.photo) {
-        setPreviewImage(profileRes.data.photo); // it's already a full Cloudinary URL
+        setPreviewImage(profileRes.data.photo);
       }
 
       } catch (error) {
@@ -143,13 +143,13 @@ export default function StudentOnboarding() {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       
-      // Validate file type
+      //validate file type
       if (!file.type.startsWith('image/')) {
         toast.error('Please select an image file (JPEG, PNG)');
         return;
       }
       
-      // Validate file size (5MB max)
+      //validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
         toast.error('File size should be less than 5MB');
         return;
@@ -160,7 +160,7 @@ export default function StudentOnboarding() {
         photo: file
       }));
 
-      // Create preview
+      //create preview
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewImage(reader.result as string);
@@ -172,7 +172,7 @@ export default function StudentOnboarding() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
+    //validate required fields
     const requiredFields = [
       'phone', 'address', 'gender', 'birth_date',
       'admission_number', 'class_level', 'photo',
@@ -186,7 +186,7 @@ export default function StudentOnboarding() {
       }
     }
 
-    // Verify phone numbers are valid
+    //verify phone numbers are valid
     const phoneRegex = /^[0-9]{10,15}$/;
     if (!phoneRegex.test(formData.phone)) {
       toast.error('Please enter a valid phone number (10-15 digits)');
@@ -208,7 +208,7 @@ export default function StudentOnboarding() {
         return d.toISOString().split('T')[0]; // formats to "YYYY-MM-DD"
       }
 
-      // Append all fields with proper names
+      //append all fields with proper names
       formPayload.append('phone', formData.phone);
       formPayload.append('address', formData.address);
       formPayload.append('gender', formData.gender);
@@ -219,7 +219,7 @@ export default function StudentOnboarding() {
       formPayload.append('parent_name', formData.parent_name);
       formPayload.append('parent_contact', formData.parent_contact);
       
-      // Optional fields
+      //optional fields
       if (formData.blood_type) {
         formPayload.append('blood_type', formData.blood_type);
       }
@@ -246,7 +246,7 @@ export default function StudentOnboarding() {
         }
       );
 
-      // Check progress after submission
+      //check progress after submission
       const progressRes = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/onboarding/progress/`,
         {

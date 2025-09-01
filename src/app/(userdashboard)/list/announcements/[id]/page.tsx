@@ -58,7 +58,7 @@ const AnnouncementDetailPage = () => {
           }
         );
 
-        console.log("✅ Announcement detail response:", res.data);
+        console.log("Announcement detail response:", res.data);
         setAnnouncement(res.data);
       } catch (err: any) {
         console.error("❌ API Error:", err.response?.data || err.message);

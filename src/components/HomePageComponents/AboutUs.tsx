@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function AboutUs() {
   return (
-    <section className="py-12 md:py-16 bg-pink-100">
+    <section className="py-12 md:py-16 bg-white">
       <div className="max-w-6xl mx-auto px-4 md:px-6">
         <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-8 md:mb-12">
           About <span className="text-[#FC46AA]">JosseyCodes Academy</span>
@@ -42,7 +42,7 @@ export default function AboutUs() {
         </div>
 
         <div className="text-center mt-8 md:mt-12">
-          <Link href="/about" className="inline-block px-6 py-3 bg-[#FC46AA] text-white rounded-md hover:bg-[#F699CD] transition-colors font-medium">
+          <Link href="/admission" className="inline-block px-6 py-3 bg-[#FC46AA] text-white rounded-md hover:bg-[#F699CD] transition-colors font-medium">
             Learn More About Us
           </Link>
         </div>
