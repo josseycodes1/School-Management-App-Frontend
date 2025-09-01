@@ -1,9 +1,9 @@
-// app/list/parents/page.tsx (updated)
+// app/list/parents/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from 'next/navigation'; 
-import { toast } from 'react-hot-toast'; 
+import { useRouter } from "next/navigation"; 
+import { toast } from "react-hot-toast"; 
 import Image from "next/image";
 import FormModal from "@/components/FormModal";
 import TableSearch from "@/components/TableSearch";
@@ -39,7 +39,6 @@ export default function ParentListPage() {
 
   const fetchParents = async () => {
     setLoading(true);
-    
     try {
       const token = localStorage.getItem("accessToken");
       if (!token) {
@@ -51,11 +50,10 @@ export default function ParentListPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/`, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-
 
       if (res.status === 403) {
         throw new Error("You don't have permission to view parents");
@@ -68,7 +66,6 @@ export default function ParentListPage() {
 
       const data = await res.json();
       setParentsData(data);
-      
     } catch (error: unknown) {
       console.error("Fetch error:", error);
       if (error instanceof Error) {
@@ -89,7 +86,7 @@ export default function ParentListPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/${id}/`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -97,7 +94,7 @@ export default function ParentListPage() {
         throw new Error("Delete failed");
       }
 
-      setParentsData(parentsData.filter(p => p.id !== id));
+      setParentsData(parentsData.filter((p) => p.id !== id));
       setDeleteConfirm(null);
       toast.success("Parent deleted successfully");
     } catch (err) {
@@ -105,7 +102,7 @@ export default function ParentListPage() {
     }
   };
 
-  const filteredParents = parentsData.filter(parent => 
+  const filteredParents = parentsData.filter((parent) =>
     `${parent.user.first_name} ${parent.user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     parent.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     parent.phone.toLowerCase().includes(searchTerm.toLowerCase())
@@ -113,38 +110,47 @@ export default function ParentListPage() {
 
   if (!isMounted) return null;
 
-  if (loading) return (
-    <div className="flex justify-center items-center h-64">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-josseypink1"></div>
-    </div>
-  );
-
-  if (error) return (
-    <div className="bg-pink-100 border-l-4 border-josseypink1 p-4 mb-4">
-      <div className="flex items-center text-josseypink1">
-        <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-        </svg>
-        {error}
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-josseypink1"></div>
       </div>
-    </div>
-  );
+    );
+
+  if (error)
+    return (
+      <div className="bg-pink-100 border-l-4 border-josseypink1 p-4 mb-4">
+        <div className="flex items-center text-josseypink1">
+          <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clipRule="evenodd"
+            />
+          </svg>
+          {error}
+        </div>
+      </div>
+    );
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">Parent Management</h1>
-            {role === "admin" && (
-            <FormModal 
-              table="parent" 
-              type="create" 
-              onSuccess={(newParent) => setParentsData([...parentsData, newParent])}
-              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap"
-            />
-          )}
+
+        {/* ✅ Add New Parent Button */}
+        {role === "admin" && (
+          <FormModal
+            table="parent"
+            type="create"
+            onSuccess={(newParent) => setParentsData([...parentsData, newParent])}
+            className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap"
+          />
+        )}
+
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
           <div className="w-full md:w-64">
-            <TableSearch 
+            <TableSearch
               value={searchTerm}
               onChange={setSearchTerm}
               placeholder="Search parents..."
@@ -195,60 +201,40 @@ export default function ParentListPage() {
                     {parent.occupation || "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {Array.isArray(parent.students) && parent.students.length > 0 
+                    {Array.isArray(parent.students) && parent.students.length > 0
                       ? parent.students.join(", ")
                       : "No students"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
-                      {/* View button - routes to parent detail page */}
-                      <button 
+                      {/* View button */}
+                      <button
                         onClick={() => router.push(`/list/parents/${parent.id}`)}
                         className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
                       >
-                        <Image 
-                          src="/view.png" 
-                          alt="View" 
-                          width={16} 
-                          height={16} 
-                          className="w-4 h-4"
-                        />
+                        <Image src="/view.png" alt="View" width={16} height={16} className="w-4 h-4" />
                       </button>
-                      
+
                       {role === "admin" && (
                         <>
                           <FormModal
                             table="parent"
                             type="update"
                             data={parent}
-                            onSuccess={(updatedParent) => 
-                              setParentsData(parentsData.map(p => 
-                                p.id === updatedParent.id ? updatedParent : p
-                              ))
+                            onSuccess={(updatedParent) =>
+                              setParentsData(parentsData.map((p) => (p.id === updatedParent.id ? updatedParent : p)))
                             }
                             trigger={
                               <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
-                                <Image 
-                                  src="/update.png" 
-                                  alt="Update" 
-                                  width={16} 
-                                  height={16} 
-                                  className="w-4 h-4"
-                                />
+                                <Image src="/update.png" alt="Update" width={16} height={16} className="w-4 h-4" />
                               </button>
                             }
                           />
-                          <button 
+                          <button
                             onClick={() => setDeleteConfirm(parent.id)}
                             className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
                           >
-                            <Image 
-                              src="/delete.png" 
-                              alt="Delete" 
-                              width={16} 
-                              height={16} 
-                              className="w-4 h-4"
-                            />
+                            <Image src="/delete.png" alt="Delete" width={16} height={16} className="w-4 h-4" />
                           </button>
                         </>
                       )}
@@ -267,6 +253,7 @@ export default function ParentListPage() {
         </table>
       </div>
 
+      {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">

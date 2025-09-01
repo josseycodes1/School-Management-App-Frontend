@@ -38,7 +38,7 @@ const ClassListPage = () => {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) throw new Error("No access token found");
 
-        const res = await axios.get("http://localhost:8000/api/accounts/classes/", {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/classes/`, {
           headers: {
             Authorization: `Bearer ${accessToken}`
           }
@@ -58,7 +58,7 @@ const ClassListPage = () => {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) throw new Error("No access token found");
 
-      await axios.delete(`http://localhost:8000/api/accounts/classes/${id}/`, {
+      await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/classes/${id}/`, {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
