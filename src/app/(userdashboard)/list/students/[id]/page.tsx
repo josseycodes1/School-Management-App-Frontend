@@ -8,8 +8,10 @@ import BigCalendar from "@/components/BigCalender";
 import Performance from "@/components/Performance";
 import Image from "next/image";
 import Link from "next/link";
+import FormModal from "@/components/FormModal";
+import { role } from "@/lib/data";
 
-interface StudentData {
+type Student = {
   id: string;
   user: {
     first_name: string;
@@ -17,30 +19,27 @@ interface StudentData {
     email: string;
   };
   admission_number: string;
-  phone: string;
-  address: string;
-  gender: string;
-  blood_type: string;
-  birth_date: string;
-  photo: string | null; // Photo can be string or null
+  phone?: string;
+  address?: string;
+  gender?: string;
+  blood_type?: string;
+  birth_date?: string;
+  profile_picture?: string;
   class_level: string;
   attendance_rate?: number;
   grade?: string;
   lessons_count?: number;
   class_name?: string;
-}
+};
 
 const SingleStudentPage = () => {
   const { id } = useParams();
-  const [student, setStudent] = useState<StudentData | null>(null);
+  const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
-    setHasMounted(true);
-
-    const fetchStudentData = async () => {
+    const fetchStudent = async () => {
       try {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) throw new Error("No access token found");
@@ -48,9 +47,7 @@ const SingleStudentPage = () => {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/${id}/`,
           {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
+            headers: { Authorization: `Bearer ${accessToken}` },
           }
         );
 
@@ -65,66 +62,42 @@ const SingleStudentPage = () => {
         setStudent(studentData);
       } catch (err) {
         setError("Failed to load student data");
-        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) {
-      fetchStudentData();
-    }
+    if (id) fetchStudent();
   }, [id]);
 
-  if (!hasMounted) {
-    return null;
-  }
-
-  if (loading) {
+  if (loading)
     return (
-      <div className="flex-1 p-4 flex items-center justify-center">
+      <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-josseypink1"></div>
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
-      <div className="flex-1 p-4 flex items-center justify-center">
-        <div className="bg-pink-100 border-l-4 border-josseypink1 p-4">
-          <div className="flex items-center text-josseypink1">
-            <svg
-              className="h-5 w-5 mr-2"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clipRule="evenodd"
-              />
-            </svg>
-            {error}
-          </div>
+      <div className="bg-pink-100 border-l-4 border-josseypink1 p-4 mb-4">
+        <div className="flex items-center text-josseypink1">
+          <svg
+            className="h-5 w-5 mr-2"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clipRule="evenodd"
+            />
+          </svg>
+          {error}
         </div>
       </div>
     );
-  }
 
-  if (!student) {
-    return (
-      <div className="flex-1 p-4 flex items-center justify-center">
-        <p>No student data found</p>
-      </div>
-    );
-  }
-
-  const formattedBirthDate = student.birth_date
-    ? new Date(student.birth_date).toLocaleDateString("en-US", {
-        month: "long",
-        year: "numeric",
-      })
-    : "N/A";
+  if (!student) return <div>Student not found</div>;
 
   return (
     <div className="flex-1 p-4 flex flex-col gap-4 xl:flex-row">
@@ -136,52 +109,62 @@ const SingleStudentPage = () => {
           <div className="bg-josseypink1 py-6 px-4 rounded-md flex-1 flex gap-4">
             <div className="w-1/3">
               <Image
-                src={
-                  student.photo
-                    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}${student.photo}`
-                    : "/avatar.png"
-                }
-                alt={`${student.user.first_name}'s profile`}
+                src={student.profile_picture || "/avatar.png"}
+                alt={`${student.user.first_name} ${student.user.last_name}`}
                 width={144}
                 height={144}
                 className="w-36 h-36 rounded-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/avatar.png";
-                }}
               />
             </div>
-            <div className="w-2/3 flex flex-col justify-between gap-4">
-              <h1 className="text-xl font-semibold">
-                {student.user.first_name} {student.user.last_name}
-              </h1>
-              <p className="text-sm text-gray-500">
-                {student.address || "No address provided"}
+            <div className="w-2/3 flex flex-col justify-between gap-4 text-white">
+              <div className="flex items-center gap-4">
+                <h1 className="text-xl font-semibold">
+                  {student.user.first_name} {student.user.last_name}
+                </h1>
+                {role === "admin" && (
+                  <FormModal
+                    table="student"
+                    type="update"
+                    data={student}
+                    onSuccess={(updatedStudent) => setStudent(updatedStudent)}
+                  />
+                )}
+              </div>
+              <p className="text-sm text-gray-200">
+                {student.class_level || "Student"}
               </p>
               <div className="flex items-center justify-between gap-2 flex-wrap text-xs font-medium">
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/blood.png" alt="" width={14} height={14} />
-                  <span>{student.blood_type || "N/A"}</span>
-                </div>
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/date.png" alt="" width={14} height={14} />
-                  <span>{formattedBirthDate}</span>
-                </div>
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <Image src="/mail.png" alt="" width={14} height={14} />
                   <span>{student.user.email}</span>
                 </div>
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/phone.png" alt="" width={14} height={14} />
-                  <span>{student.phone || "N/A"}</span>
-                </div>
+                {student.phone && (
+                  <div className="flex items-center gap-2">
+                    <Image src="/phone.png" alt="" width={14} height={14} />
+                    <span>{student.phone}</span>
+                  </div>
+                )}
+                {student.address && (
+                  <div className="flex items-center gap-2">
+                    <Image src="/location.png" alt="" width={14} height={14} />
+                    <span>{student.address}</span>
+                  </div>
+                )}
+                {student.birth_date && (
+                  <div className="flex items-center gap-2">
+                    <Image src="/date.png" alt="" width={14} height={14} />
+                    <span>
+                      {new Date(student.birth_date).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           {/* SMALL CARDS */}
           <div className="flex-1 flex gap-4 justify-between flex-wrap">
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+            <div className="bg-josseypink2 p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%]">
               <Image
                 src="/singleAttendance.png"
                 alt=""
@@ -197,8 +180,7 @@ const SingleStudentPage = () => {
               </div>
             </div>
 
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+            <div className="bg-josseypink1 p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%]">
               <Image
                 src="/singleBranch.png"
                 alt=""
@@ -212,8 +194,7 @@ const SingleStudentPage = () => {
               </div>
             </div>
 
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+            <div className="bg-josseypink1 p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%]">
               <Image
                 src="/singleLesson.png"
                 alt=""
@@ -229,8 +210,7 @@ const SingleStudentPage = () => {
               </div>
             </div>
 
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+            <div className="bg-josseypink2 p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%]">
               <Image
                 src="/singleClass.png"
                 alt=""
@@ -239,7 +219,9 @@ const SingleStudentPage = () => {
                 className="w-6 h-6"
               />
               <div>
-                <h1 className="text-xl font-semibold">{student.class_name}</h1>
+                <h1 className="text-xl font-semibold">
+                  {student.class_name}
+                </h1>
                 <span className="text-sm text-gray-400">Class</span>
               </div>
             </div>
