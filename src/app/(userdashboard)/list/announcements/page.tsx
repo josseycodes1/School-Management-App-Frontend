@@ -16,7 +16,7 @@ type Audience = {
 };
 
 type Announcement = {
-  id: string;
+  id: number;
   title: string;
   message: string;
   start_date: string;
