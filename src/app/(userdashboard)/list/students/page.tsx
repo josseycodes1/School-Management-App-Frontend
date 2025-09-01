@@ -20,7 +20,7 @@ type Student = {
   address: string;
   class_level: string;
   gender?: string;
-  profile_picture?: string; // ✅ same style as teacher
+  profile_picture?: string; 
 };
 
 const StudentListPage = () => {
@@ -76,6 +76,18 @@ const StudentListPage = () => {
     }
   };
 
+    // Add this helper inside StudentListPage (before return)
+  const getProfilePictureUrl = (url?: string) => {
+    if (!url) return "/avatar.png"; // fallback
+
+    // If already a full URL (Cloudinary, etc.), return as is
+    if (url.startsWith("http")) return url;
+
+    // Otherwise, prepend backend domain
+    return `${process.env.NEXT_PUBLIC_BACKEND_URL}${url}`;
+  };
+
+
   const filteredStudents = students.filter(
     (student) =>
       `${student.user.first_name} ${student.user.last_name}`
@@ -113,6 +125,7 @@ const StudentListPage = () => {
         </div>
       </div>
     );
+    
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
@@ -166,12 +179,13 @@ const StudentListPage = () => {
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         <Image
-                          src={student.profile_picture || "/avatar.png"}
-                          alt=""
+                          src={getProfilePictureUrl(student.profile_picture)}
+                          alt="Profile"
                           width={40}
                           height={40}
                           className="rounded-full"
                         />
+
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
