@@ -43,7 +43,7 @@ export default function ParentDetailPage() {
         }
 
         const res = await fetch(
-          `http://localhost:8000/api/accounts/parents/${params.id}/`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/${params.id}/`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -74,7 +74,7 @@ export default function ParentDetailPage() {
       if (!token) throw new Error("No access token found");
 
       const res = await fetch(
-        `http://localhost:8000/api/accounts/parents/${params.id}/`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/${params.id}/`,
         {
           method: "DELETE",
           headers: {

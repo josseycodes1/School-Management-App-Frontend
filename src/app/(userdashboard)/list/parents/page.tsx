@@ -48,13 +48,14 @@ export default function ParentListPage() {
         return;
       }
 
-      const res = await fetch("http://localhost:8000/api/accounts/parents/", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
+
 
       if (res.status === 403) {
         throw new Error("You don't have permission to view parents");
@@ -85,7 +86,7 @@ export default function ParentListPage() {
       const token = localStorage.getItem("accessToken");
       if (!token) throw new Error("No access token found");
 
-      const res = await fetch(`http://localhost:8000/api/accounts/parents/${id}/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/${id}/`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`,
