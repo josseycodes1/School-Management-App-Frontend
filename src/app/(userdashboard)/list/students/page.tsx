@@ -179,12 +179,17 @@ const StudentListPage = () => {
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         <Image
-                          src={getProfilePictureUrl(student.profile_picture)}
-                          alt="Profile"
-                          width={40}
-                          height={40}
-                          className="rounded-full"
-                        />
+                              src={
+                                student.profile_picture?.startsWith("http")
+                                  ? student.profile_picture
+                                  : `${process.env.NEXT_PUBLIC_BACKEND_URL}${student.profile_picture}`
+                              }
+                              alt="Profile"
+                              width={40}
+                              height={40}
+                              className="rounded-full"
+                            />
+
 
                       </div>
                       <div className="ml-4">
