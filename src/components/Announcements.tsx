@@ -71,7 +71,17 @@ const Announcements = ({ limit = 3 }: { limit?: number }) => {
                 {new Date(announcement.start_date).toLocaleDateString()}
               </span>
             </div>
-            <p className="text-sm text-white mt-1">{announcement.message}</p>
+
+            <p className="text-sm text-white mt-1 line-clamp-2">
+                {announcement.message}
+              </p>
+              <button
+                onClick={() => router.push("/list/announcements")}
+                className="text-xs text-white underline mt-1"
+              >
+                View More
+              </button>
+
 
             {announcement.audiences.length > 0 && (
               <div className="mt-2 text-xs text-white">

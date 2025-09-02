@@ -87,9 +87,9 @@ const EventCalendar = () => {
             <FormModal
               table="event"
               type="create"
-              className="p-1 rounded-md hover:bg-josseypink1"
+              className="p-1 rounded-md bg-josseypink1"
               trigger={
-                <button className="p-1 rounded-md hover:bg-josseypink1">
+                <button className="p-1 rounded-md bg-josseypink1">
                   <Image src="/add.png" alt="Add" width={20} height={20} />
                 </button>
               }
@@ -97,7 +97,7 @@ const EventCalendar = () => {
           )}
           <button
             aria-label="See more events"
-            className="p-1 rounded-md hover:bg-josseypink1"
+            className="p-1 rounded-md bg-josseypink1 hover:bg-josseypink2"
             onClick={() => router.push("/list/events")}
           >
             <Image src="/more.png" alt="more" width={20} height={20} />
@@ -150,7 +150,16 @@ const EventCalendar = () => {
                 </div>
               </div>
 
-              <p className="mt-2 text-gray-500 text-sm">{event.description}</p>
+              <p className="mt-2 text-gray-500 text-sm line-clamp-2">
+                  {event.description}
+                </p>
+                <button
+                  onClick={() => router.push("/list/events")}
+                  className="text-xs text-pink-500 hover:underline mt-1"
+                >
+                  View More
+                </button>
+
 
               <div className="mt-2 text-xs text-gray-400 flex flex-wrap gap-2">
                 <span>📅 {formatDay(event.date)}</span>
