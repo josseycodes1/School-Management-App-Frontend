@@ -76,14 +76,14 @@ const StudentListPage = () => {
     }
   };
 
-    // Add this helper inside StudentListPage (before return)
+    //add this helper inside StudentListPage (before return)
   const getProfilePictureUrl = (url?: string) => {
     if (!url) return "/avatar.png"; // fallback
 
-    // If already a full URL (Cloudinary, etc.), return as is
+    //if already a full URL (Cloudinary, etc.), return as is
     if (url.startsWith("http")) return url;
 
-    // Otherwise, prepend backend domain
+    //otherwise, prepend backend domain
     return `${process.env.NEXT_PUBLIC_BACKEND_URL}${url}`;
   };
 

@@ -6,11 +6,13 @@ import { useUserData } from "@/hooks/useUserData"
 import { useAnnouncements } from "@/hooks/useAnnouncements"
 import UserAvatar from "@/components/UserAvatar"
 import LogoutButton from "@/components/LogOutButton"
+import TableSearch from "@/components/TableSearch"
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const { userData, loading: userLoading } = useUserData()
   const { unreadCount } = useAnnouncements()
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,17 +22,17 @@ const Navbar = () => {
   //handle full name with fallback
   const fullName = userData
     ? `${userData.first_name || ""} ${userData.last_name || ""}`.trim() || "Admin User"
-    : "Guest"
+    : "Admin User"
 
   //handle role with fallback
   const role = userData
     ? userData.role || "admin"
-    : "Unknown"
+    : "admin"
 
   return (
     <div className='flex items-center justify-between p-4'>
       {/* SEARCH BAR */}
-      <form
+      {/* <form
         onSubmit={handleSearch}
         className='hidden md:flex items-center gap-2 text-xs rounded-full ring-[1.5px] ring-gray-300 px-2'
       >
@@ -42,7 +44,13 @@ const Navbar = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-      </form>
+      </form> */}
+
+      <TableSearch
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search ..."
+            />
       
       {/* ICONS AND USER */}
       <div className='flex items-center gap-6 justify-end w-full'>
