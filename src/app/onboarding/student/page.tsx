@@ -465,6 +465,24 @@ export default function StudentOnboarding() {
             <h2 className="text-lg font-medium text-gray-900 mb-4">Academic Information</h2>
             
             <div className="grid grid-cols-1 gap-y-4 gap-x-6 sm:grid-cols-6">
+              {/* Admission Number (Read-only) */}
+              <div className={`sm:col-span-3 ${!progress.required_fields.admission_number && 'border-l-4 border-red-500 pl-3'}`}>
+                <label htmlFor="admission_number" className="block text-sm font-medium text-gray-700">
+                  Admission Number *
+                </label>
+                <input
+                  type="text"
+                  name="admission_number"
+                  id="admission_number"
+                  value={formData.admission_number}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FC46AA] focus:ring-[#FC46AA] sm:text-sm p-2 border bg-gray-100 cursor-not-allowed"
+                  readOnly
+                  required
+                />
+              </div>
+
+              {/* Class Level Dropdown */}
               <div className={`sm:col-span-3 ${!progress.required_fields.class_level && 'border-l-4 border-red-500 pl-3'}`}>
                 <label htmlFor="class_level" className="block text-sm font-medium text-gray-700">
                   Class Level *
@@ -483,24 +501,9 @@ export default function StudentOnboarding() {
                   ))}
                 </select>
               </div>
-
-
-              <div className={`sm:col-span-3 ${!progress.required_fields.class_level && 'border-l-4 border-red-500 pl-3'}`}>
-                <label htmlFor="class_level" className="block text-sm font-medium text-gray-700">
-                  Class Level *
-                </label>
-                <input
-                  type="text"
-                  name="class_level"
-                  id="class_level"
-                  value={formData.class_level}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FC46AA] focus:ring-[#FC46AA] sm:text-sm p-2 border"
-                  required
-                />
-              </div>
             </div>
           </div>
+
 
           {/* Medical Information Section */}
           <div className="border-b border-gray-200 pb-6">
