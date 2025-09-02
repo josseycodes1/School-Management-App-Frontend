@@ -8,53 +8,65 @@ import { useAnnouncements } from "@/hooks/useAnnouncements"
 import UserAvatar from "@/components/UserAvatar"
 import LogoutButton from "@/components/LogOutButton"
 import { menuItems } from "@/lib/menuData"
-import { role as staticRole } from "@/lib/data"
+
+const dashboardRoutes: Record<string, string> = {
+  admin: "/admin",
+  teacher: "/teacher",
+  student: "/student",
+  parent: "/parent",
+}
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("")
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const { userData, loading: userLoading } = useUserData()
   const { unreadCount } = useAnnouncements()
   const router = useRouter()
 
-  // handle full name with fallback
+  // fallback values
   const fullName = userData
     ? `${userData.first_name || ""} ${userData.last_name || ""}`.trim() || "Admin User"
     : "Admin User"
 
-  // handle role with fallback
   const role = userData ? userData.role || "admin" : "admin"
 
-  // Flatten menu items for searching
-  const searchableItems = menuItems.flatMap(section => section.items)
-    .filter(item => item.visible.includes(role || staticRole))
+  // prepare searchable items
+  const searchableItems = menuItems
+    .flatMap(section => section.items)
+    .filter(item => item.visible.includes(role))
+    .map(item => ({
+      ...item,
+      href: item.label === "Dashboard" ? dashboardRoutes[role] || "/" : item.href,
+    }))
 
-  const handleSearch = (e: React.FormEvent) => {
-  e.preventDefault()
-  if (!searchQuery.trim()) return
+  // filter matches based on query
+  const matches = searchQuery.trim()
+    ? searchableItems.filter(item =>
+        item.label.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : []
 
-  const query = searchQuery.toLowerCase().trim()
-
-  // allow multiple matches
-  const matches = searchableItems.filter(item =>
-    item.label.toLowerCase().includes(query)
-  )
-
-  console.log("Search matches:", matches) // 👈 for debugging
-
-  if (matches.length > 0) {
-    router.push(matches[0].href) // navigate to first match
-  } else {
-    alert("No matching page found")
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (matches.length > 0) {
+      router.push(matches[0].href) // go to first match
+      setSearchQuery("")
+      setShowSuggestions(false)
+    }
   }
-}
 
+  const handleSelect = (href: string) => {
+    router.push(href)
+    setSearchQuery("")
+    setShowSuggestions(false)
+  }
 
   return (
-    <div className="flex items-center justify-between p-4">
+    <div className="flex items-center justify-between p-4 relative">
       {/* SEARCH BAR */}
       <form
-        onSubmit={handleSearch}
-        className="hidden md:flex items-center gap-2 text-xs rounded-full ring-[1.5px] ring-gray-300 px-2"
+        onSubmit={handleSearchSubmit}
+        className="hidden md:flex items-center gap-2 text-xs rounded-full ring-[1.5px] ring-gray-300 px-2 relative"
       >
         <Image src="/search.png" alt="Search" width={14} height={14}/>
         <input
@@ -62,12 +74,29 @@ const Navbar = () => {
           placeholder="Search anything..."
           className="w-[200px] p-2 bg-transparent outline-none"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setSearchQuery(e.target.value)
+            setShowSuggestions(true)
+          }}
         />
-        {/* hidden button so Enter key works reliably */}
         <button type="submit" className="hidden">Search</button>
-      </form>
 
+        {/* Dropdown suggestions */}
+        {showSuggestions && matches.length > 0 && (
+          <div className="absolute top-10 left-0 w-full bg-white shadow-md rounded-md text-gray-700 z-50">
+            {matches.map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                onClick={() => handleSelect(item.href)}
+              >
+                <Image src={item.icon} alt={item.label} width={16} height={16} />
+                <span className="text-sm">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </form>
 
       {/* ICONS AND USER */}
       <div className="flex items-center gap-6 justify-end w-full">
@@ -90,9 +119,7 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <span className="text-xs leading-3 font-medium">
-                {fullName}
-              </span>
+              <span className="text-xs leading-3 font-medium">{fullName}</span>
               <span className="text-[10px] text-gray-500 text-right capitalize">
                 {role}
               </span>

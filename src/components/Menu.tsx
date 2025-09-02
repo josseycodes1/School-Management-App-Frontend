@@ -1,6 +1,8 @@
-import { role } from "@/lib/data";
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useUserData } from "@/hooks/useUserData";
 
 const dashboardRoutes: Record<string, string> = {
   admin: "/admin",
@@ -22,8 +24,9 @@ const menuItems = [
       {
         icon: "/lesson.png",
         label: "Dashboard",
-        href: dashboardRoutes[role] || "/", // Dynamic routing based on role
+        href: "/", // we’ll override this dynamically
         visible: ["admin", "teacher", "student", "parent"],
+        dynamicDashboard: true, // mark as dynamic
       },
       {
         icon: "/teacher.png",
@@ -107,18 +110,25 @@ const menuItems = [
 ];
 
 const Menu = () => {
+  const { userData, loading } = useUserData();
+  const role = userData?.role || "admin"; // fallback if no user
+
   return (
     <div className="mt-4 text-sm">
-      {menuItems.map((i) => (
-        <div className="flex flex-col gap-2" key={i.title}>
+      {menuItems.map((section) => (
+        <div className="flex flex-col gap-2" key={section.title}>
           <span className="hidden lg:block text-black font-light my-4">
-            {i.title}
+            {section.title}
           </span>
-          {i.items.map((item) => {
+          {section.items.map((item) => {
             if (item.visible.includes(role)) {
+              const href = item.dynamicDashboard
+                ? dashboardRoutes[role] || "/"
+                : item.href;
+
               return (
                 <Link
-                  href={item.href}
+                  href={href}
                   key={item.label}
                   className="flex items-center justify-center lg:justify-start gap-4 text-gray-700 py-2 md:px-2 rounded-md hover:bg-josseypink1"
                 >
