@@ -1,4 +1,4 @@
-// TEMPORARY DATA
+//static DATA
 
 export let role = "admin";
 
