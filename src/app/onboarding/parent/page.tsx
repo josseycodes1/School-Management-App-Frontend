@@ -144,12 +144,45 @@ export default function ParentOnboarding() {
         ...prev,
         photo: file
       }))
-      setPreviewImage(URL.createObjectURL(file))
+
+      // Create preview - FIXED THIS PART
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    console.log('Form submission started') // Debug log
+    
+    // Validate required fields
+    const requiredFields = [
+      'phone', 'address', 'gender', 'birth_date',
+      'emergency_contact', 'photo'
+    ]
+
+    for (const field of requiredFields) {
+      if (!formData[field as keyof FormData]) {
+        toast.error(`Please fill in the ${field.replace('_', ' ')} field`)
+        return
+      }
+    }
+
+    // Validate phone numbers
+    const phoneRegex = /^[0-9]{10,15}$/
+    if (!phoneRegex.test(formData.phone)) {
+      toast.error('Please enter a valid phone number (10-15 digits)')
+      return
+    }
+
+    if (!phoneRegex.test(formData.emergency_contact)) {
+      toast.error('Please enter a valid emergency contact number (10-15 digits)')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -157,31 +190,6 @@ export default function ParentOnboarding() {
       if (!token) {
         toast.error('Authentication token not found')
         router.push('/login')
-        return
-      }
-
-      // Validate required fields
-      const requiredFields = [
-        'phone', 'address', 'gender', 'birth_date',
-        'emergency_contact', 'photo'
-      ]
-
-      for (const field of requiredFields) {
-        if (!formData[field as keyof FormData]) {
-          toast.error(`Please fill in the ${field.replace('_', ' ')} field`)
-          return
-        }
-      }
-
-      // Validate phone numbers
-      const phoneRegex = /^[0-9]{10,15}$/
-      if (!phoneRegex.test(formData.phone)) {
-        toast.error('Please enter a valid phone number (10-15 digits)')
-        return
-      }
-
-      if (!phoneRegex.test(formData.emergency_contact)) {
-        toast.error('Please enter a valid emergency contact number (10-15 digits)')
         return
       }
 
@@ -270,13 +278,16 @@ export default function ParentOnboarding() {
             progress={progress} 
           />
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-[#FC46AA] hover:bg-[#e03d98] text-white py-3 px-4 rounded-md shadow-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? 'Saving...' : 'Complete Onboarding'}
-          </button>
+          <div className="pt-6">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FC46AA] hover:bg-[#e03d98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC46AA] disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => console.log('Button clicked')} // Debug click
+            >
+              {isSubmitting ? 'Saving...' : 'Complete Onboarding'}
+            </button>
+          </div>
         </form>
       </div>
     </div>
