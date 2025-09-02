@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function HeroSection() {
   return (
-    <section className="py-12 md:py-20 px-4 md:px-6 text-center bg-josseypink1">
+    <section className="py-12 md:py-20 px-4 md:px-6 text-center bg-white">
       <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-6">
         Excellence in <span className="text-[#FC46AA]">Secondary</span> Education
       </h1>
