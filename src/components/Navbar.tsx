@@ -29,19 +29,25 @@ const Navbar = () => {
     .filter(item => item.visible.includes(role || staticRole))
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!searchQuery.trim()) return
+  e.preventDefault()
+  if (!searchQuery.trim()) return
 
-    const match = searchableItems.find(item =>
-      item.label.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+  const query = searchQuery.toLowerCase().trim()
 
-    if (match) {
-      router.push(match.href)
-    } else {
-      alert("No matching page found")
-    }
+  // allow multiple matches
+  const matches = searchableItems.filter(item =>
+    item.label.toLowerCase().includes(query)
+  )
+
+  console.log("Search matches:", matches) // 👈 for debugging
+
+  if (matches.length > 0) {
+    router.push(matches[0].href) // navigate to first match
+  } else {
+    alert("No matching page found")
   }
+}
+
 
   return (
     <div className="flex items-center justify-between p-4">
@@ -58,7 +64,10 @@ const Navbar = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
+        {/* hidden button so Enter key works reliably */}
+        <button type="submit" className="hidden">Search</button>
       </form>
+
 
       {/* ICONS AND USER */}
       <div className="flex items-center gap-6 justify-end w-full">
