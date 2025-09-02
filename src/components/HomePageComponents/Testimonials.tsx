@@ -27,13 +27,13 @@ export default function Testimonials() {
           {testimonials.map((testimonial, index) => (
             <div 
               key={index} 
-              className="bg-gray-50 p-6 rounded-lg border border-gray-100"
+              className="bg-josseypink1 p-6 rounded-lg border border-gray-100"
             >
               <div className="text-[#FC46AA] text-4xl mb-4">"</div>
-              <p className="text-gray-600 italic mb-4">"{testimonial.quote}"</p>
+              <p className="text-white italic mb-4">"{testimonial.quote}"</p>
               <div className="border-t border-gray-200 pt-4">
-                <p className="font-semibold text-gray-800">{testimonial.author}</p>
-                <p className="text-sm text-gray-500">{testimonial.role}</p>
+                <p className="font-semibold text-white">{testimonial.author}</p>
+                <p className="text-sm text-white">{testimonial.role}</p>
               </div>
             </div>
           ))}

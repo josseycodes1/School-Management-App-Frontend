@@ -17,7 +17,7 @@ export default function Programs() {
   ];
 
   return (
-    <section className="py-12 md:py-16 bg-gray-50">
+    <section className="py-12 md:py-16 bg-josseypink1">
       <div className="max-w-6xl mx-auto px-4 md:px-6">
         <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-8 md:mb-12">
           Our <span className="text-[#FC46AA]">Academic Programs</span>
