@@ -1,6 +1,6 @@
 export default function Stats() {
   const stats = [
-    { number: "98%", label: "University Admission Rate" },
+    { number: "98%", label: "School Admission Rate" },
     { number: "15:1", label: "Student-Teacher Ratio" },
     { number: "10+", label: "Years of Excellence" },
     { number: "500+", label: "Successful Graduates" }

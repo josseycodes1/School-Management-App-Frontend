@@ -31,7 +31,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-pink-500 text-white py-12 px-4 md:px-6">
+    <footer className="bg-josseypink1 text-white py-12 px-4 md:px-6">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
         <div className="lg:col-span-2">
           <div className="flex items-center mb-4">
@@ -78,7 +78,7 @@ export default function Footer() {
         ))}
       </div>
       
-      <div className="max-w-6xl mx-auto mt-8 pt-8 border-t border-gray-700 text-center text-gray-300 text-sm">
+      <div className="max-w-6xl mx-auto mt-8 pt-8 border-t border-white text-center text-gray-300 text-sm">
         <p>© {new Date().getFullYear()} JosseyCodes Academy. All rights reserved.</p>
       </div>
     </footer>

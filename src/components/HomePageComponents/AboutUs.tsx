@@ -22,7 +22,7 @@ export default function AboutUs() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
           {/* Mission */}
-          <div className="bg-pink-500 p-6 md:p-8 rounded-lg border border-pink-100">
+          <div className="bg-josseypink1 p-6 md:p-8 rounded-lg border border-pink-100">
             <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Our Mission</h3>
             <p className="text-white">
               To provide a transformative educational experience that develops students into critical thinkers, 
@@ -32,7 +32,7 @@ export default function AboutUs() {
           </div>
 
           {/* Vision */}
-          <div className="bg-pink-500 to-pink-50 p-6 md:p-8 rounded-lg border border-purple-100">
+          <div className="bg-josseypink1 to-pink-50 p-6 md:p-8 rounded-lg border border-purple-100">
             <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Our Vision</h3>
             <p className="text-white">
               To be the leading secondary school in Nigeria recognized for academic excellence, character development, 

@@ -18,22 +18,31 @@ export default function Testimonials() {
   ];
 
   return (
-    <section className="py-12 md:py-16 bg-white">
-      <div className="max-w-6xl mx-auto px-4 md:px-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-8 md:mb-12">
-          What People Say About <span className="text-[#FC46AA]">Us</span>
+    <section className="relative min-h-[500px] flex items-center justify-center py-20 px-4">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 z-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('/website6.jpg')" }}
+      >
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/40"></div>
+      </div>
+      
+      <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-6">
+        <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-10 md:mb-14 drop-shadow-md">
+          What People Say About <span className="text-white">Us</span>
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
           {testimonials.map((testimonial, index) => (
             <div 
               key={index} 
-              className="bg-josseypink1 p-6 rounded-lg border border-gray-100"
+              className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl border border-white/20 shadow-lg"
             >
               <div className="text-[#FC46AA] text-4xl mb-4">"</div>
-              <p className="text-white italic mb-4">"{testimonial.quote}"</p>
+              <p className="text-gray-800 italic mb-6 leading-relaxed">"{testimonial.quote}"</p>
               <div className="border-t border-gray-200 pt-4">
-                <p className="font-semibold text-white">{testimonial.author}</p>
-                <p className="text-sm text-white">{testimonial.role}</p>
+                <p className="font-semibold text-gray-800">{testimonial.author}</p>
+                <p className="text-sm text-gray-600">{testimonial.role}</p>
               </div>
             </div>
           ))}

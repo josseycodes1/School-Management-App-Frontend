@@ -35,8 +35,8 @@ export default function Features() {
               className="bg-josseypink1 p-6 rounded-lg border border-gray-100 hover:shadow-md transition-shadow text-center"
             >
               <div className="text-3xl md:text-4xl mb-4">{feature.icon}</div>
-              <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-800">{feature.title}</h3>
-              <p className="text-gray-600 text-sm md:text-base">{feature.description}</p>
+              <h3 className="text-lg md:text-xl font-semibold mb-2 text-white">{feature.title}</h3>
+              <p className="text-white text-sm md:text-base">{feature.description}</p>
             </div>
           ))}
         </div>
