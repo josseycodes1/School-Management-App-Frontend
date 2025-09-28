@@ -24,7 +24,7 @@ export default function Testimonials() {
         className="absolute inset-0 z-0 bg-cover bg-center"
         style={{ backgroundImage: "url('/website6.jpg')" }}
       >
-        {/* Overlay for better text readability */}
+        {/* overlay for better text readability */}
         <div className="absolute inset-0 bg-black/40"></div>
       </div>
       
