@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import Navbar from "@/components/HomePageComponents/Navbar";
 
 const AdmissionPage = () => {
   const [waitlistForm, setWaitlistForm] = useState({
@@ -43,9 +44,24 @@ const AdmissionPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Navbar/>
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-josseypink1 to-josseypink2 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="relative text-white py-16">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/schoolchildren3.jpg"
+            alt="School children learning"
+            fill
+            className="object-cover"
+            priority
+          />
+          {/* Overlay with gradient instead of solid color */}
+          <div className="absolute inset-0 bg-gradient-to-r from-josseypink1/80 to-josseypink2/80"></div>
+        </div>
+        
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Admissions</h1>
           <p className="text-xl max-w-3xl mx-auto">
             Join our educational community where excellence meets opportunity
@@ -160,20 +176,12 @@ const AdmissionPage = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-josseypink1 focus:border-josseypink1"
                   >
                     <option value="">Select grade level</option>
-
-                    <option value="k">Kindergarten</option>
-                    <option value="1">Grade 1</option>
-                    <option value="2">Grade 2</option>
-                    <option value="3">Grade 3</option>
-                    <option value="4">Grade 4</option>
-                    <option value="5">Grade 5</option>
-                    <option value="6">Grade 6</option>
-                    <option value="7">Grade 7</option>
-                    <option value="8">Grade 8</option>
-                    <option value="9">Grade 9</option>
-                    <option value="10">Grade 10</option>
-                    <option value="11">Grade 11</option>
-                    <option value="12">Grade 12</option>
+                    <option value="1">JSS1</option>
+                    <option value="2">JSS2</option>
+                    <option value="3">JSS3</option>
+                    <option value="4">SS1</option>
+                    <option value="5">SS2</option>
+                    <option value="6">SS3</option>
                   </select>
                 </div>
                 
