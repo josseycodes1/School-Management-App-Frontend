@@ -4,6 +4,7 @@ import { useState, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import axios, { AxiosError } from 'axios';
 import { Eye, EyeOff } from 'lucide-react';
+import emailjs from 'emailjs-com';
 
 interface SignUpFormData {
   email: string;
@@ -37,77 +38,171 @@ export default function SignUp() {
     }));
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  
 
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
-    }
+const handleSubmit = async (e: FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
 
-    // Validate password length
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      setLoading(false);
-      return;
-    }
+  // Validate passwords match
+  if (formData.password !== formData.confirmPassword) {
+    setError('Passwords do not match');
+    setLoading(false);
+    return;
+  }
+
+  // Validate password length
+  if (formData.password.length < 6) {
+    setError('Password must be at least 6 characters');
+    setLoading(false);
+    return;
+  }
+
+  try {
+    // Remove confirmPassword from the data sent to the server
+    const { confirmPassword, ...submitData } = formData;
+
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
+      submitData,
+      {
+        timeout: 10000, // 10 second timeout
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    // Extract email and token from response
+    const emailToStore =
+      (response?.data as any)?.email?.toString() || submitData.email.trim();
+    const token = (response?.data as any)?.token;
 
     try {
-      // Remove confirmPassword from the data sent to the server
-      const { confirmPassword, ...submitData } = formData;
+      localStorage.setItem('signupEmail', emailToStore);
+    } catch {
+      // ignore storage errors
+    }
 
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
-        submitData,
+    // 🔹 Send verification email via EmailJS
+    try {
+      await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,   // your EmailJS service ID
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!, // your template ID
         {
-          timeout: 10000, // 10 second timeout
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
+          email: emailToStore,
+          token: token,
+        },
+        process.env.NEXT_PUBLIC_EMAILJS_USER_ID // your public key (user ID)
       );
+    } catch (emailError) {
+      console.error('EmailJS error:', emailError);
+      setError('Signup successful but failed to send verification email.');
+      setLoading(false);
+      return;
+    }
 
-      // Save email to localStorage for the verify page to consume
-      const emailToStore =
-        (response?.data as any)?.email?.toString() || submitData.email.trim();
-      try {
-        localStorage.setItem('signupEmail', emailToStore);
-      } catch {
-        // ignore storage errors
-      }
+    // Redirect to verify page WITHOUT query string
+    router.push('/verify-signup');
 
-      // Redirect to verify page WITHOUT query string
-      router.push('/verify-signup');
-
-      // Note: we intentionally do not setLoading(false) here
-      // to keep the button disabled until navigation completes.
-    } catch (err) {
-      const error = err as AxiosError;
-      if (error.response?.data && typeof error.response.data === 'object') {
-        const responseData = error.response.data as any;
-        if (responseData.email) {
-          setError(responseData.email[0]);
-        } else if (responseData.message) {
-          setError(responseData.message);
-        } else if (error.code === 'ECONNABORTED') {
-          setError('Request timeout. Please try again.');
-        } else {
-          setError('Signup failed. Please try again.');
-        }
+    // keep loading true until navigation completes
+  } catch (err) {
+    const error = err as AxiosError;
+    if (error.response?.data && typeof error.response.data === 'object') {
+      const responseData = error.response.data as any;
+      if (responseData.email) {
+        setError(responseData.email[0]);
+      } else if (responseData.message) {
+        setError(responseData.message);
       } else if (error.code === 'ECONNABORTED') {
         setError('Request timeout. Please try again.');
-      } else if (error.message === 'Network Error') {
-        setError('Network error. Please check your connection.');
       } else {
         setError('Signup failed. Please try again.');
       }
-      setLoading(false);
+    } else if (error.code === 'ECONNABORTED') {
+      setError('Request timeout. Please try again.');
+    } else if (error.message === 'Network Error') {
+      setError('Network error. Please check your connection.');
+    } else {
+      setError('Signup failed. Please try again.');
     }
-  };
+    setLoading(false);
+  }
+};
+
+
+  // const handleSubmit = async (e: FormEvent) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   setError('');
+
+  //   // Validate passwords match
+  //   if (formData.password !== formData.confirmPassword) {
+  //     setError('Passwords do not match');
+  //     setLoading(false);
+  //     return;
+  //   }
+
+  //   // Validate password length
+  //   if (formData.password.length < 6) {
+  //     setError('Password must be at least 6 characters');
+  //     setLoading(false);
+  //     return;
+  //   }
+
+  //   try {
+  //     // Remove confirmPassword from the data sent to the server
+  //     const { confirmPassword, ...submitData } = formData;
+
+  //     const response = await axios.post(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
+  //       submitData,
+  //       {
+  //         timeout: 10000, // 10 second timeout
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //       }
+  //     );
+
+  //     // Save email to localStorage for the verify page to consume
+  //     const emailToStore =
+  //       (response?.data as any)?.email?.toString() || submitData.email.trim();
+  //     try {
+  //       localStorage.setItem('signupEmail', emailToStore);
+  //     } catch {
+  //       // ignore storage errors
+  //     }
+
+  //     // Redirect to verify page WITHOUT query string
+  //     router.push('/verify-signup');
+
+  //     // Note: we intentionally do not setLoading(false) here
+  //     // to keep the button disabled until navigation completes.
+  //   } catch (err) {
+  //     const error = err as AxiosError;
+  //     if (error.response?.data && typeof error.response.data === 'object') {
+  //       const responseData = error.response.data as any;
+  //       if (responseData.email) {
+  //         setError(responseData.email[0]);
+  //       } else if (responseData.message) {
+  //         setError(responseData.message);
+  //       } else if (error.code === 'ECONNABORTED') {
+  //         setError('Request timeout. Please try again.');
+  //       } else {
+  //         setError('Signup failed. Please try again.');
+  //       }
+  //     } else if (error.code === 'ECONNABORTED') {
+  //       setError('Request timeout. Please try again.');
+  //     } else if (error.message === 'Network Error') {
+  //       setError('Network error. Please check your connection.');
+  //     } else {
+  //       setError('Signup failed. Please try again.');
+  //     }
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-pink-100">
