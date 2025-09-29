@@ -91,7 +91,7 @@ const handleSubmit = async (e: FormEvent) => {
         process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,   // your EmailJS service ID
         process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!, // your template ID
         {
-          email: emailToStore,
+          to_email: emailToStore,
           token: token,
         },
         process.env.NEXT_PUBLIC_EMAILJS_USER_ID // your public key (user ID)
