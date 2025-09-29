@@ -160,7 +160,7 @@ const AdmissionPage = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-josseypink1 focus:border-josseypink1"
                   >
                     <option value="">Select grade level</option>
-                    <option value="pre-k">Pre-Kindergarten</option>
+
                     <option value="k">Kindergarten</option>
                     <option value="1">Grade 1</option>
                     <option value="2">Grade 2</option>
