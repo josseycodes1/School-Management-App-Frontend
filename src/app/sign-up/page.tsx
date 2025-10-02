@@ -86,22 +86,59 @@ const handleSubmit = async (e: FormEvent) => {
     }
 
     // 🔹 Send verification email via EmailJS
-    try {
-      await emailjs.send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,   // your EmailJS service ID
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!, // your template ID
-        {
+      try {
+        console.log('🔄 Starting EmailJS send...');
+        console.log('📧 EmailJS Parameters:', {
+          serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
+          templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
+          userId: process.env.NEXT_PUBLIC_EMAILJS_USER_ID,
           to_email: emailToStore,
-          token: token,
-        },
-        process.env.NEXT_PUBLIC_EMAILJS_USER_ID // your public key (user ID)
-      );
-    } catch (emailError) {
-      console.error('EmailJS error:', emailError);
-      setError('Signup successful but failed to send verification email.');
-      setLoading(false);
-      return;
-    }
+          hasToken: !!token,
+          tokenLength: token?.length
+        });
+
+        const emailjsResponse = await emailjs.send(
+          process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+          {
+            to_email: emailToStore,
+            token: token,
+          },
+          process.env.NEXT_PUBLIC_EMAILJS_USER_ID
+        );
+
+        console.log('✅ EmailJS send successful:', emailjsResponse);
+        console.log('📨 EmailJS status:', emailjsResponse.status);
+        console.log('📨 EmailJS text:', emailjsResponse.text);
+
+      } catch (emailError) {
+        // Properly type the error
+        const error = emailError as any;
+        
+        console.error('❌ EmailJS error details:', {
+          error: error,
+          errorType: typeof error,
+          isEmailJSError: error instanceof Error,
+          message: error?.message || 'No message',
+          status: error?.status,
+          text: error?.text,
+          response: error?.response
+        });
+
+        // Log environment variables (without exposing full values)
+        console.error('🔍 Environment variables check:', {
+          hasServiceId: !!process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
+          hasTemplateId: !!process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
+          hasUserId: !!process.env.NEXT_PUBLIC_EMAILJS_USER_ID,
+          serviceIdLength: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID?.length,
+          templateIdLength: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID?.length,
+          userIdLength: process.env.NEXT_PUBLIC_EMAILJS_USER_ID?.length
+        });
+
+        setError('Signup successful but failed to send verification email.');
+        setLoading(false);
+        return;
+      }
 
     // Redirect to verify page WITHOUT query string
     router.push('/verify-signup');
