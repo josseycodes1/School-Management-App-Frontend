@@ -85,71 +85,95 @@ const handleSubmit = async (e: FormEvent) => {
       // ignore storage errors
     }
 
-    // 🔹 Send verification email via EmailJS
-      try {
-        console.log('🔄 Starting EmailJS send...');
-        console.log('📧 EmailJS Parameters:', {
-          serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
-          templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
-          userId: process.env.NEXT_PUBLIC_EMAILJS_USER_ID,
-          to_email: emailToStore,
-          hasToken: !!token,
-          tokenLength: token?.length
-        });
+    // 🔹 FIXED EmailJS Implementation
+    try {
+      console.log('🔄 Starting EmailJS send...');
+      
+      // Validate environment variables
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+      const userId = process.env.NEXT_PUBLIC_EMAILJS_USER_ID;
 
-        const emailjsResponse = await emailjs.send(
-          process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-          {
-            to_email: emailToStore,
-            token: token,
-          },
-          process.env.NEXT_PUBLIC_EMAILJS_USER_ID
-        );
-
-        console.log('✅ EmailJS send successful:', emailjsResponse);
-        console.log('📨 EmailJS status:', emailjsResponse.status);
-        console.log('📨 EmailJS text:', emailjsResponse.text);
-
-      } catch (emailError) {
-        // Properly type the error
-        const error = emailError as any;
-        
-        console.error('❌ EmailJS error details:', {
-          error: error,
-          errorType: typeof error,
-          isEmailJSError: error instanceof Error,
-          message: error?.message || 'No message',
-          status: error?.status,
-          text: error?.text,
-          response: error?.response
-        });
-
-        // Log environment variables (without exposing full values)
-        console.error('🔍 Environment variables check:', {
-          hasServiceId: !!process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
-          hasTemplateId: !!process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
-          hasUserId: !!process.env.NEXT_PUBLIC_EMAILJS_USER_ID,
-          serviceIdLength: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID?.length,
-          templateIdLength: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID?.length,
-          userIdLength: process.env.NEXT_PUBLIC_EMAILJS_USER_ID?.length
-        });
-
-        setError('Signup successful but failed to send verification email.');
-        setLoading(false);
-        return;
+      if (!serviceId || !templateId || !userId) {
+        throw new Error('Missing EmailJS environment variables');
       }
 
-    // Redirect to verify page WITHOUT query string
+      console.log('📧 EmailJS Config:', {
+        serviceId: `${serviceId?.substring(0, 5)}...`,
+        templateId: `${templateId?.substring(0, 5)}...`,
+        userId: `${userId?.substring(0, 5)}...`,
+        to_email: emailToStore,
+        hasToken: !!token,
+      });
+
+      // Prepare template parameters - include all possible parameters your template might need
+      const templateParams = {
+        to_email: emailToStore,
+        to_name: submitData.first_name || 'User',
+        user_email: emailToStore,
+        email: emailToStore,
+        first_name: submitData.first_name || '',
+        last_name: submitData.last_name || '',
+        token: token || 'No token provided',
+        verification_token: token || 'No token provided',
+        verify_url: `${window.location.origin}/verify-email?token=${token}`,
+        site_url: window.location.origin,
+        // Add any other parameters your EmailJS template expects
+      };
+
+      console.log('📨 Sending with params:', templateParams);
+
+      const emailjsResponse = await emailjs.send(
+        serviceId,
+        templateId,
+        templateParams,
+        userId
+      );
+
+      console.log('✅ EmailJS send successful:', {
+        status: emailjsResponse.status,
+        text: emailjsResponse.text
+      });
+
+    } catch (emailError: any) {
+      console.error('❌ EmailJS detailed error:', {
+        name: emailError?.name,
+        message: emailError?.message,
+        status: emailError?.status,
+        text: emailError?.text,
+        // Log the full error for debugging
+        fullError: JSON.stringify(emailError, Object.getOwnPropertyNames(emailError), 2)
+      });
+
+      // Check if it's a template parameter error
+      if (emailError?.text?.includes('template') || emailError?.status === 422) {
+        console.error('🔧 Template parameter issue detected');
+        setError('Signup successful but email service configuration issue. Please contact support.');
+      } else {
+        setError('Signup successful but verification email failed. We will contact you shortly.');
+      }
+      
+      // Still redirect to verify page even if email fails
+      router.push('/verify-signup');
+      setLoading(false);
+      return;
+    }
+
+    // Redirect to verify page on complete success
     router.push('/verify-signup');
 
-    // keep loading true until navigation completes
-  } catch (err) {
+  } catch (err: any) {
     const error = err as AxiosError;
+    console.error('❌ Signup error:', error);
+    
     if (error.response?.data && typeof error.response.data === 'object') {
       const responseData = error.response.data as any;
       if (responseData.email) {
         setError(responseData.email[0]);
+      } else if (responseData.username) {
+        setError(responseData.username[0]);
+      } else if (responseData.non_field_errors) {
+        setError(responseData.non_field_errors[0]);
       } else if (responseData.message) {
         setError(responseData.message);
       } else if (error.code === 'ECONNABORTED') {
@@ -161,6 +185,10 @@ const handleSubmit = async (e: FormEvent) => {
       setError('Request timeout. Please try again.');
     } else if (error.message === 'Network Error') {
       setError('Network error. Please check your connection.');
+    } else if (error.response?.status === 400) {
+      setError('Invalid data provided. Please check your information.');
+    } else if (error.response?.status === 500) {
+      setError('Server error. Please try again later.');
     } else {
       setError('Signup failed. Please try again.');
     }
