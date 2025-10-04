@@ -60,68 +60,69 @@ const ProfilePage = () => {
           return;
         }
 
-        // Get current user info first
-        const userResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/user/`,
-          {
-            headers: { Authorization: `Bearer ${accessToken}` },
+        // Get user data from localStorage first (from login response)
+        const userData = localStorage.getItem("userData");
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          
+          // Try to fetch detailed profile based on role
+          try {
+            let profileEndpoint = "";
+            switch (parsedUser.role) {
+              case "student":
+                profileEndpoint = `/api/accounts/students/`;
+                break;
+              case "teacher":
+                profileEndpoint = `/api/accounts/teachers/`;
+                break;
+              case "parent":
+                profileEndpoint = `/api/accounts/parents/`;
+                break;
+              case "admin":
+                profileEndpoint = `/api/accounts/admins/`;
+                break;
+            }
+
+            if (profileEndpoint) {
+              const profileResponse = await axios.get(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}${profileEndpoint}`,
+                {
+                  headers: { Authorization: `Bearer ${accessToken}` },
+                }
+              );
+
+              // Find the profile that matches the current user
+              const profileData = profileResponse.data.results?.find(
+                (item: any) => item.user?.id === parsedUser.id
+              ) || profileResponse.data.find(
+                (item: any) => item.user?.id === parsedUser.id
+              );
+
+              if (profileData) {
+                setProfile({ ...profileData, user: parsedUser });
+                setLoading(false);
+                return;
+              }
+            }
+          } catch (profileError) {
+            console.log("Could not fetch detailed profile, using basic info");
           }
-        );
 
-        const user = userResponse.data;
-        let profileData;
-
-        // Fetch profile based on user role
-        switch (user.role) {
-          case "student":
-            const studentResponse = await axios.get(
-              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/profile/`,
-              {
-                headers: { Authorization: `Bearer ${accessToken}` },
-              }
-            );
-            profileData = studentResponse.data;
-            break;
-
-          case "teacher":
-            const teacherResponse = await axios.get(
-              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/profile/`,
-              {
-                headers: { Authorization: `Bearer ${accessToken}` },
-              }
-            );
-            profileData = teacherResponse.data;
-            break;
-
-          case "parent":
-            const parentResponse = await axios.get(
-              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/profile/`,
-              {
-                headers: { Authorization: `Bearer ${accessToken}` },
-              }
-            );
-            profileData = parentResponse.data;
-            break;
-
-          case "admin":
-            const adminResponse = await axios.get(
-              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/admins/profile/`,
-              {
-                headers: { Authorization: `Bearer ${accessToken}` },
-              }
-            );
-            profileData = adminResponse.data;
-            break;
-
-          default:
-            throw new Error("Unknown user role");
+          // Fallback: Use basic user data from localStorage
+          setProfile({
+            id: parsedUser.id,
+            user: parsedUser,
+            phone: "",
+            address: "",
+          } as UserProfile);
+          setLoading(false);
+          return;
         }
 
-        setProfile({ ...profileData, user });
+        throw new Error("No user data found");
       } catch (error) {
         console.error("Error fetching profile:", error);
         toast.error("Failed to load profile");
-      } finally {
         setLoading(false);
       }
     };
@@ -137,7 +138,11 @@ const ProfilePage = () => {
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "Not provided";
-    return new Date(dateString).toLocaleDateString();
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch {
+      return "Invalid date";
+    }
   };
 
   const getRoleDisplayName = (role: string) => {
@@ -174,12 +179,20 @@ const ProfilePage = () => {
         <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full text-center">
           <h2 className="text-xl font-semibold text-gray-800 mb-2">Profile Not Found</h2>
           <p className="text-gray-600 mb-4">Unable to load your profile information.</p>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="bg-josseypink1 text-white px-4 py-2 rounded-lg hover:bg-josseypink2 transition-colors"
-          >
-            Go to Dashboard
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full bg-josseypink1 text-white px-4 py-2 rounded-lg hover:bg-josseypink2 transition-colors"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="w-full border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Go to Dashboard
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -570,6 +583,23 @@ const ProfilePage = () => {
                       Delete Account
                     </button>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Show message for non-students on academic tab */}
+            {activeTab === "academic" && profile.user.role !== "student" && (
+              <div className="text-center py-8">
+                <div className="bg-gray-50 rounded-lg p-6 max-w-md mx-auto">
+                  <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                  </svg>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Academic Information</h3>
+                  <p className="text-gray-600">
+                    {profile.user.role === "teacher" 
+                      ? "Academic information is available for students only." 
+                      : "This section displays academic performance and subjects for students."}
+                  </p>
                 </div>
               </div>
             )}
