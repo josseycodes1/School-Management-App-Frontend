@@ -97,7 +97,7 @@ const FormModal = ({
     } else if (table === "subject") {
       return type === "create" ? "Add Subject" : "Edit";
     } else if (table === "classes") {
-      return type === "create" ? "Add Classes" : "Edit";
+      return type === "create" ? "Add Class" : "Edit";
     }
     return "";
   };
