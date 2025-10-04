@@ -1,14 +1,13 @@
 // app/list/events/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import axios from "axios";
 import Image from "next/image";
 import FormModal from "@/components/FormModal";
 import { role } from "@/lib/data";
 import { useRouter } from 'next/navigation';
 import TableSearch from "@/components/TableSearch";
 import Pagination from "@/components/Pagination";
+import usePagination from "@/hooks/usePagination";
 
 type Event = {
   id: number;
@@ -21,88 +20,27 @@ type Event = {
   location?: string;
 };
 
-type PaginationInfo = {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  current_page: number;
-  total_pages: number;
-};
-
 const EventListPage = () => {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [pagination, setPagination] = useState<PaginationInfo>({
-    count: 0,
-    next: null,
-    previous: null,
-    current_page: 1,
-    total_pages: 1
-  });
   const router = useRouter();
-
-  const fetchEvents = async (page: number = 1, search: string = "") => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: page.toString(),
-        ...(search && { search })
-      });
-
-      const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/events/?${params}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
-      );
-
-      // Handle both paginated and non-paginated responses
-      if (res.data.results) {
-        setEvents(res.data.results);
-        setPagination({
-          count: res.data.count,
-          next: res.data.next,
-          previous: res.data.previous,
-          current_page: page,
-          total_pages: Math.ceil(res.data.count / 10) // Assuming page_size = 10
-        });
-      } else {
-        setEvents(Array.isArray(res.data) ? res.data : []);
-        setPagination({
-          count: Array.isArray(res.data) ? res.data.length : 0,
-          next: null,
-          previous: null,
-          current_page: 1,
-          total_pages: 1
-        });
-      }
-    } catch (err) {
-      setError("Failed to load events");
-      console.error("Error fetching events:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchEvents(1, searchTerm);
-  }, [searchTerm]);
-
-  const handlePageChange = (page: number) => {
-    fetchEvents(page, searchTerm);
-  };
-
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-  };
+  
+  const {
+    data: events,
+    loading,
+    error,
+    pagination,
+    searchTerm,
+    setSearchTerm,
+    handlePageChange,
+    refreshData
+  } = usePagination<Event>('/api/events/', {
+    initialPage: 1,
+    pageSize: 10,
+    debounceDelay: 300
+  });
 
   const handleSuccess = (updatedEvent: Event, type: "create" | "update" | "delete") => {
-    // Refresh the current page after mutation
-    fetchEvents(pagination.current_page, searchTerm);
+    // Refresh data after mutation
+    refreshData();
   };
 
   const formatTime = (timeString?: string) => {
@@ -137,7 +75,7 @@ const EventListPage = () => {
         <div className="flex items-center gap-4">
           <TableSearch 
             value={searchTerm}
-            onChange={handleSearch}
+            onChange={setSearchTerm}
             placeholder="Search events..."
           />
           {role === "admin" && (
@@ -207,9 +145,7 @@ const EventListPage = () => {
                             table="event"
                             type="update"
                             data={event}
-                            onSuccess={(updatedEvent) => 
-                              handleSuccess(updatedEvent, "update")
-                            }
+                            onSuccess={(updatedEvent) => handleSuccess(updatedEvent, "update")}
                             trigger={
                               <button className="text-josseypink1 hover:text-josseypink2 bg-josseypink1 p-1">
                                 <Image src="/update.png" alt="Update" width={16} height={16} />
