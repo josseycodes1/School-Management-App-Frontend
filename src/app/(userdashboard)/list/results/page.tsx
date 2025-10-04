@@ -1,9 +1,12 @@
+// app/list/results/page.tsx
 "use client";
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Pagination from '@/components/Pagination';
+import usePagination from '@/hooks/usePagination';
 
 interface Exam {
   id: number;
@@ -46,14 +49,23 @@ interface Result {
 }
 
 const StudentResultsPage = () => {
-  const [results, setResults] = useState<Result[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [studentInfo, setStudentInfo] = useState<any>(null);
   const router = useRouter();
 
+  const {
+    data: results,
+    loading,
+    error,
+    pagination,
+    handlePageChange,
+    refreshData
+  } = usePagination<Result>('/api/assessment/results/', {
+    initialPage: 1,
+    pageSize: 10
+  });
+
   useEffect(() => {
-    const fetchStudentResults = async () => {
+    const fetchStudentInfo = async () => {
       try {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
@@ -61,7 +73,6 @@ const StudentResultsPage = () => {
           return;
         }
 
-        //first get student info
         const studentRes = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/me/`, {
           headers: {
             Authorization: `Bearer ${accessToken}`
@@ -69,24 +80,12 @@ const StudentResultsPage = () => {
         });
 
         setStudentInfo(studentRes.data);
-
-        //then fetch results from specific API endpoint
-        const resultsRes = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessment/results/`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        });
-
-        setResults(resultsRes.data);
       } catch (err) {
-        setError('Failed to load your results');
-        console.error(err);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching student info:', err);
       }
     };
 
-    fetchStudentResults();
+    fetchStudentInfo();
   }, [router]);
 
   //function to determine grade color
@@ -111,7 +110,7 @@ const StudentResultsPage = () => {
     }
   };
 
-  // clculate percentage
+  // calculate percentage
   const calculatePercentage = (obtained: number, total: number) => {
     return ((obtained / total) * 100).toFixed(1);
   };
@@ -261,6 +260,11 @@ const StudentResultsPage = () => {
           </div>
         </div>
 
+        {/* Results count */}
+        <div className="mb-4 text-sm text-gray-600">
+          Showing {results.length} of {pagination.count} results
+        </div>
+
         {/* Results Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-200">
@@ -327,9 +331,20 @@ const StudentResultsPage = () => {
               })}
             </div>
           )}
+
+          {/* Pagination for Results */}
+          {pagination.total_pages > 1 && (
+            <div className="px-6 py-4 border-t border-gray-200">
+              <Pagination 
+                currentPage={pagination.current_page}
+                totalPages={pagination.total_pages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
         </div>
 
-        {/* Performance Summary */}
+        {/* Performance Summary - Only show if we have results */}
         {results.length > 0 && (
           <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">Performance Summary</h2>
