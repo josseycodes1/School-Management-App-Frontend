@@ -45,14 +45,14 @@ const handleSubmit = async (e: FormEvent) => {
   setLoading(true);
   setError('');
 
-  // Validate passwords match
+  
   if (formData.password !== formData.confirmPassword) {
     setError('Passwords do not match');
     setLoading(false);
     return;
   }
 
-  // Validate password length
+  
   if (formData.password.length < 6) {
     setError('Password must be at least 6 characters');
     setLoading(false);
@@ -60,21 +60,21 @@ const handleSubmit = async (e: FormEvent) => {
   }
 
   try {
-    // Remove confirmPassword from the data sent to the server
+   
     const { confirmPassword, ...submitData } = formData;
 
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
       submitData,
       {
-        timeout: 10000, // 10 second timeout
+        timeout: 10000, 
         headers: {
           'Content-Type': 'application/json',
         },
       }
     );
 
-    // Extract email and token from response
+ 
     const emailToStore =
       (response?.data as any)?.email?.toString() || submitData.email.trim();
     const token = (response?.data as any)?.token;
@@ -82,14 +82,14 @@ const handleSubmit = async (e: FormEvent) => {
     try {
       localStorage.setItem('signupEmail', emailToStore);
     } catch {
-      // ignore storage errors
+   
     }
 
-    // 🔹 FIXED EmailJS Implementation
+ 
     try {
       console.log('🔄 Starting EmailJS send...');
       
-      // Validate environment variables
+   
       const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
       const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
       const userId = process.env.NEXT_PUBLIC_EMAILJS_USER_ID;
@@ -106,7 +106,7 @@ const handleSubmit = async (e: FormEvent) => {
         hasToken: !!token,
       });
 
-      // Prepare template parameters - include all possible parameters your template might need
+   
       const templateParams = {
         to_email: emailToStore,
         to_name: submitData.first_name || 'User',
@@ -118,7 +118,7 @@ const handleSubmit = async (e: FormEvent) => {
         verification_token: token || 'No token provided',
         verify_url: `${window.location.origin}/verify-email?token=${token}`,
         site_url: window.location.origin,
-        // Add any other parameters your EmailJS template expects
+  
       };
 
       console.log('📨 Sending with params:', templateParams);
@@ -130,7 +130,7 @@ const handleSubmit = async (e: FormEvent) => {
         userId
       );
 
-      console.log('✅ EmailJS send successful:', {
+      console.log('EmailJS send successful:', {
         status: emailjsResponse.status,
         text: emailjsResponse.text
       });
@@ -141,11 +141,11 @@ const handleSubmit = async (e: FormEvent) => {
         message: emailError?.message,
         status: emailError?.status,
         text: emailError?.text,
-        // Log the full error for debugging
+
         fullError: JSON.stringify(emailError, Object.getOwnPropertyNames(emailError), 2)
       });
 
-      // Check if it's a template parameter error
+
       if (emailError?.text?.includes('template') || emailError?.status === 422) {
         console.error('🔧 Template parameter issue detected');
         setError('Signup successful but email service configuration issue. Please contact support.');
@@ -153,13 +153,13 @@ const handleSubmit = async (e: FormEvent) => {
         setError('Signup successful but verification email failed. We will contact you shortly.');
       }
       
-      // Still redirect to verify page even if email fails
+     
       router.push('/verify-signup');
       setLoading(false);
       return;
     }
 
-    // Redirect to verify page on complete success
+    
     router.push('/verify-signup');
 
   } catch (err: any) {

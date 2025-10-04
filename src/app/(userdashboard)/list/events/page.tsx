@@ -1,3 +1,4 @@
+// app/list/events/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -20,47 +21,89 @@ type Event = {
   location?: string;
 };
 
+type PaginationInfo = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  current_page: number;
+  total_pages: number;
+};
+
 const EventListPage = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    count: 0,
+    next: null,
+    previous: null,
+    current_page: 1,
+    total_pages: 1
+  });
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/events/`, {
+  const fetchEvents = async (page: number = 1, search: string = "") => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: page.toString(),
+        ...(search && { search })
+      });
+
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/events/?${params}`,
+        {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
-        });
-        setEvents(Array.isArray(res.data) ? res.data : res.data?.results || []);
-      } catch (err) {
-        setError("Failed to load events");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEvents();
-  }, []);
+        }
+      );
 
-  const handleSuccess = (updatedEvent: Event, type: "create" | "update" | "delete") => {
-    if (type === "create") {
-      setEvents([updatedEvent, ...events]);
-    } else if (type === "update") {
-      setEvents(events.map(e => 
-        e.id === updatedEvent.id ? updatedEvent : e
-      ));
-    } else if (type === "delete") {
-      setEvents(events.filter(e => e.id !== updatedEvent.id));
+      // Handle both paginated and non-paginated responses
+      if (res.data.results) {
+        setEvents(res.data.results);
+        setPagination({
+          count: res.data.count,
+          next: res.data.next,
+          previous: res.data.previous,
+          current_page: page,
+          total_pages: Math.ceil(res.data.count / 10) // Assuming page_size = 10
+        });
+      } else {
+        setEvents(Array.isArray(res.data) ? res.data : []);
+        setPagination({
+          count: Array.isArray(res.data) ? res.data.length : 0,
+          next: null,
+          previous: null,
+          current_page: 1,
+          total_pages: 1
+        });
+      }
+    } catch (err) {
+      setError("Failed to load events");
+      console.error("Error fetching events:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const filteredEvents = events.filter(event => 
-    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (event.class_name || event.class || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    fetchEvents(1, searchTerm);
+  }, [searchTerm]);
+
+  const handlePageChange = (page: number) => {
+    fetchEvents(page, searchTerm);
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+  };
+
+  const handleSuccess = (updatedEvent: Event, type: "create" | "update" | "delete") => {
+    // Refresh the current page after mutation
+    fetchEvents(pagination.current_page, searchTerm);
+  };
 
   const formatTime = (timeString?: string) => {
     if (!timeString) return "—";
@@ -94,7 +137,7 @@ const EventListPage = () => {
         <div className="flex items-center gap-4">
           <TableSearch 
             value={searchTerm}
-            onChange={setSearchTerm}
+            onChange={handleSearch}
             placeholder="Search events..."
           />
           {role === "admin" && (
@@ -106,6 +149,11 @@ const EventListPage = () => {
             />
           )}
         </div>
+      </div>
+
+      {/* Results count */}
+      <div className="mb-4 text-sm text-gray-600">
+        Showing {events.length} of {pagination.count} events
       </div>
 
       <div className="overflow-x-auto">
@@ -121,8 +169,8 @@ const EventListPage = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredEvents.length > 0 ? (
-              filteredEvents.map((event) => (
+            {events.length > 0 ? (
+              events.map((event) => (
                 <tr key={event.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {event.title}
@@ -188,7 +236,7 @@ const EventListPage = () => {
             ) : (
               <tr>
                 <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
-                  No events found matching your search
+                  {searchTerm ? "No events found matching your search" : "No events found"}
                 </td>
               </tr>
             )}
@@ -196,9 +244,15 @@ const EventListPage = () => {
         </table>
       </div>
 
-      <div className="mt-4">
-        <Pagination />
-      </div>
+      {pagination.total_pages > 1 && (
+        <div className="mt-6">
+          <Pagination 
+            currentPage={pagination.current_page}
+            totalPages={pagination.total_pages}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
     </div>
   );
 };
