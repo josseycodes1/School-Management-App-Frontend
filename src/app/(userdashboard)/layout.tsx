@@ -16,7 +16,6 @@ export default function DashboardLayout({
           href="/"
           className="flex items-center justify-center lg:justify-start"
         >
-          <Image src="/logo.png" alt="logo" width={32} height={32} />
           <div  className="w-10 h-10 md:w-12 md:h-12 rounded-full mr-3 flex items-center justify-center bg-josseypink1">
             JC
           </div>
