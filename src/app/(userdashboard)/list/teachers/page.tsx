@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import axios from "axios";
 import Image from "next/image";
 import FormModal from "@/components/FormModal";
 import { role } from "@/lib/data";
 import { useRouter } from 'next/navigation';
-
+import Pagination from "@/components/Pagination";
+import usePagination from "@/hooks/usePagination";
+import TableSearch from "@/components/TableSearch";
 
 type Teacher = {
   id: number;
@@ -20,42 +20,25 @@ type Teacher = {
 };
 
 const TeacherListPage = () => {
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-          }
-        });
-        setTeachers(res.data);
-      } catch (err) {
-        setError("Failed to load teachers");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTeachers();
-  }, []);
+  const {
+    data: teachers,
+    loading,
+    error,
+    pagination,
+    searchTerm,
+    setSearchTerm,
+    handlePageChange,
+    refreshData
+  } = usePagination<Teacher>('/api/accounts/teachers/', {
+    initialPage: 1,
+    pageSize: 10,
+    debounceDelay: 300
+  });
 
-  const handleDelete = async (id: number) => {
-    try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/${id}/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-        }
-      });
-      setTeachers(teachers.filter(t => t.id !== id));
-      setDeleteConfirm(null);
-    } catch (err) {
-      setError("Delete failed");
-    }
+  const handleSuccess = (updatedTeacher: Teacher, type: "create" | "update" | "delete") => {
+    refreshData();
   };
 
   if (loading) return (
@@ -79,14 +62,28 @@ const TeacherListPage = () => {
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Teacher Management</h1>
-        {role === "admin" && (
-          <FormModal 
-            table="teacher" 
-            type="create" 
-            onSuccess={(newTeacher) => setTeachers([...teachers, newTeacher])}
-            className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg"
-          />
-        )}
+        <div className="flex items-center gap-4">
+          <div className="w-64">
+            <TableSearch 
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search teachers..."
+            />
+          </div>
+          {role === "admin" && (
+            <FormModal 
+              table="teacher" 
+              type="create" 
+              onSuccess={(newTeacher) => handleSuccess(newTeacher, "create")}
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Results count */}
+      <div className="mb-4 text-sm text-gray-600">
+        Showing {teachers.length} of {pagination.count} teachers
       </div>
 
       <div className="overflow-x-auto">
@@ -142,23 +139,24 @@ const TeacherListPage = () => {
                           table="teacher"
                           type="update"
                           data={teacher}
-                          onSuccess={(updatedTeacher) => 
-                            setTeachers(teachers.map(t => 
-                              t.id === updatedTeacher.id ? updatedTeacher : t
-                            ))
-                          }
+                          onSuccess={(updatedTeacher) => handleSuccess(updatedTeacher, "update")}
                           trigger={
-                            <button className="text-josseypink1 hover:text-josseypink2 bg-josseypink1 p-1">
+                            <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
                               <Image src="/update.png" alt="Update" width={16} height={16} />
                             </button>
                           }
                         />
-                        <button 
-                          onClick={() => setDeleteConfirm(teacher.id)}
-                          className="text-josseypink1 hover:text-josseypink2 bg-josseypink1 p-1"
-                        >
-                          <Image src="/delete.png" alt="Delete" width={16} height={16} />
-                        </button>
+                        <FormModal
+                          table="teacher"
+                          type="delete"
+                          id={String(teacher.id)}
+                          onSuccess={() => handleSuccess(teacher, "delete")}
+                          trigger={
+                            <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
+                              <Image src="/delete.png" alt="Delete" width={16} height={16} />
+                            </button>
+                          }
+                        />
                       </>
                     )}
                   </div>
@@ -169,27 +167,13 @@ const TeacherListPage = () => {
         </table>
       </div>
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium mb-4">Confirm Deletion</h3>
-            <p className="mb-6">Are you sure you want to delete this teacher? This action cannot be undone.</p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(deleteConfirm)}
-                className="px-4 py-2 bg-josseypink1 text-white rounded-md hover:bg-josseypink2"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
+      {pagination.total_pages > 1 && (
+        <div className="mt-6">
+          <Pagination 
+            currentPage={pagination.current_page}
+            totalPages={pagination.total_pages}
+            onPageChange={handlePageChange}
+          />
         </div>
       )}
     </div>

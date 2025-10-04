@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import axios from "axios";
 import Image from "next/image";
 import FormModal from "@/components/FormModal";
 import TableSearch from "@/components/TableSearch";
 import { useRouter } from "next/navigation";
 import { role } from "@/lib/data";
+import Pagination from "@/components/Pagination";
+import usePagination from "@/hooks/usePagination";
 
 type Student = {
   id: string;
@@ -24,80 +24,32 @@ type Student = {
 };
 
 const StudentListPage = () => {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    setIsMounted(true);
+  const {
+    data: students,
+    loading,
+    error,
+    pagination,
+    searchTerm,
+    setSearchTerm,
+    handlePageChange,
+    refreshData
+  } = usePagination<Student>('/api/accounts/students/', {
+    initialPage: 1,
+    pageSize: 10,
+    debounceDelay: 300
+  });
 
-    const fetchStudents = async () => {
-      try {
-        const accessToken = localStorage.getItem("accessToken");
-        if (!accessToken) throw new Error("No access token found");
-
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/`,
-          {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          }
-        );
-        setStudents(res.data);
-      } catch (err) {
-        setError("Failed to load students");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStudents();
-  }, []);
-
-  const handleDelete = async (id: string) => {
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) throw new Error("No access token found");
-
-      await axios.delete(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/${id}/`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-
-      setStudents(students.filter((s) => s.id !== id));
-      setDeleteConfirm(null);
-    } catch (err) {
-      setError("Delete failed");
-    }
+  const handleSuccess = (updatedStudent: Student, type: "create" | "update" | "delete") => {
+    refreshData();
   };
 
-    //add this helper inside StudentListPage (before return)
   const getProfilePictureUrl = (url?: string) => {
-    if (!url) return "/avatar.png"; // fallback
-
-    //if already a full URL (Cloudinary, etc.), return as is
+    if (!url) return "/avatar.png";
     if (url.startsWith("http")) return url;
-
-    //otherwise, prepend backend domain
     return `${process.env.NEXT_PUBLIC_BACKEND_URL}${url}`;
   };
-
-
-  const filteredStudents = students.filter(
-    (student) =>
-      `${student.user.first_name} ${student.user.last_name}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      student.admission_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  if (!isMounted) return null;
 
   if (loading)
     return (
@@ -125,7 +77,6 @@ const StudentListPage = () => {
         </div>
       </div>
     );
-    
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
@@ -143,11 +94,16 @@ const StudentListPage = () => {
             <FormModal
               table="student"
               type="create"
-              onSuccess={(newStudent) => setStudents([...students, newStudent])}
+              onSuccess={(newStudent) => handleSuccess(newStudent, "create")}
               className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap"
             />
           )}
         </div>
+      </div>
+
+      {/* Results count */}
+      <div className="mb-4 text-sm text-gray-600">
+        Showing {students.length} of {pagination.count} students
       </div>
 
       <div className="overflow-x-auto">
@@ -172,23 +128,19 @@ const StudentListPage = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredStudents.length > 0 ? (
-              filteredStudents.map((student) => (
+            {students.length > 0 ? (
+              students.map((student) => (
                 <tr key={student.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         <Image
-                              src={
-                                student.profile_picture?.startsWith("http")
-                                  ? student.profile_picture
-                                  : `${process.env.NEXT_PUBLIC_BACKEND_URL}${student.profile_picture}`
-                              }
-                              alt="Profile"
-                              width={40}
-                              height={40}
-                              className="rounded-full"
-                            />
+                          src={getProfilePictureUrl(student.profile_picture)}
+                          alt="Profile"
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
@@ -228,13 +180,7 @@ const StudentListPage = () => {
                             table="student"
                             type="update"
                             data={student}
-                            onSuccess={(updatedStudent) =>
-                              setStudents(
-                                students.map((s) =>
-                                  s.id === updatedStudent.id ? updatedStudent : s
-                                )
-                              )
-                            }
+                            onSuccess={(updatedStudent) => handleSuccess(updatedStudent, "update")}
                             trigger={
                               <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
                                 <Image
@@ -246,17 +192,22 @@ const StudentListPage = () => {
                               </button>
                             }
                           />
-                          <button
-                            onClick={() => setDeleteConfirm(student.id)}
-                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
-                          >
-                            <Image
-                              src="/delete.png"
-                              alt="Delete"
-                              width={16}
-                              height={16}
-                            />
-                          </button>
+                          <FormModal
+                            table="student"
+                            type="delete"
+                            id={String(student.id)}
+                            onSuccess={() => handleSuccess(student, "delete")}
+                            trigger={
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
+                                <Image
+                                  src="/delete.png"
+                                  alt="Delete"
+                                  width={16}
+                                  height={16}
+                                />
+                              </button>
+                            }
+                          />
                         </>
                       )}
                     </div>
@@ -269,7 +220,7 @@ const StudentListPage = () => {
                   colSpan={5}
                   className="px-6 py-4 text-center text-sm text-gray-500"
                 >
-                  No students found matching your search
+                  {searchTerm ? "No students found matching your search" : "No students found"}
                 </td>
               </tr>
             )}
@@ -277,30 +228,13 @@ const StudentListPage = () => {
         </table>
       </div>
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium mb-4">Confirm Deletion</h3>
-            <p className="mb-6">
-              Are you sure you want to delete this student? This action cannot be
-              undone.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(deleteConfirm)}
-                className="px-4 py-2 bg-josseypink1 text-white rounded-md hover:bg-josseypink2"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
+      {pagination.total_pages > 1 && (
+        <div className="mt-6">
+          <Pagination 
+            currentPage={pagination.current_page}
+            totalPages={pagination.total_pages}
+            onPageChange={handlePageChange}
+          />
         </div>
       )}
     </div>

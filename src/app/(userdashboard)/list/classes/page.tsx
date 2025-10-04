@@ -1,12 +1,13 @@
+// app/list/classes/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import axios from "axios";
 import Image from "next/image";
 import FormModal from "@/components/FormModal";
 import TableSearch from "@/components/TableSearch";
 import { useRouter } from 'next/navigation';
 import { role } from "@/lib/data";
+import Pagination from "@/components/Pagination";
+import usePagination from "@/hooks/usePagination";
 
 type Class = {
   id: string;
@@ -23,62 +24,26 @@ type Class = {
 };
 
 const ClassListPage = () => {
-  const [classes, setClasses] = useState<Class[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    setIsMounted(true);
-    const fetchClasses = async () => {
-      try {
-        const accessToken = localStorage.getItem("accessToken");
-        if (!accessToken) throw new Error("No access token found");
+  const {
+    data: classes,
+    loading,
+    error,
+    pagination,
+    searchTerm,
+    setSearchTerm,
+    handlePageChange,
+    refreshData
+  } = usePagination<Class>('/api/accounts/classes/', {
+    initialPage: 1,
+    pageSize: 10,
+    debounceDelay: 300
+  });
 
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/classes/`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        });
-        setClasses(res.data);
-      } catch (err) {
-        setError("Failed to load classes");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchClasses();
-  }, []);
-
-  const handleDelete = async (id: string) => {
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) throw new Error("No access token found");
-
-      await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/classes/${id}/`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-      setClasses(classes.filter(c => c.id !== id));
-      setDeleteConfirm(null);
-    } catch (err) {
-      setError("Delete failed");
-    }
+  const handleSuccess = (updatedClass: Class, type: "create" | "update" | "delete") => {
+    refreshData();
   };
-
-  const filteredClasses = classes.filter(classItem => 
-    classItem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (classItem.teacher && 
-      `${classItem.teacher.user.first_name} ${classItem.teacher.user.last_name}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()))
-  );
-
-  if (!isMounted) return null;
 
   if (loading) return (
     <div className="flex justify-center items-center h-64">
@@ -115,11 +80,16 @@ const ClassListPage = () => {
             <FormModal 
               table="class" 
               type="create" 
-              onSuccess={(newClass) => setClasses([...classes, newClass])}
+              onSuccess={(newClass) => handleSuccess(newClass, "create")}
               className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap"
             />
           )}
         </div>
+      </div>
+
+      {/* Results count */}
+      <div className="mb-4 text-sm text-gray-600">
+        Showing {classes.length} of {pagination.count} classes
       </div>
 
       <div className="overflow-x-auto">
@@ -133,8 +103,8 @@ const ClassListPage = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredClasses.length > 0 ? (
-              filteredClasses.map((classItem) => (
+            {classes.length > 0 ? (
+              classes.map((classItem) => (
                 <tr key={classItem.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
@@ -168,9 +138,6 @@ const ClassListPage = () => {
                           width={16} 
                           height={16} 
                           className="w-4 h-4"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
                         />
                       </button>
                       {role === "admin" && (
@@ -179,11 +146,7 @@ const ClassListPage = () => {
                             table="class"
                             type="update"
                             data={classItem}
-                            onSuccess={(updatedClass) => 
-                              setClasses(classes.map(c => 
-                                c.id === updatedClass.id ? updatedClass : c
-                              ))
-                            }
+                            onSuccess={(updatedClass) => handleSuccess(updatedClass, "update")}
                             trigger={
                               <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
                                 <Image 
@@ -192,28 +155,27 @@ const ClassListPage = () => {
                                   width={16} 
                                   height={16} 
                                   className="w-4 h-4"
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                  }}
                                 />
                               </button>
                             }
                           />
-                          <button 
-                            onClick={() => setDeleteConfirm(classItem.id)}
-                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
-                          >
-                            <Image 
-                              src="/delete.png" 
-                              alt="Delete" 
-                              width={16} 
-                              height={16} 
-                              className="w-4 h-4"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                              }}
-                            />
-                          </button>
+                          <FormModal
+                            table="class"
+                            type="delete"
+                            id={String(classItem.id)}
+                            onSuccess={() => handleSuccess(classItem, "delete")}
+                            trigger={
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
+                                <Image 
+                                  src="/delete.png" 
+                                  alt="Delete" 
+                                  width={16} 
+                                  height={16} 
+                                  className="w-4 h-4"
+                                />
+                              </button>
+                            }
+                          />
                         </>
                       )}
                     </div>
@@ -223,7 +185,7 @@ const ClassListPage = () => {
             ) : (
               <tr>
                 <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
-                  No classes found matching your search
+                  {searchTerm ? "No classes found matching your search" : "No classes found"}
                 </td>
               </tr>
             )}
@@ -231,26 +193,13 @@ const ClassListPage = () => {
         </table>
       </div>
 
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium mb-4">Confirm Deletion</h3>
-            <p className="mb-6">Are you sure you want to delete this class? This action cannot be undone.</p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(deleteConfirm)}
-                className="px-4 py-2 bg-josseypink1 text-white rounded-md hover:bg-josseypink2"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
+      {pagination.total_pages > 1 && (
+        <div className="mt-6">
+          <Pagination 
+            currentPage={pagination.current_page}
+            totalPages={pagination.total_pages}
+            onPageChange={handlePageChange}
+          />
         </div>
       )}
     </div>

@@ -1,13 +1,14 @@
-// app/list/parents/page.tsx (fixed)
+// app/list/parents/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation'; 
 import { toast } from 'react-hot-toast'; 
 import Image from "next/image";
 import FormModal from "@/components/FormModal";
 import TableSearch from "@/components/TableSearch";
 import { role } from "@/lib/data";
+import Pagination from "@/components/Pagination";
+import usePagination from "@/hooks/usePagination";
 
 type Parent = {
   id: number;
@@ -24,93 +25,26 @@ type Parent = {
 };
 
 export default function ParentListPage() {
-  const [parentsData, setParentsData] = useState<Parent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  
-  useEffect(() => {
-    setIsMounted(true);
-    fetchParents();
-  }, []);
 
-  const fetchParents = async () => {
-    setLoading(true);
-    
-    try {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        toast.error("Please login again");
-        router.push("/login");
-        return;
-      }
+  const {
+    data: parentsData,
+    loading,
+    error,
+    pagination,
+    searchTerm,
+    setSearchTerm,
+    handlePageChange,
+    refreshData
+  } = usePagination<Parent>('/api/accounts/parents/', {
+    initialPage: 1,
+    pageSize: 10,
+    debounceDelay: 300
+  });
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (res.status === 403) {
-        throw new Error("You don't have permission to view parents");
-      }
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to fetch parents");
-      }
-
-      const data = await res.json();
-      setParentsData(data);
-      
-    } catch (error: unknown) {
-      console.error("Fetch error:", error);
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("An unknown error occurred");
-      }
-    } finally {
-      setLoading(false);
-    }
+  const handleSuccess = (updatedParent: Parent, type: "create" | "update" | "delete") => {
+    refreshData();
   };
-
-  const handleDelete = async (id: number) => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      if (!token) throw new Error("No access token found");
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/${id}/`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error("Delete failed");
-      }
-
-      setParentsData(parentsData.filter(p => p.id !== id));
-      setDeleteConfirm(null);
-      toast.success("Parent deleted successfully");
-    } catch (err) {
-      toast.error("Delete failed");
-    }
-  };
-
-  const filteredParents = parentsData.filter(parent => 
-    `${parent.user.first_name} ${parent.user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    parent.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    parent.phone.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  if (!isMounted) return null;
 
   if (loading) return (
     <div className="flex justify-center items-center h-64">
@@ -131,7 +65,6 @@ export default function ParentListPage() {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-      {/* Fixed header section - matches teacher page layout */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Parent Management</h1>
         <div className="flex items-center gap-4">
@@ -146,11 +79,16 @@ export default function ParentListPage() {
             <FormModal 
               table="parent" 
               type="create" 
-              onSuccess={(newParent) => setParentsData([...parentsData, newParent])}
+              onSuccess={(newParent) => handleSuccess(newParent, "create")}
               className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg"
             />
           )}
         </div>
+      </div>
+
+      {/* Results count */}
+      <div className="mb-4 text-sm text-gray-600">
+        Showing {parentsData.length} of {pagination.count} parents
       </div>
 
       <div className="overflow-x-auto">
@@ -165,8 +103,8 @@ export default function ParentListPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredParents.length > 0 ? (
-              filteredParents.map((parent) => (
+            {parentsData.length > 0 ? (
+              parentsData.map((parent) => (
                 <tr key={parent.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -201,7 +139,6 @@ export default function ParentListPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
-                      {/* View button - routes to parent detail page */}
                       <button 
                         onClick={() => router.push(`/list/parents/${parent.id}`)}
                         className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
@@ -221,11 +158,7 @@ export default function ParentListPage() {
                             table="parent"
                             type="update"
                             data={parent}
-                            onSuccess={(updatedParent) => 
-                              setParentsData(parentsData.map(p => 
-                                p.id === updatedParent.id ? updatedParent : p
-                              ))
-                            }
+                            onSuccess={(updatedParent) => handleSuccess(updatedParent, "update")}
                             trigger={
                               <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
                                 <Image 
@@ -238,18 +171,23 @@ export default function ParentListPage() {
                               </button>
                             }
                           />
-                          <button 
-                            onClick={() => setDeleteConfirm(parent.id)}
-                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
-                          >
-                            <Image 
-                              src="/delete.png" 
-                              alt="Delete" 
-                              width={16} 
-                              height={16} 
-                              className="w-4 h-4"
-                            />
-                          </button>
+                          <FormModal
+                            table="parent"
+                            type="delete"
+                            id={String(parent.id)}
+                            onSuccess={() => handleSuccess(parent, "delete")}
+                            trigger={
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
+                                <Image 
+                                  src="/delete.png" 
+                                  alt="Delete" 
+                                  width={16} 
+                                  height={16} 
+                                  className="w-4 h-4"
+                                />
+                              </button>
+                            }
+                          />
                         </>
                       )}
                     </div>
@@ -259,7 +197,7 @@ export default function ParentListPage() {
             ) : (
               <tr>
                 <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
-                  No parents found matching your search
+                  {searchTerm ? "No parents found matching your search" : "No parents found"}
                 </td>
               </tr>
             )}
@@ -267,26 +205,13 @@ export default function ParentListPage() {
         </table>
       </div>
 
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium mb-4">Confirm Deletion</h3>
-            <p className="mb-6">Are you sure you want to delete this parent? This action cannot be undone.</p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(deleteConfirm)}
-                className="px-4 py-2 bg-josseypink1 text-white rounded-md hover:bg-josseypink2"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
+      {pagination.total_pages > 1 && (
+        <div className="mt-6">
+          <Pagination 
+            currentPage={pagination.current_page}
+            totalPages={pagination.total_pages}
+            onPageChange={handlePageChange}
+          />
         </div>
       )}
     </div>
