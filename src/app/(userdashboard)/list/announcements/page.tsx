@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import axios from "axios";
 import Image from "next/image";
 import FormModal from "@/components/FormModal";
 import { role } from "@/lib/data";
 import { useRouter } from "next/navigation";
 import TableSearch from "@/components/TableSearch";
 import Pagination from "@/components/Pagination";
+import usePagination from "@/hooks/usePagination";
 
 type Audience = {
   student_first_name?: string | null;
@@ -24,84 +23,30 @@ type Announcement = {
 };
 
 const AnnouncementListPage = () => {
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchAnnouncements = async () => {
-      try {
-        const token = localStorage.getItem("accessToken");
-        if (!token) {
-          setError("No access token found. Please log in again.");
-          setLoading(false);
-          return;
-        }
-
-        console.log("🔑 Token being used:", token);
-
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/announcements/`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        console.log("✅ API raw response:", res.data);
-
-        if (Array.isArray(res.data)) {
-          setAnnouncements(res.data);
-        } else if (res.data.results) {
-          setAnnouncements(res.data.results);
-        } else {
-          setAnnouncements([]);
-        }
-      } catch (err: any) {
-        console.error("❌ API Error:", err.response?.data || err.message);
-        setError(
-          err.response?.data?.detail ||
-            "Failed to load announcements. Please try again."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAnnouncements();
-  }, []);
+  const {
+    data: announcements,
+    loading,
+    error,
+    pagination,
+    searchTerm,
+    setSearchTerm,
+    handlePageChange,
+    refreshData
+  } = usePagination<Announcement>('/api/announcements/', {
+    initialPage: 1,
+    pageSize: 10,
+    debounceDelay: 300
+  });
 
   const handleSuccess = (
     updatedAnnouncement: Announcement,
     type: "create" | "update" | "delete"
   ) => {
-    if (type === "create") {
-      setAnnouncements([updatedAnnouncement, ...announcements]);
-    } else if (type === "update") {
-      setAnnouncements(
-        announcements.map((a) =>
-          a.id === updatedAnnouncement.id ? updatedAnnouncement : a
-        )
-      );
-    } else if (type === "delete") {
-      setAnnouncements(
-        announcements.filter((a) => a.id !== updatedAnnouncement.id)
-      );
-    }
+    // Refresh data after mutation
+    refreshData();
   };
-
-  const filteredAnnouncements = announcements.filter(
-    (announcement) =>
-      announcement.title
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      announcement.message
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-  );
 
   const formatAudience = (audiences: Audience[]) => {
     return [
@@ -163,6 +108,11 @@ const AnnouncementListPage = () => {
         </div>
       </div>
 
+      {/* Results count */}
+      <div className="mb-4 text-sm text-gray-600">
+        Showing {announcements.length} of {pagination.count} announcements
+      </div>
+
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -185,8 +135,8 @@ const AnnouncementListPage = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredAnnouncements.length > 0 ? (
-              filteredAnnouncements.map((announcement) => (
+            {announcements.length > 0 ? (
+              announcements.map((announcement) => (
                 <tr key={announcement.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {announcement.title}
@@ -247,7 +197,7 @@ const AnnouncementListPage = () => {
                           <FormModal
                             table="announcement"
                             type="delete"
-                            id={announcement.id}
+                            id={String(announcement.id)}
                             onSuccess={() =>
                               handleSuccess(announcement, "delete")
                             }
@@ -274,7 +224,7 @@ const AnnouncementListPage = () => {
                   colSpan={5}
                   className="px-6 py-4 text-center text-sm text-gray-500"
                 >
-                  No announcements found matching your search
+                  {searchTerm ? "No announcements found matching your search" : "No announcements found"}
                 </td>
               </tr>
             )}
@@ -282,9 +232,15 @@ const AnnouncementListPage = () => {
         </table>
       </div>
 
-      <div className="mt-4">
-        <Pagination />
-      </div>
+      {pagination.total_pages > 1 && (
+        <div className="mt-6">
+          <Pagination 
+            currentPage={pagination.current_page}
+            totalPages={pagination.total_pages}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
     </div>
   );
 };
