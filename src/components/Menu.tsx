@@ -24,9 +24,9 @@ const menuItems = [
       {
         icon: "/lesson.png",
         label: "Dashboard",
-        href: "/", // we’ll override this dynamically
+        href: "/", 
         visible: ["admin", "teacher", "student", "parent"],
-        dynamicDashboard: true, // mark as dynamic
+        dynamicDashboard: true, 
       },
       {
         icon: "/teacher.png",
@@ -111,7 +111,7 @@ const menuItems = [
 
 const Menu = () => {
   const { userData, loading } = useUserData();
-  const role = userData?.role || "admin"; // fallback if no user
+  const role = userData?.role || "admin"; 
 
   return (
     <div className="mt-4 text-sm">
