@@ -4,6 +4,7 @@
 import Image from "next/image";
 import FormModal from "@/components/FormModal";
 import TableSearch from "@/components/TableSearch";
+import MobileSearch from "@/components/MobileSearch";
 import { useRouter } from 'next/navigation';
 import { role } from "@/lib/data";
 import Pagination from "@/components/Pagination";
@@ -23,7 +24,7 @@ type Exam = {
 
 const ExamListPage = () => {
   const router = useRouter();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const {
     data: exams,
@@ -62,6 +63,9 @@ const ExamListPage = () => {
     return "No time specified";
   };
 
+  // Check if user can edit/delete (only admin and teacher)
+  const canEditDelete = role === "admin" || role === "teacher";
+
   if (loading) return (
     <div className="flex justify-center items-center h-64">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-josseypink1"></div>
@@ -86,14 +90,12 @@ const ExamListPage = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-xl md:text-2xl font-bold text-gray-800">Exam Management</h1>
           
-          {/* Mobile Menu Button */}
+          {/* Mobile Search Button */}
           <button 
-            className="md:hidden flex flex-col space-y-1 w-6 h-6 justify-center items-center text-josseypink1"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden flex items-center justify-center w-10 h-10 text-josseypink1 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => setIsMobileSearchOpen(true)}
           >
-            <span className={`block w-5 h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-            <span className={`block w-5 h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
-            <span className={`block w-5 h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+            <Image src="/search.png" alt="Search" width={20} height={20} />
           </button>
         </div>
 
@@ -107,36 +109,52 @@ const ExamListPage = () => {
             />
           </div>
           
-          {(role === "admin" || role === "teacher") && (
+          {/* Only show create button for admin and teacher */}
+          {canEditDelete && (
             <FormModal 
               table="exam" 
               type="create" 
               onSuccess={(newExam) => handleSuccess(newExam, "create")}
-              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap"
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap transition-colors"
             />
           )}
         </div>
 
-        {/* Search and Create - Mobile (in menu) */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <TableSearch 
-              value={searchTerm}
-              onChange={setSearchTerm}
-              placeholder="Search exams..."
+        {/* Mobile Create Button - Always visible for authorized users */}
+        {canEditDelete && (
+          <div className="md:hidden">
+            <FormModal 
+              table="exam" 
+              type="create" 
+              onSuccess={(newExam) => handleSuccess(newExam, "create")}
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-3 rounded-lg w-full text-center transition-colors"
             />
-            
-            {(role === "admin" || role === "teacher") && (
-              <FormModal 
-                table="exam" 
-                type="create" 
-                onSuccess={(newExam) => handleSuccess(newExam, "create")}
-                className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-3 rounded-lg text-center"
-              />
-            )}
           </div>
         )}
       </div>
+
+      {/* Mobile Search Modal */}
+      {isMobileSearchOpen && (
+        <div className="md:hidden fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 pt-20">
+          <div className="bg-white rounded-lg w-full max-w-md p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">Search Exams</h3>
+              <button 
+                onClick={() => setIsMobileSearchOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <Image src="/close.png" alt="Close" width={20} height={20} />
+              </button>
+            </div>
+            <MobileSearch
+              value={searchTerm}
+              onChange={setSearchTerm}
+              onClose={() => setIsMobileSearchOpen(false)}
+              placeholder="Search exams..."
+            />
+          </div>
+        </div>
+      )}
 
       {/* Results count */}
       <div className="mb-4 text-sm text-gray-600">
@@ -181,7 +199,9 @@ const ExamListPage = () => {
                       >
                         <Image src="/view.png" alt="View" width={16} height={16} />
                       </button>
-                      {(role === "admin" || role === "teacher") && (
+                      
+                      {/* Only show edit/delete for admin and teacher */}
+                      {canEditDelete && (
                         <>
                           <FormModal
                             table="exam"
@@ -236,7 +256,9 @@ const ExamListPage = () => {
                   >
                     <Image src="/view.png" alt="View" width={14} height={14} />
                   </button>
-                  {(role === "admin" || role === "teacher") && (
+                  
+                  {/* Only show edit/delete for admin and teacher */}
+                  {canEditDelete && (
                     <>
                       <FormModal
                         table="exam"

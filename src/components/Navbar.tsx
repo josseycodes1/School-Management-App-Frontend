@@ -23,14 +23,14 @@ const Navbar = () => {
   const { unreadCount } = useAnnouncements()
   const router = useRouter()
 
-  // fallback values
+
   const fullName = userData
     ? `${userData.first_name || ""} ${userData.last_name || ""}`.trim() || "Admin User"
     : "Admin User"
 
   const role = userData ? userData.role || "admin" : "admin"
 
-  // prepare searchable items
+
   const searchableItems = menuItems
     .flatMap(section => section.items)
     .filter(item => item.visible.includes(role))
@@ -39,7 +39,7 @@ const Navbar = () => {
       href: item.label === "Dashboard" ? dashboardRoutes[role] || "/" : item.href,
     }))
 
-  // filter matches based on query
+
   const matches = searchQuery.trim()
     ? searchableItems.filter(item =>
         item.label.toLowerCase().includes(searchQuery.toLowerCase())
@@ -49,7 +49,7 @@ const Navbar = () => {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (matches.length > 0) {
-      router.push(matches[0].href) // go to first match
+      router.push(matches[0].href) 
       setSearchQuery("")
       setShowSuggestions(false)
     }
