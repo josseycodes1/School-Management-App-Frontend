@@ -4,7 +4,6 @@
 import Image from "next/image";
 import FormModal from "@/components/FormModal";
 import TableSearch from "@/components/TableSearch";
-import MobileSearch from "@/components/MobileSearch";
 import { useRouter } from 'next/navigation';
 import { role } from "@/lib/data";
 import Pagination from "@/components/Pagination";
@@ -24,7 +23,7 @@ type Exam = {
 
 const ExamListPage = () => {
   const router = useRouter();
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isMobileSearchVisible, setIsMobileSearchVisible] = useState(false);
 
   const {
     data: exams,
@@ -63,8 +62,9 @@ const ExamListPage = () => {
     return "No time specified";
   };
 
-  // Check if user can edit/delete (only admin and teacher)
-  const canEditDelete = role === "admin" || role === "teacher";
+  // Check if user can edit/delete (only admin)
+  const canEditDelete = role === "admin";
+  const canCreate = role === "admin";
 
   if (loading) return (
     <div className="flex justify-center items-center h-64">
@@ -90,10 +90,10 @@ const ExamListPage = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-xl md:text-2xl font-bold text-gray-800">Exam Management</h1>
           
-          {/* Mobile Search Button */}
+          {/* Mobile Search Toggle Button */}
           <button 
             className="md:hidden flex items-center justify-center w-10 h-10 text-josseypink1 hover:bg-gray-100 rounded-lg transition-colors"
-            onClick={() => setIsMobileSearchOpen(true)}
+            onClick={() => setIsMobileSearchVisible(!isMobileSearchVisible)}
           >
             <Image src="/search.png" alt="Search" width={20} height={20} />
           </button>
@@ -109,8 +109,8 @@ const ExamListPage = () => {
             />
           </div>
           
-          {/* Only show create button for admin and teacher */}
-          {canEditDelete && (
+          {/* Only show create button for admin */}
+          {canCreate && (
             <FormModal 
               table="exam" 
               type="create" 
@@ -120,8 +120,34 @@ const ExamListPage = () => {
           )}
         </div>
 
-        {/* Mobile Create Button - Always visible for authorized users */}
-        {canEditDelete && (
+        {/* Mobile Search - Live search without modal */}
+        {isMobileSearchVisible && (
+          <div className="md:hidden">
+            <div className="flex items-center gap-2 text-sm rounded-lg ring-2 ring-gray-300 px-3 py-2 bg-white">
+              <Image src="/search.png" alt="Search icon" width={16} height={16} className="text-gray-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search exams..."
+                className="w-full p-1 bg-transparent outline-none text-gray-700"
+                autoFocus
+              />
+              {searchTerm && (
+                <button 
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <Image src="/close.png" alt="Clear" width={16} height={16} />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Create Button - Only for admin */}
+        {canCreate && (
           <div className="md:hidden">
             <FormModal 
               table="exam" 
@@ -132,29 +158,6 @@ const ExamListPage = () => {
           </div>
         )}
       </div>
-
-      {/* Mobile Search Modal */}
-      {isMobileSearchOpen && (
-        <div className="md:hidden fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 pt-20">
-          <div className="bg-white rounded-lg w-full max-w-md p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Search Exams</h3>
-              <button 
-                onClick={() => setIsMobileSearchOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <Image src="/close.png" alt="Close" width={20} height={20} />
-              </button>
-            </div>
-            <MobileSearch
-              value={searchTerm}
-              onChange={setSearchTerm}
-              onClose={() => setIsMobileSearchOpen(false)}
-              placeholder="Search exams..."
-            />
-          </div>
-        </div>
-      )}
 
       {/* Results count */}
       <div className="mb-4 text-sm text-gray-600">
@@ -200,7 +203,7 @@ const ExamListPage = () => {
                         <Image src="/view.png" alt="View" width={16} height={16} />
                       </button>
                       
-                      {/* Only show edit/delete for admin and teacher */}
+                      {/* Only show edit/delete for admin */}
                       {canEditDelete && (
                         <>
                           <FormModal
@@ -257,7 +260,7 @@ const ExamListPage = () => {
                     <Image src="/view.png" alt="View" width={14} height={14} />
                   </button>
                   
-                  {/* Only show edit/delete for admin and teacher */}
+                  {/* Only show edit/delete for admin */}
                   {canEditDelete && (
                     <>
                       <FormModal
