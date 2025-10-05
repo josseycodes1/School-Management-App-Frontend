@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { role } from "@/lib/data";
 import Pagination from "@/components/Pagination";
 import usePagination from "@/hooks/usePagination";
+import { useState } from "react";
 
 type Exam = {
   id: string;
@@ -22,6 +23,7 @@ type Exam = {
 
 const ExamListPage = () => {
   const router = useRouter();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const {
     data: exams,
@@ -78,11 +80,25 @@ const ExamListPage = () => {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Exam Management</h1>
-        
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
+      {/* Header Section */}
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800">Exam Management</h1>
+          
+          {/* Mobile Menu Button */}
+          <button 
+            className="md:hidden flex flex-col space-y-1 w-6 h-6 justify-center items-center text-josseypink1"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <span className={`block w-5 h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+            <span className={`block w-5 h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
+            <span className={`block w-5 h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+          </button>
+        </div>
+
+        {/* Search and Create - Desktop */}
+        <div className="hidden md:flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
           <div className="w-full md:w-64">
             <TableSearch 
               value={searchTerm}
@@ -100,6 +116,26 @@ const ExamListPage = () => {
             />
           )}
         </div>
+
+        {/* Search and Create - Mobile (in menu) */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <TableSearch 
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search exams..."
+            />
+            
+            {(role === "admin" || role === "teacher") && (
+              <FormModal 
+                table="exam" 
+                type="create" 
+                onSuccess={(newExam) => handleSuccess(newExam, "create")}
+                className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-3 rounded-lg text-center"
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Results count */}
@@ -107,7 +143,8 @@ const ExamListPage = () => {
         Showing {exams.length} of {pagination.count} exams
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Desktop Table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -138,7 +175,10 @@ const ExamListPage = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
-                      <button onClick={() => router.push(`/list/exams/${exam.id}`)} className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
+                      <button 
+                        onClick={() => router.push(`/list/exams/${exam.id}`)} 
+                        className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
+                      >
                         <Image src="/view.png" alt="View" width={16} height={16} />
                       </button>
                       {(role === "admin" || role === "teacher") && (
@@ -149,7 +189,7 @@ const ExamListPage = () => {
                             data={exam}
                             onSuccess={(updatedExam) => handleSuccess(updatedExam, "update")}
                             trigger={
-                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                                 <Image src="/update.png" alt="Update" width={16} height={16} />
                               </button>
                             }
@@ -160,7 +200,7 @@ const ExamListPage = () => {
                             id={String(exam.id)}
                             onSuccess={() => handleSuccess(exam, "delete")}
                             trigger={
-                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                                 <Image src="/delete.png" alt="Delete" width={16} height={16} />
                               </button>
                             }
@@ -180,6 +220,81 @@ const ExamListPage = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-4">
+        {exams.length > 0 ? (
+          exams.map((exam) => (
+            <div key={exam.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-semibold text-gray-800 text-lg">{exam.title || "Untitled Exam"}</h3>
+                <div className="flex space-x-1">
+                  <button 
+                    onClick={() => router.push(`/list/exams/${exam.id}`)} 
+                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
+                  >
+                    <Image src="/view.png" alt="View" width={14} height={14} />
+                  </button>
+                  {(role === "admin" || role === "teacher") && (
+                    <>
+                      <FormModal
+                        table="exam"
+                        type="update"
+                        data={exam}
+                        onSuccess={(updatedExam) => handleSuccess(updatedExam, "update")}
+                        trigger={
+                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                            <Image src="/update.png" alt="Update" width={14} height={14} />
+                          </button>
+                        }
+                      />
+                      <FormModal
+                        table="exam"
+                        type="delete"
+                        id={String(exam.id)}
+                        onSuccess={() => handleSuccess(exam, "delete")}
+                        trigger={
+                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                            <Image src="/delete.png" alt="Delete" width={14} height={14} />
+                          </button>
+                        }
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              <div className="space-y-2 text-sm text-gray-600">
+                <div className="flex justify-between">
+                  <span className="font-medium">Subject:</span>
+                  <span>{exam.subject?.name || "No subject"}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="font-medium">Time:</span>
+                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                    {formatTimeRange(exam)}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="font-medium">Teacher:</span>
+                  <span>{exam.teacher ? `${exam.teacher.user.first_name} ${exam.teacher.user.last_name}` : "No teacher"}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="font-medium">Date:</span>
+                  <span>{exam.exam_date ? new Date(exam.exam_date).toLocaleDateString() : "No date"}</span>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            {searchTerm ? "No exams found matching your search" : "No exams found"}
+          </div>
+        )}
       </div>
 
       {pagination.total_pages > 1 && (

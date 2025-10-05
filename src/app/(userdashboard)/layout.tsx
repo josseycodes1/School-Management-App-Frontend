@@ -17,11 +17,9 @@ export default function DashboardLayout({
           href="/"
           className="flex items-center justify-center lg:justify-start"
         >
-          <div className="w-12 h-12 md:w-12 md:h-12 text-white rounded-full 
-          mr-3 flex items-center justify-center bg-josseypink1 border-2 border-black
-        ">
-            JC
-          </div>
+          <div className="w-12 h-12 text-white rounded-full mr-3 flex items-center justify-center bg-josseypink1 border-2 border-black">
+              JC
+            </div>
           <span className="hidden lg:block font-bold text-josseypink1">JOSSEYCODES ACADEMY</span>
         </Link>
         <Menu />
