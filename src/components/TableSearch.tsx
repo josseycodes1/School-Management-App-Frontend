@@ -7,10 +7,11 @@ import { ChangeEvent, useState, useEffect } from "react";
 interface TableSearchProps {
   value: string;
   onChange: (value: string) => void;
+  onSubmit: () => void; // New prop for API search
   placeholder?: string;
 }
 
-const TableSearch = ({ value, onChange, placeholder = "Search..." }: TableSearchProps) => {
+const TableSearch = ({ value, onChange, onSubmit, placeholder = "Search..." }: TableSearchProps) => {
   const router = useRouter();
   const [localValue, setLocalValue] = useState(value);
 
@@ -22,19 +23,19 @@ const TableSearch = ({ value, onChange, placeholder = "Search..." }: TableSearch
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setLocalValue(newValue);
-    onChange(newValue); // Live update parent if needed
+    onChange(newValue); // Live update for client-side search
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Only trigger search on form submit
-    const params = new URLSearchParams(window.location.search);
-    if (localValue.trim()) {
-      params.set("search", localValue.trim());
-    } else {
-      params.delete("search");
+    onSubmit(); // Trigger API search
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      onSubmit(); // Trigger API search on Enter
     }
-    router.push(`${window.location.pathname}?${params}`);
   };
 
   return (
@@ -47,9 +48,18 @@ const TableSearch = ({ value, onChange, placeholder = "Search..." }: TableSearch
         type="text"
         value={localValue}
         onChange={handleChange}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder}
         className="w-[200px] p-2 bg-transparent outline-none"
       />
+      {/* Optional: Add a subtle indicator */}
+      <button 
+        type="submit" 
+        className="text-xs text-gray-400 hover:text-josseypink1 transition-colors"
+        title="Press Enter to search all data"
+      >
+        ↵
+      </button>
     </form>
   );
 };

@@ -33,11 +33,13 @@ const ExamListPage = () => {
     searchTerm,
     setSearchTerm,
     handlePageChange,
-    refreshData
+    refreshData,
+    handleSearchSubmit, // This should now exist
+    isClientSideSearch // This should now exist
   } = usePagination<Exam>('/api/assessment/exams/', {
     initialPage: 1,
     pageSize: 10,
-    debounceDelay: 300
+    // Remove debounceDelay since we're not using it anymore
   });
 
   const handleSuccess = (updatedExam: Exam, type: "create" | "update" | "delete") => {
@@ -102,15 +104,12 @@ const ExamListPage = () => {
         {/* Search and Create - Desktop */}
         <div className="hidden md:flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
           <div className="w-full md:w-64">
-            <TableSearch
+            <TableSearch 
               value={searchTerm}
-              onChange={(val: string) => {
-                setSearchTerm(val);
-                refreshData(val); // fetch only on form submit
-              }}
-              placeholder="Search exams..."
+              onChange={setSearchTerm}
+              onSubmit={handleSearchSubmit} // This should work now
+              placeholder="Search exams... (Press Enter for full search)"
             />
-
           </div>
           
           {/* Only show create button for admin */}
@@ -124,7 +123,7 @@ const ExamListPage = () => {
           )}
         </div>
 
-        {/* Mobile Search - Live search without modal */}
+        {/* Mobile Search */}
         {isMobileSearchVisible && (
           <div className="md:hidden">
             <div className="flex items-center gap-2 text-sm rounded-lg ring-2 ring-gray-300 px-3 py-2 bg-white">
@@ -133,7 +132,12 @@ const ExamListPage = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search exams..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearchSubmit(); // Add Enter key support for mobile
+                  }
+                }}
+                placeholder="Search exams... (Press Enter for full search)"
                 className="w-full p-1 bg-transparent outline-none text-gray-700"
                 autoFocus
               />
@@ -163,11 +167,26 @@ const ExamListPage = () => {
         )}
       </div>
 
-      {/* Results count */}
+      {/* Results count with search mode indicator */}
       <div className="mb-4 text-sm text-gray-600">
-        Showing {exams.length} of {pagination.count} exams
+        {isClientSideSearch ? (
+          <>
+            Showing {exams.length} exam{exams.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (current page)</>
+            )}
+          </>
+        ) : (
+          <>
+            Showing {exams.length} of {pagination.count} exam{exams.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
+            )}
+          </>
+        )}
       </div>
 
+      {/* Rest of your table and mobile cards remain exactly the same */}
       {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
@@ -207,7 +226,6 @@ const ExamListPage = () => {
                         <Image src="/view.png" alt="View" width={16} height={16} />
                       </button>
                       
-                      {/* Only show edit/delete for admin */}
                       {canEditDelete && (
                         <>
                           <FormModal
@@ -264,7 +282,6 @@ const ExamListPage = () => {
                     <Image src="/view.png" alt="View" width={14} height={14} />
                   </button>
                   
-                  {/* Only show edit/delete for admin */}
                   {canEditDelete && (
                     <>
                       <FormModal
@@ -326,7 +343,8 @@ const ExamListPage = () => {
         )}
       </div>
 
-      {pagination.total_pages > 1 && (
+      {/* Only show pagination when not searching or in client-side mode */}
+      {(!searchTerm || isClientSideSearch) && pagination.total_pages > 1 && (
         <div className="mt-6">
           <Pagination 
             currentPage={pagination.current_page}
