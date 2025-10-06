@@ -19,17 +19,16 @@ const dashboardRoutes: Record<string, string> = {
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
   const { userData, loading: userLoading } = useUserData()
   const { unreadCount } = useAnnouncements()
   const router = useRouter()
-
 
   const fullName = userData
     ? `${userData.first_name || ""} ${userData.last_name || ""}`.trim() || "Admin User"
     : "Admin User"
 
   const role = userData ? userData.role || "admin" : "admin"
-
 
   const searchableItems = menuItems
     .flatMap(section => section.items)
@@ -38,7 +37,6 @@ const Navbar = () => {
       ...item,
       href: item.label === "Dashboard" ? dashboardRoutes[role] || "/" : item.href,
     }))
-
 
   const matches = searchQuery.trim()
     ? searchableItems.filter(item =>
@@ -52,6 +50,7 @@ const Navbar = () => {
       router.push(matches[0].href) 
       setSearchQuery("")
       setShowSuggestions(false)
+      setIsMobileSearchOpen(false)
     }
   }
 
@@ -59,11 +58,12 @@ const Navbar = () => {
     router.push(href)
     setSearchQuery("")
     setShowSuggestions(false)
+    setIsMobileSearchOpen(false)
   }
 
   return (
     <div className="flex items-center justify-between p-4 relative">
-      {/* SEARCH BAR */}
+      {/* Desktop Search Bar */}
       <form
         onSubmit={handleSearchSubmit}
         className="hidden md:flex items-center gap-2 text-xs rounded-full ring-[1.5px] ring-gray-300 px-2 relative"
@@ -98,9 +98,64 @@ const Navbar = () => {
         )}
       </form>
 
+      {/* Mobile Search Button */}
+      <button 
+        className="md:hidden flex items-center justify-center w-10 h-10 text-josseypink1 hover:bg-gray-100 rounded-lg transition-colors"
+        onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+      >
+        <Image src="/search.png" alt="Search" width={20} height={20} />
+      </button>
+
+      {/* Mobile Search Input */}
+      {isMobileSearchOpen && (
+        <div className="md:hidden absolute top-16 left-4 right-4 bg-white shadow-lg rounded-lg p-3 z-50 border border-gray-200">
+          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-1 text-sm rounded-lg ring-2 ring-gray-300 px-3 py-2 bg-white">
+              <Image src="/search.png" alt="Search" width={16} height={16} />
+              <input
+                type="text"
+                placeholder="Search anything..."
+                className="w-full p-1 bg-transparent outline-none"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  setShowSuggestions(true)
+                }}
+                autoFocus
+              />
+              {searchQuery && (
+                <button 
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <Image src="/close.png" alt="Clear" width={14} height={14} />
+                </button>
+              )}
+            </div>
+          </form>
+          
+          {/* Mobile Dropdown suggestions */}
+          {showSuggestions && matches.length > 0 && (
+            <div className="mt-2 bg-white border border-gray-200 rounded-md shadow-sm max-h-48 overflow-y-auto">
+              {matches.map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                  onClick={() => handleSelect(item.href)}
+                >
+                  <Image src={item.icon} alt={item.label} width={18} height={18} />
+                  <span className="text-sm font-medium">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ICONS AND USER */}
-      <div className="flex items-center gap-6 justify-end w-full">
-        {/* Announcements */}
+      <div className="flex items-center gap-4 md:gap-6 justify-end w-full">
+        {/* Announcements - Always visible */}
         <div className="bg-white rounded-full w-7 h-7 flex items-center justify-center cursor-pointer relative">
           <Image src="/announcement.png" alt="Announcements" width={20} height={20}/>
           {unreadCount > 0 && (
@@ -110,8 +165,8 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* User Info */}
-        <div className="flex flex-col">
+        {/* User Info - Hidden on mobile, shown on desktop */}
+        <div className="hidden md:flex flex-col">
           {userLoading ? (
             <>
               <div className="h-3 w-20 bg-gray-200 rounded animate-pulse mb-1"></div>
@@ -127,10 +182,10 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Avatar */}
+        {/* Avatar - Always visible */}
         <UserAvatar size={36} />
 
-        {/* Logout */}
+        {/* Logout - Hidden on mobile (will be in mobile menu) */}
         <div className="hidden md:block">
           <LogoutButton
             variant="text"

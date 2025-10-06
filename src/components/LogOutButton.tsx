@@ -7,26 +7,33 @@ interface LogoutButtonProps {
   className?: string
   variant?: 'primary' | 'secondary' | 'text'
   children?: React.ReactNode
+  onClick?: () => void // Add this line
 }
 
 export default function LogoutButton({ 
   className = '', 
   variant = 'primary',
-  children 
+  children,
+  onClick // Add this line
 }: LogoutButtonProps) {
   const router = useRouter()
 
   const handleLogout = () => {
-    //clear all user data from localStorage
+    // Call the passed onClick prop first (to close mobile menu, etc.)
+    if (onClick) {
+      onClick()
+    }
+    
+    // Clear all user data from localStorage
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('user')
     localStorage.removeItem('role')
     
-    //show success message
+    // Show success message
     toast.success('You have been successfully logged out!')
     
-    //redirect to login page
+    // Redirect to login page
     router.push('/log-in')
   }
 
