@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useUserData } from "@/hooks/useUserData";
-import { useRouter } from "next/navigation";
 import { useAnnouncements } from "@/hooks/useAnnouncements";
 import UserAvatar from "@/components/UserAvatar";
 import LogoutButton from "@/components/LogOutButton";
@@ -104,6 +104,12 @@ const menuItems = [
         href: "/settings",
         visible: ["admin", "teacher", "student", "parent"],
       },
+      {
+        icon: "/logout.png",
+        label: "Logout",
+        href: "/logout",
+        visible: ["admin", "teacher", "student", "parent"],
+      },
     ],
   },
 ];
@@ -153,6 +159,10 @@ const MobileMenu = () => {
     if (matches.length > 0) {
       handleSelect(matches[0].href);
     }
+  };
+
+  const handleLogoutClick = () => {
+    setIsMenuOpen(false);
   };
 
   return (
@@ -290,7 +300,7 @@ const MobileMenu = () => {
             <LogoutButton
               variant="text"
               className="flex items-center gap-3 w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
-              onClick={toggleMenu}
+              onClick={handleLogoutClick}
             >
               <Image src="/logout.png" alt="Logout" width={18} height={18} />
               <span className="font-medium">Logout</span>
