@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useState, useEffect } from "react";
 
 interface TableSearchProps {
   value: string;
@@ -12,15 +12,28 @@ interface TableSearchProps {
 
 const TableSearch = ({ value, onChange, placeholder = "Search..." }: TableSearchProps) => {
   const router = useRouter();
+  const [localValue, setLocalValue] = useState(value);
+
+  // Sync local value with prop value
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value);
+    const newValue = e.target.value;
+    setLocalValue(newValue);
+    onChange(newValue);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Only update URL when form is explicitly submitted
     const params = new URLSearchParams(window.location.search);
-    params.set("search", value);
+    if (localValue.trim()) {
+      params.set("search", localValue.trim());
+    } else {
+      params.delete("search");
+    }
     router.push(`${window.location.pathname}?${params}`);
   };
 
@@ -32,7 +45,7 @@ const TableSearch = ({ value, onChange, placeholder = "Search..." }: TableSearch
       <Image src="/search.png" alt="Search icon" width={14} height={14} />
       <input
         type="text"
-        value={value}
+        value={localValue}
         onChange={handleChange}
         placeholder={placeholder}
         className="w-[200px] p-2 bg-transparent outline-none"
