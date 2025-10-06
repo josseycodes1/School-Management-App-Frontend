@@ -18,8 +18,10 @@ const MobileSearch = ({ value, onChange, onClose, placeholder = "Search..." }: M
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onClose(); // Close the modal after search
+    onChange(value); // trigger the search
+    onClose();       // close modal after submitting
   };
+
 
   return (
     <form onSubmit={handleSubmit} className="w-full">

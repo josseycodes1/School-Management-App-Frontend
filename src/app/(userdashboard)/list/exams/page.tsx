@@ -102,11 +102,15 @@ const ExamListPage = () => {
         {/* Search and Create - Desktop */}
         <div className="hidden md:flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
           <div className="w-full md:w-64">
-            <TableSearch 
+            <TableSearch
               value={searchTerm}
-              onChange={setSearchTerm}
+              onChange={(val: string) => {
+                setSearchTerm(val);
+                refreshData(val); // fetch only on form submit
+              }}
               placeholder="Search exams..."
             />
+
           </div>
           
           {/* Only show create button for admin */}

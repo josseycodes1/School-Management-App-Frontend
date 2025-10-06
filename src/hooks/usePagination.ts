@@ -26,7 +26,7 @@ interface UsePaginationReturn<T> {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   handlePageChange: (page: number) => void;
-  refreshData: () => void;
+  refreshData: (search?: string) => void;
 }
 
 const usePagination = <T>(
@@ -120,16 +120,19 @@ const usePagination = <T>(
 
   // Fetch data when page or debounced search term changes
   useEffect(() => {
-    fetchData(pagination.current_page, debouncedSearchTerm);
-  }, [fetchData, pagination.current_page, debouncedSearchTerm]);
+    fetchData(pagination.current_page);
+  }, [fetchData, pagination.current_page]);
+
 
   const handlePageChange = (page: number) => {
     setPagination(prev => ({ ...prev, current_page: page }));
   };
 
-  const refreshData = () => {
-    fetchData(pagination.current_page, debouncedSearchTerm);
+  const refreshData = (search?: string) => {
+    fetchData(pagination.current_page, search || debouncedSearchTerm);
   };
+
+
 
   return {
     data,
