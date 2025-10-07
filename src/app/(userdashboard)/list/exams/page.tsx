@@ -170,22 +170,22 @@ const ExamListPage = () => {
       <div className="mb-4 text-sm text-gray-600">
         {isClientSideSearch ? (
           <>
-            Showing {exams.length} exam{exams.length !== 1 ? 's' : ''} 
+            Showing {exams.length} exam{exams.length !== 1 ? 's' : ''}
             {searchTerm && (
-              <> for "<span className="font-medium">{searchTerm}</span>" (current page)</>
+              <> for "<span className="font-medium">{searchTerm}</span>" on this current page, <span className="text-josseypink1 font-medium">press Enter for full search on other pages</span></>
             )}
           </>
         ) : (
           <>
-            Showing {exams.length} of {pagination.count} exam{exams.length !== 1 ? 's' : ''} 
+            Showing {exams.length} of {pagination.count} exam{exams.length !== 1 ? 's' : ''}
             {searchTerm && (
               <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
             )}
           </>
         )}
-      </div>
+</div>
 
-      {/* Rest of your table and mobile cards remain exactly the same */}
+      {/* Rest of table and mobile cards remain exactly the same */}
       {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">

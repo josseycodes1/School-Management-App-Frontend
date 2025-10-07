@@ -1,4 +1,3 @@
-// components/MobileSearch.tsx
 "use client";
 
 import Image from "next/image";
@@ -18,8 +17,8 @@ const MobileSearch = ({ value, onChange, onClose, placeholder = "Search..." }: M
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onChange(value); // trigger the search
-    onClose();       // close modal after submitting
+    onChange(value); 
+    onClose();     
   };
 
 
