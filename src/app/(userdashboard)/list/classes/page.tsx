@@ -1,4 +1,3 @@
-// app/list/classes/page.tsx
 "use client";
 
 import Image from "next/image";
@@ -8,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { role } from "@/lib/data";
 import Pagination from "@/components/Pagination";
 import usePagination from "@/hooks/usePagination";
+import { useState } from "react";
 
 type Class = {
   id: string;
@@ -25,6 +25,7 @@ type Class = {
 
 const ClassListPage = () => {
   const router = useRouter();
+  const [isMobileSearchVisible, setIsMobileSearchVisible] = useState(false);
 
   const {
     data: classes,
@@ -46,6 +47,10 @@ const ClassListPage = () => {
     refreshData();
   };
 
+  // Check if user can edit/delete (only admin)
+  const canEditDelete = role === "admin";
+  const canCreate = role === "admin";
+
   if (loading) return (
     <div className="flex justify-center items-center h-64">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-josseypink1"></div>
@@ -64,11 +69,23 @@ const ClassListPage = () => {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Class Management</h1>
-        
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
+      {/* Header Section */}
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800">Class Management</h1>
+          
+          {/* Mobile Search Toggle Button */}
+          <button 
+            className="md:hidden flex items-center justify-center w-10 h-10 text-josseypink1 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => setIsMobileSearchVisible(!isMobileSearchVisible)}
+          >
+            <Image src="/search.png" alt="Search" width={20} height={20} />
+          </button>
+        </div>
+
+        {/* Search and Create - Desktop */}
+        <div className="hidden md:flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
           <div className="w-full md:w-64">
             <TableSearch 
               value={searchTerm}
@@ -78,15 +95,59 @@ const ClassListPage = () => {
             />
           </div>
           
-          {role === "admin" && (
+          {/* Only show create button for admin */}
+          {canCreate && (
             <FormModal 
               table="class" 
               type="create" 
               onSuccess={(newClass) => handleSuccess(newClass, "create")}
-              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap"
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap transition-colors"
             />
           )}
         </div>
+
+        {/* Mobile Search */}
+        {isMobileSearchVisible && (
+          <div className="md:hidden">
+            <div className="flex items-center gap-2 text-sm rounded-lg ring-2 ring-gray-300 px-3 py-2 bg-white">
+              <Image src="/search.png" alt="Search icon" width={16} height={16} className="text-gray-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearchSubmit();
+                  }
+                }}
+                placeholder="Search classes... (Press Enter for full search)"
+                className="w-full p-1 bg-transparent outline-none text-gray-700"
+                autoFocus
+              />
+              {searchTerm && (
+                <button 
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <Image src="/close.png" alt="Clear" width={16} height={16} />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Create Button - Only for admin */}
+        {canCreate && (
+          <div className="md:hidden">
+            <FormModal 
+              table="class" 
+              type="create" 
+              onSuccess={(newClass) => handleSuccess(newClass, "create")}
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-3 rounded-lg w-full text-center transition-colors"
+            />
+          </div>
+        )}
       </div>
 
       {/* Updated Results count with search mode */}
@@ -108,7 +169,8 @@ const ClassListPage = () => {
         )}
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Desktop Table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -146,17 +208,16 @@ const ClassListPage = () => {
                     <div className="flex justify-end space-x-2">
                       <button 
                         onClick={() => router.push(`/list/classes/${classItem.id}`)}
-                        className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
+                        className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
                       >
                         <Image 
                           src="/view.png" 
                           alt="View" 
                           width={16} 
                           height={16} 
-                          className="w-4 h-4"
                         />
                       </button>
-                      {role === "admin" && (
+                      {canEditDelete && (
                         <>
                           <FormModal
                             table="class"
@@ -164,13 +225,12 @@ const ClassListPage = () => {
                             data={classItem}
                             onSuccess={(updatedClass) => handleSuccess(updatedClass, "update")}
                             trigger={
-                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                                 <Image 
                                   src="/update.png" 
                                   alt="Update" 
                                   width={16} 
                                   height={16} 
-                                  className="w-4 h-4"
                                 />
                               </button>
                             }
@@ -181,13 +241,12 @@ const ClassListPage = () => {
                             id={String(classItem.id)}
                             onSuccess={() => handleSuccess(classItem, "delete")}
                             trigger={
-                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                                 <Image 
                                   src="/delete.png" 
                                   alt="Delete" 
                                   width={16} 
                                   height={16} 
-                                  className="w-4 h-4"
                                 />
                               </button>
                             }
@@ -207,6 +266,79 @@ const ClassListPage = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-4">
+        {classes.length > 0 ? (
+          classes.map((classItem) => (
+            <div key={classItem.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-semibold text-gray-800 text-lg">{classItem.name}</h3>
+                <div className="flex space-x-1">
+                  <button 
+                    onClick={() => router.push(`/list/classes/${classItem.id}`)}
+                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
+                  >
+                    <Image src="/view.png" alt="View" width={14} height={14} />
+                  </button>
+                  
+                  {canEditDelete && (
+                    <>
+                      <FormModal
+                        table="class"
+                        type="update"
+                        data={classItem}
+                        onSuccess={(updatedClass) => handleSuccess(updatedClass, "update")}
+                        trigger={
+                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                            <Image src="/update.png" alt="Update" width={14} height={14} />
+                          </button>
+                        }
+                      />
+                      <FormModal
+                        table="class"
+                        type="delete"
+                        id={String(classItem.id)}
+                        onSuccess={() => handleSuccess(classItem, "delete")}
+                        trigger={
+                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                            <Image src="/delete.png" alt="Delete" width={14} height={14} />
+                          </button>
+                        }
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              <div className="space-y-2 text-sm text-gray-600">
+                <div className="flex justify-between">
+                  <span className="font-medium">Supervisor:</span>
+                  <span className="text-right">
+                    {classItem.teacher ? (
+                      <>
+                        <div>{classItem.teacher.user.first_name} {classItem.teacher.user.last_name}</div>
+                        <div className="text-xs text-gray-400">{classItem.teacher.user.email}</div>
+                      </>
+                    ) : (
+                      "No supervisor assigned"
+                    )}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="font-medium">Created Date:</span>
+                  <span>{new Date(classItem.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            {searchTerm ? "No classes found matching your search" : "No classes found"}
+          </div>
+        )}
       </div>
 
       {/* Only show pagination when not searching or in client-side mode */}
