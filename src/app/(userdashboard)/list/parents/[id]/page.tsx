@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -20,7 +19,7 @@ type Parent = {
   address: string;
   emergency_contact: string;
   occupation: string;
-  students: string[]; // This should be an array of strings based on your initial type
+  students: string[]; 
   created_at: string;
   updated_at: string;
 };

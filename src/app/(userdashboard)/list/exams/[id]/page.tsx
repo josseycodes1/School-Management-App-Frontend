@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -73,7 +72,7 @@ const ExamDetailPage = () => {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) throw new Error("No access token found");
 
-        // Fetch exam details
+       
         const examRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessment/exams/${examId}/`,
           {
@@ -84,7 +83,7 @@ const ExamDetailPage = () => {
         );
         setExam(examRes.data);
 
-        // Fetch results for this exam
+      
         try {
           const resultsRes = await axios.get(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessment/results/?exam=${examId}`,

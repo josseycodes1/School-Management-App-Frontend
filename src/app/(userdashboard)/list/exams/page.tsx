@@ -1,4 +1,3 @@
-// app/list/exams/page.tsx
 "use client";
 
 import Image from "next/image";
@@ -133,7 +132,7 @@ const ExamListPage = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    handleSearchSubmit(); // Add Enter key support for mobile
+                    handleSearchSubmit(); 
                   }
                 }}
                 placeholder="Search exams... (Press Enter for full search)"
