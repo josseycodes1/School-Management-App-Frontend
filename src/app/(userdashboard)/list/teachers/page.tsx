@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Pagination from "@/components/Pagination";
 import usePagination from "@/hooks/usePagination";
 import TableSearch from "@/components/TableSearch";
+import { useState } from "react";
 
 type Teacher = {
   id: number;
@@ -21,6 +22,7 @@ type Teacher = {
 
 const TeacherListPage = () => {
   const router = useRouter();
+  const [isMobileSearchVisible, setIsMobileSearchVisible] = useState(false);
 
   const {
     data: teachers,
@@ -31,8 +33,8 @@ const TeacherListPage = () => {
     setSearchTerm,
     handlePageChange,
     refreshData,
-    handleSearchSubmit, // Add this
-    isClientSideSearch // Add this
+    handleSearchSubmit,
+    isClientSideSearch
   } = usePagination<Teacher>('/api/accounts/teachers/', {
     initialPage: 1,
     pageSize: 10,
@@ -41,6 +43,10 @@ const TeacherListPage = () => {
   const handleSuccess = (updatedTeacher: Teacher, type: "create" | "update" | "delete") => {
     refreshData();
   };
+
+  // Check if user can edit/delete (only admin)
+  const canEditDelete = role === "admin";
+  const canCreate = role === "admin";
 
   if (loading) return (
     <div className="flex justify-center items-center h-64">
@@ -60,27 +66,85 @@ const TeacherListPage = () => {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Teacher Management</h1>
-        <div className="flex items-center gap-4">
-          <div className="w-64">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
+      {/* Header Section */}
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800">Teacher Management</h1>
+          
+          {/* Mobile Search Toggle Button */}
+          <button 
+            className="md:hidden flex items-center justify-center w-10 h-10 text-josseypink1 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => setIsMobileSearchVisible(!isMobileSearchVisible)}
+          >
+            <Image src="/search.png" alt="Search" width={20} height={20} />
+          </button>
+        </div>
+
+        {/* Search and Create - Desktop */}
+        <div className="hidden md:flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+          <div className="w-full md:w-64">
             <TableSearch 
               value={searchTerm}
               onChange={setSearchTerm}
-              onSubmit={handleSearchSubmit} // Add this prop
+              onSubmit={handleSearchSubmit}
               placeholder="Search teachers... (Press Enter for full search)"
             />
           </div>
-          {role === "admin" && (
+          
+          {/* Only show create button for admin */}
+          {canCreate && (
             <FormModal 
               table="teacher" 
               type="create" 
               onSuccess={(newTeacher) => handleSuccess(newTeacher, "create")}
-              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg"
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap transition-colors"
             />
           )}
         </div>
+
+        {/* Mobile Search */}
+        {isMobileSearchVisible && (
+          <div className="md:hidden">
+            <div className="flex items-center gap-2 text-sm rounded-lg ring-2 ring-gray-300 px-3 py-2 bg-white">
+              <Image src="/search.png" alt="Search icon" width={16} height={16} className="text-gray-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearchSubmit();
+                  }
+                }}
+                placeholder="Search teachers... (Press Enter for full search)"
+                className="w-full p-1 bg-transparent outline-none text-gray-700"
+                autoFocus
+              />
+              {searchTerm && (
+                <button 
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <Image src="/close.png" alt="Clear" width={16} height={16} />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Create Button - Only for admin */}
+        {canCreate && (
+          <div className="md:hidden">
+            <FormModal 
+              table="teacher" 
+              type="create" 
+              onSuccess={(newTeacher) => handleSuccess(newTeacher, "create")}
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-3 rounded-lg w-full text-center transition-colors"
+            />
+          </div>
+        )}
       </div>
 
       {/* Updated Results count with search mode */}
@@ -102,7 +166,8 @@ const TeacherListPage = () => {
         )}
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Desktop Table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -113,74 +178,159 @@ const TeacherListPage = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {teachers.map((teacher) => (
-              <tr key={teacher.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10">
-                      <Image
-                        src={teacher.profile_picture || "/default-teacher.png"}
-                        alt=""
-                        width={40}
-                        height={40}
-                        className="rounded-full"
-                      />
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {teacher.user.first_name} {teacher.user.last_name}
+            {teachers.length > 0 ? (
+              teachers.map((teacher) => (
+                <tr key={teacher.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <Image
+                          src={teacher.profile_picture || "/default-teacher.png"}
+                          alt=""
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {teacher.user.first_name} {teacher.user.last_name}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {teacher.user.email}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-josseypink1 text-white">
-                    {teacher.subject_specialization || "General"}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end space-x-2">
-                    <button 
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {teacher.user.email}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-josseypink1 text-white">
+                      {teacher.subject_specialization || "General"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end space-x-2">
+                      <button 
                         onClick={() => router.push(`/list/teachers/${teacher.id}`)}
-                        className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
+                        className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
                       >
                         <Image src="/view.png" alt="View" width={16} height={16} />
                       </button>
-                    {role === "admin" && (
-                      <>
-                        <FormModal
-                          table="teacher"
-                          type="update"
-                          data={teacher}
-                          onSuccess={(updatedTeacher) => handleSuccess(updatedTeacher, "update")}
-                          trigger={
-                            <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
-                              <Image src="/update.png" alt="Update" width={16} height={16} />
-                            </button>
-                          }
-                        />
-                        <FormModal
-                          table="teacher"
-                          type="delete"
-                          id={String(teacher.id)}
-                          onSuccess={() => handleSuccess(teacher, "delete")}
-                          trigger={
-                            <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
-                              <Image src="/delete.png" alt="Delete" width={16} height={16} />
-                            </button>
-                          }
-                        />
-                      </>
-                    )}
-                  </div>
+                      {canEditDelete && (
+                        <>
+                          <FormModal
+                            table="teacher"
+                            type="update"
+                            data={teacher}
+                            onSuccess={(updatedTeacher) => handleSuccess(updatedTeacher, "update")}
+                            trigger={
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                                <Image src="/update.png" alt="Update" width={16} height={16} />
+                              </button>
+                            }
+                          />
+                          <FormModal
+                            table="teacher"
+                            type="delete"
+                            id={String(teacher.id)}
+                            onSuccess={() => handleSuccess(teacher, "delete")}
+                            trigger={
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                                <Image src="/delete.png" alt="Delete" width={16} height={16} />
+                              </button>
+                            }
+                          />
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
+                  {searchTerm ? "No teachers found matching your search" : "No teachers found"}
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-4">
+        {teachers.length > 0 ? (
+          teachers.map((teacher) => (
+            <div key={teacher.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 h-12 w-12">
+                    <Image
+                      src={teacher.profile_picture || "/default-teacher.png"}
+                      alt=""
+                      width={48}
+                      height={48}
+                      className="rounded-full"
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="font-semibold text-gray-800 text-lg">
+                      {teacher.user.first_name} {teacher.user.last_name}
+                    </h3>
+                    <p className="text-sm text-gray-500">{teacher.user.email}</p>
+                  </div>
+                </div>
+                <div className="flex space-x-1">
+                  <button 
+                    onClick={() => router.push(`/list/teachers/${teacher.id}`)}
+                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
+                  >
+                    <Image src="/view.png" alt="View" width={14} height={14} />
+                  </button>
+                  
+                  {canEditDelete && (
+                    <>
+                      <FormModal
+                        table="teacher"
+                        type="update"
+                        data={teacher}
+                        onSuccess={(updatedTeacher) => handleSuccess(updatedTeacher, "update")}
+                        trigger={
+                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                            <Image src="/update.png" alt="Update" width={14} height={14} />
+                          </button>
+                        }
+                      />
+                      <FormModal
+                        table="teacher"
+                        type="delete"
+                        id={String(teacher.id)}
+                        onSuccess={() => handleSuccess(teacher, "delete")}
+                        trigger={
+                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                            <Image src="/delete.png" alt="Delete" width={14} height={14} />
+                          </button>
+                        }
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              <div className="space-y-2 text-sm text-gray-600">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">Specialization:</span>
+                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-josseypink1 text-white">
+                    {teacher.subject_specialization || "General"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            {searchTerm ? "No teachers found matching your search" : "No teachers found"}
+          </div>
+        )}
       </div>
 
       {/* Only show pagination when not searching or in client-side mode */}

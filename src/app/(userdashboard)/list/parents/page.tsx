@@ -9,6 +9,7 @@ import TableSearch from "@/components/TableSearch";
 import { role } from "@/lib/data";
 import Pagination from "@/components/Pagination";
 import usePagination from "@/hooks/usePagination";
+import { useState } from "react";
 
 type Parent = {
   id: number;
@@ -26,6 +27,7 @@ type Parent = {
 
 export default function ParentListPage() {
   const router = useRouter();
+  const [isMobileSearchVisible, setIsMobileSearchVisible] = useState(false);
 
   const {
     data: parentsData,
@@ -47,6 +49,10 @@ export default function ParentListPage() {
     refreshData();
   };
 
+  // Check if user can edit/delete (only admin)
+  const canEditDelete = role === "admin";
+  const canCreate = role === "admin";
+
   if (loading) return (
     <div className="flex justify-center items-center h-64">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-josseypink1"></div>
@@ -65,11 +71,24 @@ export default function ParentListPage() {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Parent Management</h1>
-        <div className="flex items-center gap-4">
-          <div className="w-64">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
+      {/* Header Section */}
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800">Parent Management</h1>
+          
+          {/* Mobile Search Toggle Button */}
+          <button 
+            className="md:hidden flex items-center justify-center w-10 h-10 text-josseypink1 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => setIsMobileSearchVisible(!isMobileSearchVisible)}
+          >
+            <Image src="/search.png" alt="Search" width={20} height={20} />
+          </button>
+        </div>
+
+        {/* Search and Create - Desktop */}
+        <div className="hidden md:flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+          <div className="w-full md:w-64">
             <TableSearch 
               value={searchTerm}
               onChange={setSearchTerm}
@@ -77,37 +96,83 @@ export default function ParentListPage() {
               placeholder="Search parents... (Press Enter for full search)"
             />
           </div>
-          {role === "admin" && (
+          
+          {/* Only show create button for admin */}
+          {canCreate && (
             <FormModal 
               table="parent" 
               type="create" 
               onSuccess={(newParent) => handleSuccess(newParent, "create")}
-              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg"
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap transition-colors"
             />
           )}
         </div>
+
+        {/* Mobile Search */}
+        {isMobileSearchVisible && (
+          <div className="md:hidden">
+            <div className="flex items-center gap-2 text-sm rounded-lg ring-2 ring-gray-300 px-3 py-2 bg-white">
+              <Image src="/search.png" alt="Search icon" width={16} height={16} className="text-gray-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearchSubmit();
+                  }
+                }}
+                placeholder="Search parents... (Press Enter for full search)"
+                className="w-full p-1 bg-transparent outline-none text-gray-700"
+                autoFocus
+              />
+              {searchTerm && (
+                <button 
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <Image src="/close.png" alt="Clear" width={16} height={16} />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Create Button - Only for admin */}
+        {canCreate && (
+          <div className="md:hidden">
+            <FormModal 
+              table="parent" 
+              type="create" 
+              onSuccess={(newParent) => handleSuccess(newParent, "create")}
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-3 rounded-lg w-full text-center transition-colors"
+            />
+          </div>
+        )}
       </div>
 
       {/* Updated Results count with search mode */}
       <div className="mb-4 text-sm text-gray-600">
-          {isClientSideSearch ? (
-            <>
-              Showing {parentsData.length} parent{parentsData.length !== 1 ? 's' : ''}
-              {searchTerm && (
-                <> for "<span className="font-medium">{searchTerm}</span>" on this current page, <span className="text-josseypink1 font-medium">press Enter for full search on other pages</span></>
-              )}
-            </>
-          ) : (
-            <>
-              Showing {parentsData.length} of {pagination.count} parent{parentsData.length !== 1 ? 's' : ''}
-              {searchTerm && (
-                <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
-              )}
-            </>
-          )}
-        </div>
+        {isClientSideSearch ? (
+          <>
+            Showing {parentsData.length} parent{parentsData.length !== 1 ? 's' : ''}
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" on this current page, <span className="text-josseypink1 font-medium">press Enter for full search on other pages</span></>
+            )}
+          </>
+        ) : (
+          <>
+            Showing {parentsData.length} of {pagination.count} parent{parentsData.length !== 1 ? 's' : ''}
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
+            )}
+          </>
+        )}
+      </div>
 
-      <div className="overflow-x-auto">
+      {/* Desktop Table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -157,18 +222,17 @@ export default function ParentListPage() {
                     <div className="flex justify-end space-x-2">
                       <button 
                         onClick={() => router.push(`/list/parents/${parent.id}`)}
-                        className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded"
+                        className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
                       >
                         <Image 
                           src="/view.png" 
                           alt="View" 
                           width={16} 
                           height={16} 
-                          className="w-4 h-4"
                         />
                       </button>
                       
-                      {role === "admin" && (
+                      {canEditDelete && (
                         <>
                           <FormModal
                             table="parent"
@@ -176,13 +240,12 @@ export default function ParentListPage() {
                             data={parent}
                             onSuccess={(updatedParent) => handleSuccess(updatedParent, "update")}
                             trigger={
-                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                                 <Image 
                                   src="/update.png" 
                                   alt="Update" 
                                   width={16} 
                                   height={16} 
-                                  className="w-4 h-4"
                                 />
                               </button>
                             }
@@ -193,13 +256,12 @@ export default function ParentListPage() {
                             id={String(parent.id)}
                             onSuccess={() => handleSuccess(parent, "delete")}
                             trigger={
-                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                                 <Image 
                                   src="/delete.png" 
                                   alt="Delete" 
                                   width={16} 
                                   height={16} 
-                                  className="w-4 h-4"
                                 />
                               </button>
                             }
@@ -219,6 +281,100 @@ export default function ParentListPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-4">
+        {parentsData.length > 0 ? (
+          parentsData.map((parent) => (
+            <div key={parent.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 h-12 w-12">
+                    <Image
+                      src="/avatar.png"
+                      alt={`${parent.user.first_name}'s profile`}
+                      width={48}
+                      height={48}
+                      className="rounded-full"
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="font-semibold text-gray-800 text-lg">
+                      {parent.user.first_name} {parent.user.last_name}
+                    </h3>
+                    <p className="text-sm text-gray-500">{parent.user.email}</p>
+                  </div>
+                </div>
+                <div className="flex space-x-1">
+                  <button 
+                    onClick={() => router.push(`/list/parents/${parent.id}`)}
+                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
+                  >
+                    <Image src="/view.png" alt="View" width={14} height={14} />
+                  </button>
+                  
+                  {canEditDelete && (
+                    <>
+                      <FormModal
+                        table="parent"
+                        type="update"
+                        data={parent}
+                        onSuccess={(updatedParent) => handleSuccess(updatedParent, "update")}
+                        trigger={
+                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                            <Image src="/update.png" alt="Update" width={14} height={14} />
+                          </button>
+                        }
+                      />
+                      <FormModal
+                        table="parent"
+                        type="delete"
+                        id={String(parent.id)}
+                        onSuccess={() => handleSuccess(parent, "delete")}
+                        trigger={
+                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                            <Image src="/delete.png" alt="Delete" width={14} height={14} />
+                          </button>
+                        }
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              <div className="space-y-2 text-sm text-gray-600">
+                <div className="flex justify-between">
+                  <span className="font-medium">Phone:</span>
+                  <span>{parent.phone || "N/A"}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="font-medium">Emergency Contact:</span>
+                  <span>{parent.emergency_contact || "None"}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="font-medium">Occupation:</span>
+                  <span>{parent.occupation || "N/A"}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="font-medium">Students:</span>
+                  <span className="text-right max-w-[60%]">
+                    {Array.isArray(parent.students) && parent.students.length > 0 
+                      ? parent.students.join(", ")
+                      : "No students"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            {searchTerm ? "No parents found matching your search" : "No parents found"}
+          </div>
+        )}
       </div>
 
       {/* Only show pagination when not searching or in client-side mode */}
