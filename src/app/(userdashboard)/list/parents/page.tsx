@@ -90,22 +90,22 @@ export default function ParentListPage() {
 
       {/* Updated Results count with search mode */}
       <div className="mb-4 text-sm text-gray-600">
-        {isClientSideSearch ? (
-          <>
-            Showing {parentsData.length} parent{parentsData.length !== 1 ? 's' : ''} 
-            {searchTerm && (
-              <> for "<span className="font-medium">{searchTerm}</span>" (current page)</>
-            )}
-          </>
-        ) : (
-          <>
-            Showing {parentsData.length} of {pagination.count} parent{parentsData.length !== 1 ? 's' : ''} 
-            {searchTerm && (
-              <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
-            )}
-          </>
-        )}
-      </div>
+          {isClientSideSearch ? (
+            <>
+              Showing {parentsData.length} parent{parentsData.length !== 1 ? 's' : ''}
+              {searchTerm && (
+                <> for "<span className="font-medium">{searchTerm}</span>" on this current page, <span className="text-josseypink1 font-medium">press Enter for full search on other pages</span></>
+              )}
+            </>
+          ) : (
+            <>
+              Showing {parentsData.length} of {pagination.count} parent{parentsData.length !== 1 ? 's' : ''}
+              {searchTerm && (
+                <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
+              )}
+            </>
+          )}
+        </div>
 
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">

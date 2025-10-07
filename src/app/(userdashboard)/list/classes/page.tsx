@@ -93,14 +93,14 @@ const ClassListPage = () => {
       <div className="mb-4 text-sm text-gray-600">
         {isClientSideSearch ? (
           <>
-            Showing {classes.length} class{classes.length !== 1 ? 'es' : ''} 
+            Showing {classes.length} class{classes.length !== 1 ? 'es' : ''}
             {searchTerm && (
-              <> for "<span className="font-medium">{searchTerm}</span>" (current page)</>
+              <> for "<span className="font-medium">{searchTerm}</span>" on this current page, <span className="text-josseypink1 font-medium">press Enter for full search on other pages</span></>
             )}
           </>
         ) : (
           <>
-            Showing {classes.length} of {pagination.count} class{classes.length !== 1 ? 'es' : ''} 
+            Showing {classes.length} of {pagination.count} class{classes.length !== 1 ? 'es' : ''}
             {searchTerm && (
               <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
             )}
