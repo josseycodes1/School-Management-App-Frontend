@@ -31,15 +31,15 @@ const EventListPage = () => {
     searchTerm,
     setSearchTerm,
     handlePageChange,
-    refreshData
+    refreshData,
+    handleSearchSubmit,
+    isClientSideSearch
   } = usePagination<Event>('/api/events/', {
     initialPage: 1,
     pageSize: 10,
-    debounceDelay: 300
   });
 
   const handleSuccess = (updatedEvent: Event, type: "create" | "update" | "delete") => {
-    // Refresh data after mutation
     refreshData();
   };
 
@@ -76,7 +76,8 @@ const EventListPage = () => {
           <TableSearch 
             value={searchTerm}
             onChange={setSearchTerm}
-            placeholder="Search events..."
+            onSubmit={handleSearchSubmit}
+            placeholder="Search events... (Press Enter for full search)"
           />
           {role === "admin" && (
             <FormModal 
@@ -89,9 +90,23 @@ const EventListPage = () => {
         </div>
       </div>
 
-      {/* Results count */}
+      {/* Updated Results count with search mode */}
       <div className="mb-4 text-sm text-gray-600">
-        Showing {events.length} of {pagination.count} events
+        {isClientSideSearch ? (
+          <>
+            Showing {events.length} event{events.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (current page)</>
+            )}
+          </>
+        ) : (
+          <>
+            Showing {events.length} of {pagination.count} event{events.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
+            )}
+          </>
+        )}
       </div>
 
       <div className="overflow-x-auto">
@@ -147,7 +162,7 @@ const EventListPage = () => {
                             data={event}
                             onSuccess={(updatedEvent) => handleSuccess(updatedEvent, "update")}
                             trigger={
-                              <button className="text-josseypink1 hover:text-josseypink2 bg-josseypink1 p-1">
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
                                 <Image src="/update.png" alt="Update" width={16} height={16} />
                               </button>
                             }
@@ -158,7 +173,7 @@ const EventListPage = () => {
                             id={String(event.id)}
                             onSuccess={() => handleSuccess(event, "delete")}
                             trigger={
-                              <button className="text-josseypink1 hover:text-josseypink2 bg-josseypink1 p-1">
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
                                 <Image src="/delete.png" alt="Delete" width={16} height={16} />
                               </button>
                             }
@@ -180,7 +195,8 @@ const EventListPage = () => {
         </table>
       </div>
 
-      {pagination.total_pages > 1 && (
+      {/* Only show pagination when not searching or in client-side mode */}
+      {(!searchTerm || isClientSideSearch) && pagination.total_pages > 1 && (
         <div className="mt-6">
           <Pagination 
             currentPage={pagination.current_page}
