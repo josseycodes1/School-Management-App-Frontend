@@ -107,14 +107,14 @@ const StudentListPage = () => {
       <div className="mb-4 text-sm text-gray-600">
         {isClientSideSearch ? (
           <>
-            Showing {students.length} student{students.length !== 1 ? 's' : ''} 
+            Showing {students.length} student{students.length !== 1 ? 's' : ''}
             {searchTerm && (
-              <> for "<span className="font-medium">{searchTerm}</span>" (current page)</>
+              <> for "<span className="font-medium">{searchTerm}</span>" on this current page, <span className="text-josseypink1 font-medium">press Enter for full search on other pages</span></>
             )}
           </>
         ) : (
           <>
-            Showing {students.length} of {pagination.count} student{students.length !== 1 ? 's' : ''} 
+            Showing {students.length} of {pagination.count} student{students.length !== 1 ? 's' : ''}
             {searchTerm && (
               <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
             )}
