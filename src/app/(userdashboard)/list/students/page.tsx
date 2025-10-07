@@ -34,11 +34,12 @@ const StudentListPage = () => {
     searchTerm,
     setSearchTerm,
     handlePageChange,
-    refreshData
+    refreshData,
+    handleSearchSubmit,
+    isClientSideSearch
   } = usePagination<Student>('/api/accounts/students/', {
     initialPage: 1,
     pageSize: 10,
-    debounceDelay: 300
   });
 
   const handleSuccess = (updatedStudent: Student, type: "create" | "update" | "delete") => {
@@ -87,7 +88,8 @@ const StudentListPage = () => {
             <TableSearch
               value={searchTerm}
               onChange={setSearchTerm}
-              placeholder="Search students..."
+              onSubmit={handleSearchSubmit}
+              placeholder="Search students... (Press Enter for full search)"
             />
           </div>
           {role === "admin" && (
@@ -101,9 +103,23 @@ const StudentListPage = () => {
         </div>
       </div>
 
-      {/* Results count */}
+      {/* Updated Results count with search mode */}
       <div className="mb-4 text-sm text-gray-600">
-        Showing {students.length} of {pagination.count} students
+        {isClientSideSearch ? (
+          <>
+            Showing {students.length} student{students.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (current page)</>
+            )}
+          </>
+        ) : (
+          <>
+            Showing {students.length} of {pagination.count} student{students.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
+            )}
+          </>
+        )}
       </div>
 
       <div className="overflow-x-auto">
@@ -228,7 +244,8 @@ const StudentListPage = () => {
         </table>
       </div>
 
-      {pagination.total_pages > 1 && (
+      {/* Only show pagination when not searching or in client-side mode */}
+      {(!searchTerm || isClientSideSearch) && pagination.total_pages > 1 && (
         <div className="mt-6">
           <Pagination 
             currentPage={pagination.current_page}

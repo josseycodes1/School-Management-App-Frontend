@@ -35,11 +35,12 @@ export default function ParentListPage() {
     searchTerm,
     setSearchTerm,
     handlePageChange,
-    refreshData
+    refreshData,
+    handleSearchSubmit,
+    isClientSideSearch
   } = usePagination<Parent>('/api/accounts/parents/', {
     initialPage: 1,
     pageSize: 10,
-    debounceDelay: 300
   });
 
   const handleSuccess = (updatedParent: Parent, type: "create" | "update" | "delete") => {
@@ -72,7 +73,8 @@ export default function ParentListPage() {
             <TableSearch 
               value={searchTerm}
               onChange={setSearchTerm}
-              placeholder="Search parents..."
+              onSubmit={handleSearchSubmit}
+              placeholder="Search parents... (Press Enter for full search)"
             />
           </div>
           {role === "admin" && (
@@ -86,9 +88,23 @@ export default function ParentListPage() {
         </div>
       </div>
 
-      {/* Results count */}
+      {/* Updated Results count with search mode */}
       <div className="mb-4 text-sm text-gray-600">
-        Showing {parentsData.length} of {pagination.count} parents
+        {isClientSideSearch ? (
+          <>
+            Showing {parentsData.length} parent{parentsData.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (current page)</>
+            )}
+          </>
+        ) : (
+          <>
+            Showing {parentsData.length} of {pagination.count} parent{parentsData.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
+            )}
+          </>
+        )}
       </div>
 
       <div className="overflow-x-auto">
@@ -205,7 +221,8 @@ export default function ParentListPage() {
         </table>
       </div>
 
-      {pagination.total_pages > 1 && (
+      {/* Only show pagination when not searching or in client-side mode */}
+      {(!searchTerm || isClientSideSearch) && pagination.total_pages > 1 && (
         <div className="mt-6">
           <Pagination 
             currentPage={pagination.current_page}

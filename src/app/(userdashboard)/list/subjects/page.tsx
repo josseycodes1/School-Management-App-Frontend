@@ -36,11 +36,12 @@ const SubjectListPage = () => {
     searchTerm,
     setSearchTerm,
     handlePageChange,
-    refreshData
+    refreshData,
+    handleSearchSubmit,
+    isClientSideSearch
   } = usePagination<Subject>('/api/accounts/subjects/', {
     initialPage: 1,
     pageSize: 10,
-    debounceDelay: 300
   });
 
   const handleSuccess = (updatedSubject: Subject, type: "create" | "update" | "delete") => {
@@ -74,7 +75,8 @@ const SubjectListPage = () => {
             <TableSearch 
               value={searchTerm}
               onChange={setSearchTerm}
-              placeholder="Search subjects..."
+              onSubmit={handleSearchSubmit}
+              placeholder="Search subjects... (Press Enter for full search)"
             />
           </div>
           
@@ -89,9 +91,23 @@ const SubjectListPage = () => {
         </div>
       </div>
 
-      {/* Results count */}
+      {/* Updated Results count with search mode */}
       <div className="mb-4 text-sm text-gray-600">
-        Showing {subjects.length} of {pagination.count} subjects
+        {isClientSideSearch ? (
+          <>
+            Showing {subjects.length} subject{subjects.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (current page)</>
+            )}
+          </>
+        ) : (
+          <>
+            Showing {subjects.length} of {pagination.count} subject{subjects.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
+            )}
+          </>
+        )}
       </div>
 
       <div className="overflow-x-auto">
@@ -195,7 +211,8 @@ const SubjectListPage = () => {
         </table>
       </div>
 
-      {pagination.total_pages > 1 && (
+      {/* Only show pagination when not searching or in client-side mode */}
+      {(!searchTerm || isClientSideSearch) && pagination.total_pages > 1 && (
         <div className="mt-6">
           <Pagination 
             currentPage={pagination.current_page}

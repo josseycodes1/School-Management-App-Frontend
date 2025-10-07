@@ -30,11 +30,12 @@ const TeacherListPage = () => {
     searchTerm,
     setSearchTerm,
     handlePageChange,
-    refreshData
+    refreshData,
+    handleSearchSubmit, // Add this
+    isClientSideSearch // Add this
   } = usePagination<Teacher>('/api/accounts/teachers/', {
     initialPage: 1,
     pageSize: 10,
-    debounceDelay: 300
   });
 
   const handleSuccess = (updatedTeacher: Teacher, type: "create" | "update" | "delete") => {
@@ -67,7 +68,8 @@ const TeacherListPage = () => {
             <TableSearch 
               value={searchTerm}
               onChange={setSearchTerm}
-              placeholder="Search teachers..."
+              onSubmit={handleSearchSubmit} // Add this prop
+              placeholder="Search teachers... (Press Enter for full search)"
             />
           </div>
           {role === "admin" && (
@@ -81,9 +83,23 @@ const TeacherListPage = () => {
         </div>
       </div>
 
-      {/* Results count */}
+      {/* Updated Results count with search mode */}
       <div className="mb-4 text-sm text-gray-600">
-        Showing {teachers.length} of {pagination.count} teachers
+        {isClientSideSearch ? (
+          <>
+            Showing {teachers.length} teacher{teachers.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (current page)</>
+            )}
+          </>
+        ) : (
+          <>
+            Showing {teachers.length} of {pagination.count} teacher{teachers.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
+            )}
+          </>
+        )}
       </div>
 
       <div className="overflow-x-auto">
@@ -167,7 +183,8 @@ const TeacherListPage = () => {
         </table>
       </div>
 
-      {pagination.total_pages > 1 && (
+      {/* Only show pagination when not searching or in client-side mode */}
+      {(!searchTerm || isClientSideSearch) && pagination.total_pages > 1 && (
         <div className="mt-6">
           <Pagination 
             currentPage={pagination.current_page}

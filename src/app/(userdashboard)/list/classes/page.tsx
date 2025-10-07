@@ -34,11 +34,12 @@ const ClassListPage = () => {
     searchTerm,
     setSearchTerm,
     handlePageChange,
-    refreshData
+    refreshData,
+    handleSearchSubmit,
+    isClientSideSearch
   } = usePagination<Class>('/api/accounts/classes/', {
     initialPage: 1,
     pageSize: 10,
-    debounceDelay: 300
   });
 
   const handleSuccess = (updatedClass: Class, type: "create" | "update" | "delete") => {
@@ -72,7 +73,8 @@ const ClassListPage = () => {
             <TableSearch 
               value={searchTerm}
               onChange={setSearchTerm}
-              placeholder="Search classes..."
+              onSubmit={handleSearchSubmit}
+              placeholder="Search classes... (Press Enter for full search)"
             />
           </div>
           
@@ -87,9 +89,23 @@ const ClassListPage = () => {
         </div>
       </div>
 
-      {/* Results count */}
+      {/* Updated Results count with search mode */}
       <div className="mb-4 text-sm text-gray-600">
-        Showing {classes.length} of {pagination.count} classes
+        {isClientSideSearch ? (
+          <>
+            Showing {classes.length} class{classes.length !== 1 ? 'es' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (current page)</>
+            )}
+          </>
+        ) : (
+          <>
+            Showing {classes.length} of {pagination.count} class{classes.length !== 1 ? 'es' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
+            )}
+          </>
+        )}
       </div>
 
       <div className="overflow-x-auto">
@@ -193,7 +209,8 @@ const ClassListPage = () => {
         </table>
       </div>
 
-      {pagination.total_pages > 1 && (
+      {/* Only show pagination when not searching or in client-side mode */}
+      {(!searchTerm || isClientSideSearch) && pagination.total_pages > 1 && (
         <div className="mt-6">
           <Pagination 
             currentPage={pagination.current_page}

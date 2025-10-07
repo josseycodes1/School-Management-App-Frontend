@@ -28,6 +28,7 @@ interface UsePaginationReturn<T> {
   refreshData: () => void;
   handleSearchSubmit: () => void; // Add this
   isClientSideSearch: boolean; // Add this
+  
 }
 
 const usePagination = <T>(

@@ -33,18 +33,18 @@ const AnnouncementListPage = () => {
     searchTerm,
     setSearchTerm,
     handlePageChange,
-    refreshData
+    refreshData,
+    handleSearchSubmit,
+    isClientSideSearch
   } = usePagination<Announcement>('/api/announcements/', {
     initialPage: 1,
     pageSize: 10,
-    debounceDelay: 300
   });
 
   const handleSuccess = (
     updatedAnnouncement: Announcement,
     type: "create" | "update" | "delete"
   ) => {
-    // Refresh data after mutation
     refreshData();
   };
 
@@ -95,7 +95,8 @@ const AnnouncementListPage = () => {
           <TableSearch
             value={searchTerm}
             onChange={setSearchTerm}
-            placeholder="Search announcements..."
+            onSubmit={handleSearchSubmit}
+            placeholder="Search announcements... (Press Enter for full search)"
           />
           {role === "admin" && (
             <FormModal
@@ -108,9 +109,23 @@ const AnnouncementListPage = () => {
         </div>
       </div>
 
-      {/* Results count */}
+      {/* Updated Results count with search mode */}
       <div className="mb-4 text-sm text-gray-600">
-        Showing {announcements.length} of {pagination.count} announcements
+        {isClientSideSearch ? (
+          <>
+            Showing {announcements.length} announcement{announcements.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (current page)</>
+            )}
+          </>
+        ) : (
+          <>
+            Showing {announcements.length} of {pagination.count} announcement{announcements.length !== 1 ? 's' : ''} 
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
+            )}
+          </>
+        )}
       </div>
 
       <div className="overflow-x-auto">
@@ -184,7 +199,7 @@ const AnnouncementListPage = () => {
                               handleSuccess(updatedAnnouncement, "update")
                             }
                             trigger={
-                              <button className="text-josseypink1 hover:text-josseypink2 bg-josseypink1 p-1">
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
                                 <Image
                                   src="/update.png"
                                   alt="Update"
@@ -202,7 +217,7 @@ const AnnouncementListPage = () => {
                               handleSuccess(announcement, "delete")
                             }
                             trigger={
-                              <button className="text-josseypink1 hover:text-josseypink2 bg-josseypink1 p-1">
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded">
                                 <Image
                                   src="/delete.png"
                                   alt="Delete"
@@ -232,7 +247,8 @@ const AnnouncementListPage = () => {
         </table>
       </div>
 
-      {pagination.total_pages > 1 && (
+      {/* Only show pagination when not searching or in client-side mode */}
+      {(!searchTerm || isClientSideSearch) && pagination.total_pages > 1 && (
         <div className="mt-6">
           <Pagination 
             currentPage={pagination.current_page}

@@ -34,12 +34,11 @@ const ExamListPage = () => {
     setSearchTerm,
     handlePageChange,
     refreshData,
-    handleSearchSubmit, // This should now exist
-    isClientSideSearch // This should now exist
+    handleSearchSubmit,
+    isClientSideSearch 
   } = usePagination<Exam>('/api/assessment/exams/', {
     initialPage: 1,
     pageSize: 10,
-    // Remove debounceDelay since we're not using it anymore
   });
 
   const handleSuccess = (updatedExam: Exam, type: "create" | "update" | "delete") => {
