@@ -1,10 +1,19 @@
 export const getUserRole = (): string => {
   if (typeof window === 'undefined') return '';
-  return localStorage.getItem('userRole') || '';
+  
+  // Try multiple possible storage locations
+  const role = localStorage.getItem('role') || 
+               localStorage.getItem('userRole') || 
+               '';
+  
+  console.log('🔍 getUserRole() - Current role:', role);
+  return role;
 };
 
 export const isAdmin = (): boolean => {
-  return getUserRole() === 'admin';
+  const role = getUserRole();
+  console.log('🔍 isAdmin() - Checking if role is admin:', role);
+  return role === 'admin';
 };
 
 export const isTeacher = (): boolean => {

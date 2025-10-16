@@ -71,6 +71,8 @@ export default function LoginPage() {
         localStorage.setItem('user', JSON.stringify(user))
         localStorage.setItem('role', user.role)
 
+         console.log('✅ Stored user role:', user.role); 
+
         // If admin, go straight to dashboard
         if (user.role === 'admin') {
           router.push(`/${user.role}`)
