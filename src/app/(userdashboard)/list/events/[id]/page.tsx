@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
-import { role } from "@/lib/data";
 import FormModal from "@/components/FormModal";
 import { toast } from "react-hot-toast";
+import { isAdmin } from "@/lib/user-role";
 
 type Event = {
   id: number;
@@ -28,6 +28,9 @@ const EventDetailPage = () => {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Check if user can edit/delete (only admin)
+  const canEditDelete = isAdmin();
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -133,7 +136,7 @@ const EventDetailPage = () => {
             ) : null}
           </div>
           
-          {role === "admin" && (
+          {canEditDelete && (
             <div className="flex space-x-2">
               <FormModal
                 table="event"
