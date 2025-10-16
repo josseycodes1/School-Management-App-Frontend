@@ -19,10 +19,10 @@ export default function Programs() {
   return (
     <section className="py-16 md:py-20 bg-white">
       <div className="max-w-6xl mx-auto px-6 md:px-8">
-        {/* Pink background container with rounded edges */}
-        <div className="bg-josseypink1 rounded-2xl shadow-xl p-10 md:p-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-10 md:mb-14">
-            Our <span className="text-white">Academic Programs</span>
+        {/*background container with rounded edges */}
+        <div className="rounded-2xl shadow-xl p-10 md:p-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-josseypink1 mb-10 md:mb-14">
+            Our Academic Programs
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
             {programs.map((program, index) => (
@@ -36,7 +36,7 @@ export default function Programs() {
             ))}
           </div>
           <div className="text-center mt-12 md:mt-16">
-            <Link href="/academics" className="inline-block px-8 py-3 bg-white text-[#FC46AA] rounded-xl hover:bg-gray-100 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
+            <Link href="/academics" className="inline-block px-8 py-3 bg-josseypink1 text-white rounded-xl hover:bg-josseypink2 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
               View Full Curriculum
             </Link>
           </div>
