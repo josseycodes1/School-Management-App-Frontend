@@ -10,10 +10,10 @@ export default function CallToAction() {
             Schedule a visit to our campus and see firsthand how we nurture academic excellence and character development.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <Link href="/admission" className="px-10 py-4 bg-josseypink1 text-white rounded-xl hover:bg-josseypink2 transition-all duration-300 font-medium text-lg shadow-md hover:shadow-lg">
+            <Link href="/admission" className="px-7 py-4 bg-josseypink1 text-white rounded-xl hover:bg-josseypink2 transition-all duration-300 font-medium text-lg shadow-md hover:shadow-lg">
               Apply for Admission
             </Link>
-            <Link href="/contact" className="px-10 py-4 border-2 bg-josseypink1 text-white rounded-xl hover:bg-josseypink2 transition-all duration-300 font-medium text-lg">
+            <Link href="/contact" className="px-7 py-4 border-2 bg-josseypink1 text-white rounded-xl hover:bg-josseypink2 transition-all duration-300 font-medium text-lg">
               Contact Us
             </Link>
           </div>

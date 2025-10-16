@@ -18,8 +18,8 @@ export default function Home() {
       <Stats />
       <PortalAccess />
       <Features />
-      <Programs />
       <Testimonials />
+      <Programs />
       <Footer />
     </div>
   )
