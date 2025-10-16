@@ -257,7 +257,7 @@ const ExamListPage = () => {
                             title="You don't have permission to edit exams"
                           >
                             <Image src="/update.png" alt="Update" width={16} height={16} />
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-pink-200 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                               No permission
                             </div>
                           </button>
@@ -267,7 +267,7 @@ const ExamListPage = () => {
                             title="You don't have permission to delete exams"
                           >
                             <Image src="/delete.png" alt="Delete" width={16} height={16} />
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                               No permission
                             </div>
                           </button>
