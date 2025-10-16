@@ -6,7 +6,7 @@ import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import FormModal from "@/components/FormModal";
-import { role } from "@/lib/data";
+import { isAdmin } from "@/lib/user-role";
 
 type Exam = {
   id: string;
@@ -65,6 +65,9 @@ const ExamDetailPage = () => {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("details");
 
+  // Check if user can edit/delete (only admin)
+  const canEditDelete = isAdmin();
+
   useEffect(() => {
     const fetchExamData = async () => {
       try {
@@ -72,7 +75,6 @@ const ExamDetailPage = () => {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) throw new Error("No access token found");
 
-       
         const examRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessment/exams/${examId}/`,
           {
@@ -83,7 +85,6 @@ const ExamDetailPage = () => {
         );
         setExam(examRes.data);
 
-      
         try {
           const resultsRes = await axios.get(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/assessment/results/?exam=${examId}`,
@@ -198,26 +199,24 @@ const ExamDetailPage = () => {
           </p>
         </div>
 
-        <div className="flex gap-2">
-          {(role === "admin" || role === "teacher") && (
-            <>
-              <FormModal
-                table="exam"
-                type="update"
-                data={exam}
-                onSuccess={(updatedExam) => setExam(updatedExam)}
-                className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg"
-              />
-              <FormModal
-                table="exam"
-                type="delete"
-                id={exam.id}
-                onSuccess={handleDeleteSuccess}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
-              />
-            </>
-          )}
-        </div>
+        {canEditDelete && (
+          <div className="flex gap-2">
+            <FormModal
+              table="exam"
+              type="update"
+              data={exam}
+              onSuccess={(updatedExam) => setExam(updatedExam)}
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg"
+            />
+            <FormModal
+              table="exam"
+              type="delete"
+              id={exam.id}
+              onSuccess={handleDeleteSuccess}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+            />
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
@@ -357,7 +356,7 @@ const ExamDetailPage = () => {
         <div>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-semibold text-gray-800">Exam Results</h2>
-            {results.length > 0 && (
+            {results.length > 0 && canEditDelete && (
               <button className="bg-josseypink1 text-white px-4 py-2 rounded-lg hover:bg-josseypink2">
                 Export Results
               </button>
@@ -378,9 +377,11 @@ const ExamDetailPage = () => {
               />
               <h3 className="text-lg font-medium text-gray-800 mb-2">No Results Yet</h3>
               <p className="text-gray-600 mb-4">No students have taken this exam yet.</p>
-              <button className="bg-josseypink1 text-white px-4 py-2 rounded-lg hover:bg-josseypink2">
-                Add Results
-              </button>
+              {canEditDelete && (
+                <button className="bg-josseypink1 text-white px-4 py-2 rounded-lg hover:bg-josseypink2">
+                  Add Results
+                </button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">
