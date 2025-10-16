@@ -3,21 +3,21 @@ import Image from 'next/image'
 
 export default function HeroSection() {
   return (
-    <section className="relative py-16 md:py-24 lg:py-32 px-4 md:px-6 text-center mt-16 md:mt-0">
+    <section className="relative py-16 md:py-24 lg:py-32 px-4 md:px-6 text-center mt-16">
       {/* Background Image with Next.js optimization */}
       <div className="absolute inset-0 z-0">
         <Image
           src="/schoolchildren3.jpg"
           alt="School children learning"
           fill
-          className="object-cover"
+          className="object-cover object-top lg:object-[center_top]"
           priority
         />
         {/* Overlay for better text readability */}
         <div className="absolute inset-0 bg-black/40"></div>
       </div>
       
-      <div className="relative z-10 max-w-4xl mx-auto pt-8 md:pt-0">
+      <div className="relative z-10 max-w-4xl mx-auto">
         <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
           Excellence in <span className="text-[#FC46AA]">Secondary</span> Education
         </h1>
