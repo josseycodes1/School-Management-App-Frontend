@@ -299,7 +299,7 @@ const AnnouncementListPage = () => {
                         // Show disabled buttons with tooltip for non-admin users
                         <>
                           <button 
-                            className="text-gray-400 cursor-not-allowed p-1 rounded relative group"
+                            className="text-gray-400 cursor-not-allowed p-1 rounded relative group bg-josseypink1"
                             disabled
                             title="You don't have permission to edit announcements"
                           >
@@ -309,7 +309,7 @@ const AnnouncementListPage = () => {
                             </div>
                           </button>
                           <button 
-                            className="text-gray-400 cursor-not-allowed p-1 rounded relative group"
+                            className="text-gray-400 cursor-not-allowed p-1 rounded relative group bg-josseypink1"
                             disabled
                             title="You don't have permission to delete announcements"
                           >
@@ -396,14 +396,14 @@ const AnnouncementListPage = () => {
                     // Show disabled buttons for mobile
                     <>
                       <button 
-                        className="text-gray-400 cursor-not-allowed p-1 rounded"
+                        className="text-gray-400 cursor-not-allowed p-1 rounded bg-josseypink1"
                         disabled
                         title="You don't have permission to edit announcements"
                       >
                         <Image src="/update.png" alt="Update" width={14} height={14} />
                       </button>
                       <button 
-                        className="text-gray-400 cursor-not-allowed p-1 rounded"
+                        className="text-gray-400 cursor-not-allowed p-1 rounded bg-josseypink1"
                         disabled
                         title="You don't have permission to delete announcements"
                       >
