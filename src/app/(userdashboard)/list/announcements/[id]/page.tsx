@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import FormModal from "@/components/FormModal";
-import { role } from "@/lib/data";
+import { isAdmin } from "@/lib/user-role";
 
 type Audience = {
   student_first_name?: string | null;
@@ -38,6 +38,9 @@ const AnnouncementDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  // Check if user can edit/delete (only admin)
+  const canEditDelete = isAdmin();
 
   useEffect(() => {
     const fetchAnnouncement = async () => {
@@ -191,7 +194,7 @@ const AnnouncementDetailPage = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-800">{announcement.title}</h1>
           
-          {role === "admin" && (
+          {canEditDelete && (
             <div className="flex space-x-2">
               <FormModal
                 table="announcement"

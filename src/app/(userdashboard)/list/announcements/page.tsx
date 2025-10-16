@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import FormModal from "@/components/FormModal";
-import { role } from "@/lib/data";
 import { useRouter } from "next/navigation";
 import TableSearch from "@/components/TableSearch";
 import Pagination from "@/components/Pagination";
 import usePagination from "@/hooks/usePagination";
 import { useState } from "react";
+import { isAdmin } from "@/lib/user-role";
 
 type Audience = {
   student_first_name?: string | null;
@@ -61,8 +61,8 @@ const AnnouncementListPage = () => {
   };
 
   // Check if user can edit/delete (only admin)
-  const canEditDelete = role === "admin";
-  const canCreate = role === "admin";
+  const canEditDelete = isAdmin();
+  const canCreate = isAdmin();
 
   if (loading)
     return (
@@ -256,7 +256,7 @@ const AnnouncementListPage = () => {
                           height={16}
                         />
                       </button>
-                      {canEditDelete && (
+                      {canEditDelete ? (
                         <>
                           <FormModal
                             table="announcement"
@@ -295,6 +295,30 @@ const AnnouncementListPage = () => {
                             }
                           />
                         </>
+                      ) : (
+                        // Show disabled buttons with tooltip for non-admin users
+                        <>
+                          <button 
+                            className="text-gray-400 cursor-not-allowed p-1 rounded relative group"
+                            disabled
+                            title="You don't have permission to edit announcements"
+                          >
+                            <Image src="/update.png" alt="Update" width={16} height={16} />
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                              No permission
+                            </div>
+                          </button>
+                          <button 
+                            className="text-gray-400 cursor-not-allowed p-1 rounded relative group"
+                            disabled
+                            title="You don't have permission to delete announcements"
+                          >
+                            <Image src="/delete.png" alt="Delete" width={16} height={16} />
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                              No permission
+                            </div>
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>
@@ -329,7 +353,7 @@ const AnnouncementListPage = () => {
                     <Image src="/view.png" alt="View" width={14} height={14} />
                   </button>
                   
-                  {canEditDelete && (
+                  {canEditDelete ? (
                     <>
                       <FormModal
                         table="announcement"
@@ -367,6 +391,24 @@ const AnnouncementListPage = () => {
                           </button>
                         }
                       />
+                    </>
+                  ) : (
+                    // Show disabled buttons for mobile
+                    <>
+                      <button 
+                        className="text-gray-400 cursor-not-allowed p-1 rounded"
+                        disabled
+                        title="You don't have permission to edit announcements"
+                      >
+                        <Image src="/update.png" alt="Update" width={14} height={14} />
+                      </button>
+                      <button 
+                        className="text-gray-400 cursor-not-allowed p-1 rounded"
+                        disabled
+                        title="You don't have permission to delete announcements"
+                      >
+                        <Image src="/delete.png" alt="Delete" width={14} height={14} />
+                      </button>
                     </>
                   )}
                 </div>
