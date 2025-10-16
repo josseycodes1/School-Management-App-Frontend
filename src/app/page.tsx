@@ -17,9 +17,9 @@ export default function Home() {
       <AboutUs />
       <Stats />
       <PortalAccess />
-      <Features />
-      <Testimonials />
       <Programs />
+      <Testimonials />
+      <Features />
       <Footer />
     </div>
   )
