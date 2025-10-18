@@ -220,66 +220,66 @@ export default function TeacherOnboarding() {
   }, [router]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+  const { name, value } = e.target;
+  
+  setFormData(prev => ({
+    ...prev,
+    [name]: value
+  }));
+
+  // Mark field as touched
+  setTouchedFields(prev => new Set(prev).add(name));
+
+  // Validate field in real-time
+  const error = validateField(name, value);
+  setValidationErrors(prev => ({
+    ...prev,
+    [name]: error
+  }));
+};
+
+const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  if (e.target.files && e.target.files.length > 0) {
+    const file = e.target.files[0];
     
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      const errorMsg = 'Please select a valid image file (JPEG, PNG, or WebP)';
+      setValidationErrors(prev => ({ ...prev, photo: errorMsg }));
+      toast.error(errorMsg);
+      return;
+    }
+    
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      const errorMsg = 'File size should be less than 5MB';
+      setValidationErrors(prev => ({ ...prev, photo: errorMsg }));
+      toast.error(errorMsg);
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      photo: file
     }));
 
-    // Mark field as touched
-    setTouchedFields(prev => new Set(prev).add(name));
+    // Clear photo error
+    setValidationErrors(prev => ({ ...prev, photo: undefined }));
 
-    // Validate field in real-time
-    const error = validateField(name, value);
-    setValidationErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
-  };
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-      if (!allowedTypes.includes(file.type)) {
-        const errorMsg = 'Please select a valid image file (JPEG, PNG, or WebP)';
-        setValidationErrors(prev => ({ ...prev, photo: errorMsg }));
-        toast.error(errorMsg);
-        return;
-      }
-      
-      // Validate file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        const errorMsg = 'File size should be less than 5MB';
-        setValidationErrors(prev => ({ ...prev, photo: errorMsg }));
-        toast.error(errorMsg);
-        return;
-      }
-
-      setFormData(prev => ({
-        ...prev,
-        photo: file
-      }));
-
-      // Clear photo error
-      setValidationErrors(prev => ({ ...prev, photo: undefined }));
-
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.onerror = () => {
-        const errorMsg = 'Failed to read file';
-        setValidationErrors(prev => ({ ...prev, photo: errorMsg }));
-        toast.error(errorMsg);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPreviewImage(reader.result as string);
+    };
+    reader.onerror = () => {
+      const errorMsg = 'Failed to read file';
+      setValidationErrors(prev => ({ ...prev, photo: errorMsg }));
+      toast.error(errorMsg);
+    };
+    reader.readAsDataURL(file);
+  }
+};
 
   const handleBlur = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -296,28 +296,75 @@ export default function TeacherOnboarding() {
     return touchedFields.has(fieldName) ? validationErrors[fieldName] : undefined;
   };
 
+  const calculateProgress = (): void => {
+      const requiredFields: (keyof FormData)[] = [
+        'phone', 'address', 'gender', 'birth_date', 
+        'subject_specialization', 'hire_date'
+      ];
+      
+      // Count how many required fields are filled and valid
+      const filledFields = requiredFields.filter(field => {
+        const value = formData[field];
+        const stringValue = value ? value.toString().trim() : '';
+        const validationError = validateField(field, value);
+        return stringValue !== '' && !validationError;
+      }).length;
+      
+      // Add photo if present
+      const hasPhoto = !!formData.photo || !!previewImage;
+      const totalFilled = filledFields + (hasPhoto ? 1 : 0);
+      const totalRequired = requiredFields.length + 1; // +1 for photo
+      
+      const progressPercentage = Math.round((totalFilled / totalRequired) * 100);
+      
+      // Update required_fields for the progress display
+      const requiredFieldsStatus = {
+        phone: !!formData.phone && !validateField('phone', formData.phone),
+        address: !!formData.address && !validateField('address', formData.address),
+        gender: !!formData.gender && !validateField('gender', formData.gender),
+        birth_date: !!formData.birth_date && !validateField('birth_date', formData.birth_date),
+        subject_specialization: !!formData.subject_specialization && !validateField('subject_specialization', formData.subject_specialization),
+        hire_date: !!formData.hire_date && !validateField('hire_date', formData.hire_date),
+        photo: hasPhoto
+      };
+      
+      setProgress({
+        completed: progressPercentage === 100,
+        progress: progressPercentage,
+        required_fields: requiredFieldsStatus
+      });
+    };
+
+  useEffect(() => {
+    calculateProgress();
+  }, [formData, previewImage]);
+
   const isFormValid = (): boolean => {
-    // Define required fields with proper typing
-    const requiredFields: (keyof FormData)[] = [
-      'phone', 'address', 'gender', 'birth_date', 
-      'subject_specialization', 'hire_date'
-    ];
-    
-    // Check if all required fields have values and pass validation
-    const hasAllRequiredFields = requiredFields.every(field => {
-      const value = formData[field];
-      const stringValue = value ? value.toString().trim() : '';
-      return stringValue !== '' && !validateField(field, value);
-    });
-    
-    // Check photo exists
-    const hasPhoto = !!formData.photo || !!previewImage;
-    
-    // Check no validation errors
-    const hasNoErrors = Object.keys(validationErrors).length === 0;
-    
-    return hasAllRequiredFields && hasPhoto && hasNoErrors;
-  };
+      // Define required fields with proper typing
+      const requiredFields: (keyof FormData)[] = [
+        'phone', 'address', 'gender', 'birth_date', 
+        'subject_specialization', 'hire_date'
+      ];
+      
+      // Check if all required fields have values and pass validation
+      const hasAllRequiredFields = requiredFields.every(field => {
+        const value = formData[field];
+        const stringValue = value ? value.toString().trim() : '';
+        const validationError = validateField(field, value);
+        return stringValue !== '' && !validationError;
+      });
+      
+      // Check photo exists
+      const hasPhoto = !!formData.photo || !!previewImage;
+      
+      // Check no validation errors - filter out undefined/empty errors
+      const actualErrors = Object.values(validationErrors).filter(error => 
+        error && error.trim() !== ''
+      );
+      const hasNoErrors = actualErrors.length === 0;
+      
+      return hasAllRequiredFields && hasPhoto && hasNoErrors;
+    };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
