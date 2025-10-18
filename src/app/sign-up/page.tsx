@@ -22,7 +22,7 @@ interface CreateUserResponse {
   created?: boolean;
   message?: string;
   detail?: string;
-  // backend may return other fields — add them here if needed
+  
 }
 
 export default function SignUp() {
@@ -54,7 +54,7 @@ const handleSubmit = async (e: FormEvent) => {
   setLoading(true);
   setError('');
 
-  // Validate passwords
+ 
   if (formData.password !== formData.confirmPassword) {
     setError('Passwords do not match');
     setLoading(false);
@@ -67,7 +67,7 @@ const handleSubmit = async (e: FormEvent) => {
   }
 
   try {
-    // Build payload
+   
     const { confirmPassword, ...rest } = formData;
     const submitData: CreateUserPayload = rest;
 
@@ -81,7 +81,7 @@ const handleSubmit = async (e: FormEvent) => {
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
       submitData,
       {
-        timeout: 45000, // 45s
+        timeout: 45000, 
         headers: {
           'Content-Type': 'application/json',
         },
@@ -98,14 +98,14 @@ const handleSubmit = async (e: FormEvent) => {
     const data = response.data;
     const emailToStore = (submitData.email || '').trim();
 
-    // Save email locally for verify page (best-effort)
+   
     try {
       localStorage.setItem('signupEmail', emailToStore);
     } catch (storageError) {
       console.warn('Could not save to localStorage:', storageError);
     }
 
-    // Check for token in response (we expect token since server returns it)
+   
     const tokenFromBackend = data?.token;
     if (!tokenFromBackend) {
       const msg = 'No verification token returned from backend.';
@@ -115,11 +115,11 @@ const handleSubmit = async (e: FormEvent) => {
       return;
     }
 
-    // Only proceed when the server created the user AND returned a token
+   
     if (status === 201 || data?.created === true || !!tokenFromBackend || status === 200) {
       console.log('User created successfully on backend; token present:', !!tokenFromBackend);
 
-      // EmailJS step — log env vars presence
+
       const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
       const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
       const userId = process.env.NEXT_PUBLIC_EMAILJS_USER_ID;
@@ -130,17 +130,17 @@ const handleSubmit = async (e: FormEvent) => {
       console.log('EmailJS userId present:', Boolean(userId));
       console.groupEnd();
 
-      // If you want to *require* EmailJS to be configured, fail early:
+
       if (!serviceId || !templateId || !userId) {
         const msg = 'EmailJS configuration missing. Please set NEXT_PUBLIC_EMAILJS_SERVICE_ID, NEXT_PUBLIC_EMAILJS_TEMPLATE_ID and NEXT_PUBLIC_EMAILJS_USER_ID.';
         console.error(msg);
         setError(msg);
         setLoading(false);
-        // Throw so the outer catch treats this as a failure (and it will be visible in logs)
+ 
         throw new Error(msg);
       }
 
-      // Build template params (avoid logging full token in prod; we show truncated)
+  
       const templateParams = {
         to_email: emailToStore,
         to_name: submitData.first_name || 'User',
@@ -149,7 +149,7 @@ const handleSubmit = async (e: FormEvent) => {
         verify_url: `${window.location.origin}/verify-email?token=${tokenFromBackend}`,
       };
 
-      // Log a redacted/summary view of the params for diagnostics
+      
       console.groupCollapsed('EmailJS: sending email with templateParams (redacted)');
       console.log('to_email:', templateParams.to_email);
       console.log('to_name:', templateParams.to_name);
@@ -157,7 +157,7 @@ const handleSubmit = async (e: FormEvent) => {
       console.log('verify_url:', templateParams.verify_url);
       console.groupEnd();
 
-      // Attempt to send email via EmailJS - if this fails, we treat it as a hard failure
+      
       try {
         console.time('emailjs-send-time');
         await emailjs.send(serviceId, templateId, templateParams, userId);
@@ -167,13 +167,13 @@ const handleSubmit = async (e: FormEvent) => {
         console.error('EmailJS send failed:', emailErr);
         setError('Failed to send verification email. Please try again later.');
         setLoading(false);
-        // Throw so outer catch will handle and log the failure
+       
         throw emailErr;
       }
 
-      // Success: stop loading and navigate
+     
       setLoading(false);
-      // router.push('/verify-signup');
+      router.push('/verify-signup');
       return;
     }
 

@@ -26,9 +26,23 @@ interface ProgressData {
   };
 }
 
+interface ValidationErrors {
+  phone?: string;
+  address?: string;
+  gender?: string;
+  birth_date?: string;
+  subject_specialization?: string;
+  hire_date?: string;
+  photo?: string;
+  [key: string]: string | undefined;
+}
+
 interface PersonalInfoFormProps {
   formData: FormData;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  onBlur: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  errors: ValidationErrors;
+  getFieldError: (fieldName: string) => string | undefined;
   progress: ProgressData;
 }
 
@@ -37,13 +51,32 @@ const bloodTypes = [
   'AB+', 'AB-', 'O+', 'O-'
 ];
 
-export default function PersonalInfoForm({ formData, onChange, progress }: PersonalInfoFormProps) {
+export default function PersonalInfoForm({ 
+  formData, 
+  onChange, 
+  onBlur,
+  errors,
+  getFieldError,
+  progress 
+}: PersonalInfoFormProps) {
+  
+  const getInputClass = (fieldName: string) => {
+    const baseClass = "mt-1 block w-full rounded-md shadow-sm focus:ring-[#FC46AA] sm:text-sm p-2 border";
+    const error = getFieldError(fieldName);
+    
+    if (error) {
+      return `${baseClass} border-red-300 focus:border-red-500 bg-red-50`;
+    }
+    return `${baseClass} border-gray-300 focus:border-[#FC46AA]`;
+  };
+
   return (
     <div className="border-b border-gray-200 pb-6">
       <h2 className="text-lg font-medium text-gray-900 mb-4">Personal Information</h2>
       
       <div className="grid grid-cols-1 gap-y-4 gap-x-6 sm:grid-cols-6">
-        <div className={`sm:col-span-3 ${!progress.required_fields.phone && 'border-l-4 border-red-500 pl-3'}`}>
+        {/* Phone Number */}
+        <div className={`sm:col-span-3 ${getFieldError('phone') && 'border-l-4 border-red-500 pl-3'}`}>
           <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
             Phone Number *
           </label>
@@ -53,12 +86,21 @@ export default function PersonalInfoForm({ formData, onChange, progress }: Perso
             id="phone"
             value={formData.phone}
             onChange={onChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FC46AA] focus:ring-[#FC46AA] sm:text-sm p-2 border"
+            onBlur={onBlur}
+            className={getInputClass('phone')}
+            placeholder="e.g., 123-456-7890"
             required
           />
+          {getFieldError('phone') && (
+            <p className="mt-1 text-sm text-red-600">{getFieldError('phone')}</p>
+          )}
+          {!getFieldError('phone') && formData.phone && (
+            <p className="mt-1 text-sm text-green-600">✓ Valid phone number</p>
+          )}
         </div>
 
-        <div className={`sm:col-span-3 ${!progress.required_fields.gender && 'border-l-4 border-red-500 pl-3'}`}>
+        {/* Gender */}
+        <div className={`sm:col-span-3 ${getFieldError('gender') && 'border-l-4 border-red-500 pl-3'}`}>
           <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
             Gender *
           </label>
@@ -67,17 +109,26 @@ export default function PersonalInfoForm({ formData, onChange, progress }: Perso
             name="gender"
             value={formData.gender}
             onChange={onChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FC46AA] focus:ring-[#FC46AA] sm:text-sm p-2 border"
+            onBlur={onBlur}
+            className={getInputClass('gender')}
             required
           >
             <option value="">Select gender</option>
             <option value="M">Male</option>
             <option value="F">Female</option>
             <option value="O">Other</option>
+            <option value="N">Prefer not to say</option>
           </select>
+          {getFieldError('gender') && (
+            <p className="mt-1 text-sm text-red-600">{getFieldError('gender')}</p>
+          )}
+          {!getFieldError('gender') && formData.gender && (
+            <p className="mt-1 text-sm text-green-600">✓ Gender selected</p>
+          )}
         </div>
 
-        <div className={`sm:col-span-6 ${!progress.required_fields.address && 'border-l-4 border-red-500 pl-3'}`}>
+        {/* Address */}
+        <div className={`sm:col-span-6 ${getFieldError('address') && 'border-l-4 border-red-500 pl-3'}`}>
           <label htmlFor="address" className="block text-sm font-medium text-gray-700">
             Address *
           </label>
@@ -87,12 +138,21 @@ export default function PersonalInfoForm({ formData, onChange, progress }: Perso
             id="address"
             value={formData.address}
             onChange={onChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FC46AA] focus:ring-[#FC46AA] sm:text-sm p-2 border"
+            onBlur={onBlur}
+            className={getInputClass('address')}
+            placeholder="Enter your complete address"
             required
           />
+          {getFieldError('address') && (
+            <p className="mt-1 text-sm text-red-600">{getFieldError('address')}</p>
+          )}
+          {!getFieldError('address') && formData.address && (
+            <p className="mt-1 text-sm text-green-600">✓ Address looks good</p>
+          )}
         </div>
 
-        <div className={`sm:col-span-3 ${!progress.required_fields.birth_date && 'border-l-4 border-red-500 pl-3'}`}>
+        {/* Birth Date */}
+        <div className={`sm:col-span-3 ${getFieldError('birth_date') && 'border-l-4 border-red-500 pl-3'}`}>
           <label htmlFor="birth_date" className="block text-sm font-medium text-gray-700">
             Birth Date *
           </label>
@@ -102,11 +162,19 @@ export default function PersonalInfoForm({ formData, onChange, progress }: Perso
             id="birth_date"
             value={formData.birth_date}
             onChange={onChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FC46AA] focus:ring-[#FC46AA] sm:text-sm p-2 border"
+            onBlur={onBlur}
+            className={getInputClass('birth_date')}
             required
           />
+          {getFieldError('birth_date') && (
+            <p className="mt-1 text-sm text-red-600">{getFieldError('birth_date')}</p>
+          )}
+          {!getFieldError('birth_date') && formData.birth_date && (
+            <p className="mt-1 text-sm text-green-600">✓ Valid birth date</p>
+          )}
         </div>
 
+        {/* Blood Type (Optional) */}
         <div className="sm:col-span-3">
           <label htmlFor="blood_type" className="block text-sm font-medium text-gray-700">
             Blood Type
@@ -116,6 +184,7 @@ export default function PersonalInfoForm({ formData, onChange, progress }: Perso
             name="blood_type"
             value={formData.blood_type}
             onChange={onChange}
+            onBlur={onBlur}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FC46AA] focus:ring-[#FC46AA] sm:text-sm p-2 border"
           >
             <option value="">Select blood type</option>
@@ -123,6 +192,9 @@ export default function PersonalInfoForm({ formData, onChange, progress }: Perso
               <option key={type} value={type}>{type}</option>
             ))}
           </select>
+          {formData.blood_type && (
+            <p className="mt-1 text-sm text-green-600">✓ Blood type selected</p>
+          )}
         </div>
       </div>
     </div>

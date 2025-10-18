@@ -18,6 +18,7 @@ export interface FormData {
   hire_date: string;
   qualifications: string;
   photo: File | null;
+  photo_url?: string; // For existing photo URL from backend
 }
 
 export interface ProgressData {
@@ -34,6 +35,17 @@ export interface ProgressData {
   };
 }
 
+export interface ValidationErrors {
+  phone?: string;
+  address?: string;
+  gender?: string;
+  birth_date?: string;
+  subject_specialization?: string;
+  hire_date?: string;
+  photo?: string;
+  [key: string]: string | undefined;
+}
+
 export default function TeacherOnboarding() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,9 +59,12 @@ export default function TeacherOnboarding() {
     subject_specialization: '',
     hire_date: '',
     qualifications: '',
-    photo: null
+    photo: null,
+    photo_url: ''
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [progress, setProgress] = useState<ProgressData>({
     completed: false,
     progress: 0,
@@ -63,6 +78,83 @@ export default function TeacherOnboarding() {
       photo: false
     }
   });
+
+  // Validation functions
+  const validateField = (name: string, value: any): string | undefined => {
+    switch (name) {
+      case 'phone':
+        if (!value) return 'Phone number is required';
+        // More flexible phone validation
+        const cleanedPhone = value.replace(/[\s\-\(\)\+]/g, '');
+        const phoneRegex = /^[0-9]{8,15}$/;
+        if (!phoneRegex.test(cleanedPhone)) {
+          return 'Please enter a valid phone number (8-15 digits)';
+        }
+        return undefined;
+
+      case 'address':
+        if (!value) return 'Address is required';
+        if (value.length < 10) return 'Address should be at least 10 characters';
+        return undefined;
+
+      case 'gender':
+        if (!value) return 'Gender is required';
+        return undefined;
+
+      case 'birth_date':
+        if (!value) return 'Birth date is required';
+        const birthDate = new Date(value);
+        const today = new Date();
+        if (birthDate > today) return 'Birth date cannot be in the future';
+        // Check if age is at least 18
+        const minAgeDate = new Date();
+        minAgeDate.setFullYear(today.getFullYear() - 18);
+        if (birthDate > minAgeDate) return 'You must be at least 18 years old';
+        return undefined;
+
+      case 'hire_date':
+        if (!value) return 'Hire date is required';
+        const hireDate = new Date(value);
+        const todayDate = new Date();
+        if (hireDate > todayDate) return 'Hire date cannot be in the future';
+        return undefined;
+
+      case 'subject_specialization':
+        if (!value) return 'Subject specialization is required';
+        if (value.length < 2) return 'Subject specialization should be at least 2 characters';
+        return undefined;
+
+      case 'photo':
+        if (!value && !previewImage) return 'Profile photo is required';
+        return undefined;
+
+      default:
+        return undefined;
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const errors: ValidationErrors = {};
+    const requiredFields: (keyof FormData)[] = [
+      'phone', 'address', 'gender', 'birth_date', 
+      'subject_specialization', 'hire_date'
+    ];
+
+    requiredFields.forEach(field => {
+      const error = validateField(field, formData[field]);
+      if (error) {
+        errors[field] = error;
+      }
+    });
+
+    // Special handling for photo
+    if (!formData.photo && !previewImage) {
+      errors.photo = 'Profile photo is required';
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   // Check if user is already onboarded
   useEffect(() => {
@@ -102,18 +194,21 @@ export default function TeacherOnboarding() {
           }
         );
 
+        const existingData = profileRes.data;
         setFormData(prev => ({
           ...prev,
-          ...profileRes.data,
-          photo: null
+          ...existingData,
+          photo: null,
+          photo_url: existingData.photo || ''
         }));
 
-        if (profileRes.data.photo) {
-          setPreviewImage(profileRes.data.photo);
+        if (existingData.photo) {
+          setPreviewImage(existingData.photo);
         }
 
       } catch (error) {
         console.error('Error checking onboarding status:', error);
+        toast.error('Failed to load onboarding data');
       } finally {
         setLoadingProgress(false);
       }
@@ -124,9 +219,20 @@ export default function TeacherOnboarding() {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+
+    // Mark field as touched
+    setTouchedFields(prev => new Set(prev).add(name));
+
+    // Validate field in real-time
+    const error = validateField(name, value);
+    setValidationErrors(prev => ({
+      ...prev,
+      [name]: error
     }));
   };
 
@@ -135,14 +241,19 @@ export default function TeacherOnboarding() {
       const file = e.target.files[0];
       
       // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please select an image file (JPEG, PNG)');
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        const errorMsg = 'Please select a valid image file (JPEG, PNG, or WebP)';
+        setValidationErrors(prev => ({ ...prev, photo: errorMsg }));
+        toast.error(errorMsg);
         return;
       }
       
       // Validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error('File size should be less than 5MB');
+        const errorMsg = 'File size should be less than 5MB';
+        setValidationErrors(prev => ({ ...prev, photo: errorMsg }));
+        toast.error(errorMsg);
         return;
       }
 
@@ -151,34 +262,76 @@ export default function TeacherOnboarding() {
         photo: file
       }));
 
+      // Clear photo error
+      setValidationErrors(prev => ({ ...prev, photo: undefined }));
+
       // Create preview
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewImage(reader.result as string);
       };
+      reader.onerror = () => {
+        const errorMsg = 'Failed to read file';
+        setValidationErrors(prev => ({ ...prev, photo: errorMsg }));
+        toast.error(errorMsg);
+      };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleBlur = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setTouchedFields(prev => new Set(prev).add(name));
+    
+    const error = validateField(name, value);
+    setValidationErrors(prev => ({
+      ...prev,
+      [name]: error
+    }));
+  };
+
+  const getFieldError = (fieldName: string): string | undefined => {
+    return touchedFields.has(fieldName) ? validationErrors[fieldName] : undefined;
+  };
+
+  const isFormValid = (): boolean => {
+    // Define required fields with proper typing
+    const requiredFields: (keyof FormData)[] = [
+      'phone', 'address', 'gender', 'birth_date', 
+      'subject_specialization', 'hire_date'
+    ];
+    
+    // Check if all required fields have values and pass validation
+    const hasAllRequiredFields = requiredFields.every(field => {
+      const value = formData[field];
+      const stringValue = value ? value.toString().trim() : '';
+      return stringValue !== '' && !validateField(field, value);
+    });
+    
+    // Check photo exists
+    const hasPhoto = !!formData.photo || !!previewImage;
+    
+    // Check no validation errors
+    const hasNoErrors = Object.keys(validationErrors).length === 0;
+    
+    return hasAllRequiredFields && hasPhoto && hasNoErrors;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
-    const requiredFields = [
-      'phone', 'address', 'gender', 'birth_date', 'subject_specialization', 'hire_date', 'photo'
-    ];
+    // Mark all fields as touched to show all errors
+    const allFields = ['phone', 'address', 'gender', 'birth_date', 'subject_specialization', 'hire_date', 'photo'];
+    setTouchedFields(prev => new Set([...prev, ...allFields]));
 
-    for (const field of requiredFields) {
-      if (!formData[field as keyof FormData]) {
-        toast.error(`Please fill in the ${field.replace('_', ' ')} field`);
-        return;
-      }
+    // Final validation
+    if (!validateForm()) {
+      toast.error('Please fix the errors in the form before submitting');
+      return;
     }
 
-    // Verify phone number is valid
-    const phoneRegex = /^[0-9]{10,15}$/;
-    if (!phoneRegex.test(formData.phone)) {
-      toast.error('Please enter a valid phone number (10-15 digits)');
+    if (!isFormValid()) {
+      toast.error('Please complete all required fields correctly');
       return;
     }
 
@@ -199,7 +352,10 @@ export default function TeacherOnboarding() {
       formPayload.append('birth_date', formatDateForBackend(formData.birth_date));
       formPayload.append('subject_specialization', formData.subject_specialization);
       formPayload.append('hire_date', formatDateForBackend(formData.hire_date));
-      if (formData.photo) formPayload.append('photo', formData.photo);
+      
+      if (formData.photo) {
+        formPayload.append('photo', formData.photo);
+      }
       
       // Optional fields
       if (formData.blood_type) {
@@ -243,28 +399,32 @@ export default function TeacherOnboarding() {
         toast.success('Onboarding completed successfully!');
         router.push('/teacher');
       } else {
-        toast.success('Progress saved!');
+        toast.success('Progress saved successfully!');
       }
 
     } catch (error: any) {
       console.error('Error:', error);
       
-      if (error.response) {
-        if (error.response.data) {
-          if (typeof error.response.data === 'object') {
-            Object.entries(error.response.data).forEach(([key, value]) => {
-              if (Array.isArray(value)) {
-                value.forEach(err => toast.error(`${key}: ${err}`));
-              } else {
-                toast.error(`${key}: ${value}`);
-              }
-            });
-          } else {
-            toast.error(error.response.data.detail || 'Onboarding failed. Please check your data.');
-          }
+      if (error.response?.data) {
+        // Handle backend validation errors
+        const backendErrors = error.response.data;
+        if (typeof backendErrors === 'object') {
+          const newErrors: ValidationErrors = {};
+          Object.entries(backendErrors).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+              newErrors[key] = value.join(', ');
+              value.forEach(err => toast.error(`${key}: ${err}`));
+            } else {
+              newErrors[key] = value as string;
+              toast.error(`${key}: ${value}`);
+            }
+          });
+          setValidationErrors(newErrors);
+        } else {
+          toast.error(backendErrors.detail || 'Onboarding failed. Please check your data.');
         }
       } else if (error.request) {
-        toast.error('No response from server. Please try again.');
+        toast.error('No response from server. Please check your connection and try again.');
       } else {
         toast.error('Request error: ' + error.message);
       }
@@ -292,30 +452,64 @@ export default function TeacherOnboarding() {
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <PersonalInfoForm 
             formData={formData} 
-            onChange={handleChange} 
+            onChange={handleChange}
+            onBlur={handleBlur}
+            errors={validationErrors}
+            getFieldError={getFieldError}
             progress={progress} 
           />
           
           <ProfessionalInfoForm 
             formData={formData} 
-            onChange={handleChange} 
+            onChange={handleChange}
+            onBlur={handleBlur}
+            errors={validationErrors}
+            getFieldError={getFieldError}
             progress={progress} 
           />
           
           <ProfilePhotoUpload 
             previewImage={previewImage} 
-            onFileChange={handleFileChange} 
+            onFileChange={handleFileChange}
+            error={getFieldError('photo')}
             progress={progress} 
           />
+
+          {/* Validation Summary */}
+          {Object.keys(validationErrors).length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+              <h3 className="text-red-800 font-medium mb-2">
+                Please fix the following errors:
+              </h3>
+              <ul className="text-red-700 text-sm list-disc list-inside space-y-1">
+                {Object.entries(validationErrors).map(([field, error]) => (
+                  <li key={field}>
+                    <span className="capitalize">{field.replace('_', ' ')}</span>: {error}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="pt-6">
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FC46AA] hover:bg-[#e03d98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC46AA] disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmitting || !isFormValid()}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FC46AA] hover:bg-[#e03d98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC46AA] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
-              {isSubmitting ? 'Submitting...' : progress.completed ? 'Update Profile' : 'Complete Onboarding'}
+              {isSubmitting ? (
+                <span className="flex items-center">
+                  <div className="spinner border-2 border-white border-t-transparent rounded-full w-4 h-4 animate-spin mr-2"></div>
+                  Submitting...
+                </span>
+              ) : progress.completed ? 'Update Profile' : 'Complete Onboarding'}
             </button>
+            
+            {!isFormValid() && (
+              <p className="text-sm text-red-600 mt-2 text-center">
+                Please complete all required fields correctly to submit the form
+              </p>
+            )}
           </div>
         </form>
       </div>
