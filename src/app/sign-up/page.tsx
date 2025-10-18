@@ -38,21 +38,19 @@ export default function SignUp() {
     }));
   };
 
-  
-
 const handleSubmit = async (e: FormEvent) => {
   e.preventDefault();
   setLoading(true);
   setError('');
 
-  
+  // Validate passwords match
   if (formData.password !== formData.confirmPassword) {
     setError('Passwords do not match');
     setLoading(false);
     return;
   }
 
-  
+  // Validate password length
   if (formData.password.length < 6) {
     setError('Password must be at least 6 characters');
     setLoading(false);
@@ -60,36 +58,32 @@ const handleSubmit = async (e: FormEvent) => {
   }
 
   try {
-   
     const { confirmPassword, ...submitData } = formData;
 
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
       submitData,
       {
-        timeout: 10000, 
+        timeout: 30000, // Increased timeout to 30 seconds
         headers: {
           'Content-Type': 'application/json',
         },
       }
     );
 
- 
-    const emailToStore =
-      (response?.data as any)?.email?.toString() || submitData.email.trim();
+    const emailToStore = submitData.email.trim();
     const token = (response?.data as any)?.token;
 
     try {
       localStorage.setItem('signupEmail', emailToStore);
     } catch {
-   
+      // ignore storage errors
     }
 
- 
+    // Send verification email via EmailJS
     try {
       console.log('🔄 Starting EmailJS send...');
       
-   
       const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
       const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
       const userId = process.env.NEXT_PUBLIC_EMAILJS_USER_ID;
@@ -106,7 +100,6 @@ const handleSubmit = async (e: FormEvent) => {
         hasToken: !!token,
       });
 
-   
       const templateParams = {
         to_email: emailToStore,
         to_name: submitData.first_name || 'User',
@@ -118,7 +111,6 @@ const handleSubmit = async (e: FormEvent) => {
         verification_token: token || 'No token provided',
         verify_url: `${window.location.origin}/verify-email?token=${token}`,
         site_url: window.location.origin,
-  
       };
 
       console.log('📨 Sending with params:', templateParams);
@@ -135,32 +127,36 @@ const handleSubmit = async (e: FormEvent) => {
         text: emailjsResponse.text
       });
 
+      // Success - redirect to verification page
+      setError('');
+      router.push('/verify-signup');
+
     } catch (emailError: any) {
       console.error('❌ EmailJS detailed error:', {
         name: emailError?.name,
         message: emailError?.message,
         status: emailError?.status,
         text: emailError?.text,
-
         fullError: JSON.stringify(emailError, Object.getOwnPropertyNames(emailError), 2)
       });
 
-
+      // Even if EmailJS fails, the user is created as unverified
+      // They can still request a new verification token later
       if (emailError?.text?.includes('template') || emailError?.status === 422) {
         console.error('🔧 Template parameter issue detected');
-        setError('Signup successful but email service configuration issue. Please contact support.');
+        setError('Signup successful but email service configuration issue. You can request a new verification token on the next page.');
       } else {
-        setError('Signup successful but verification email failed. We will contact you shortly.');
+        setError('Signup successful but verification email failed. You can request a new token on the next page.');
       }
       
-     
-      router.push('/verify-signup');
+      // Still redirect to verification page so they can request a new token
+      setTimeout(() => {
+        router.push('/verify-signup');
+      }, 2000);
+      
       setLoading(false);
       return;
     }
-
-    
-    router.push('/verify-signup');
 
   } catch (err: any) {
     const error = err as AxiosError;
@@ -170,12 +166,8 @@ const handleSubmit = async (e: FormEvent) => {
       const responseData = error.response.data as any;
       if (responseData.email) {
         setError(responseData.email[0]);
-      } else if (responseData.username) {
-        setError(responseData.username[0]);
-      } else if (responseData.non_field_errors) {
-        setError(responseData.non_field_errors[0]);
-      } else if (responseData.message) {
-        setError(responseData.message);
+      } else if (responseData.error) {
+        setError(responseData.error);
       } else if (error.code === 'ECONNABORTED') {
         setError('Request timeout. Please try again.');
       } else {
@@ -185,8 +177,6 @@ const handleSubmit = async (e: FormEvent) => {
       setError('Request timeout. Please try again.');
     } else if (error.message === 'Network Error') {
       setError('Network error. Please check your connection.');
-    } else if (error.response?.status === 400) {
-      setError('Invalid data provided. Please check your information.');
     } else if (error.response?.status === 500) {
       setError('Server error. Please try again later.');
     } else {
