@@ -173,17 +173,7 @@ const handleSubmit = async (e: FormEvent) => {
 
       // Success: stop loading and navigate
       setLoading(false);
-      router.push('/verify-signup');
-      return;
-    }
-
-    // Handle unverified user case (legacy fallback)
-    if (status === 200 && String(data?.detail || '').toLowerCase().includes('unverified')) {
-      try {
-        localStorage.setItem('signupEmail', emailToStore);
-      } catch {}
-      setLoading(false);
-      router.push('/verify-signup');
+      // router.push('/verify-signup');
       return;
     }
 
