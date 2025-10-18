@@ -134,27 +134,29 @@ export default function TeacherOnboarding() {
   };
 
   const validateForm = (): boolean => {
-    const errors: ValidationErrors = {};
-    const requiredFields: (keyof FormData)[] = [
-      'phone', 'address', 'gender', 'birth_date', 
-      'subject_specialization', 'hire_date'
-    ];
+      const errors: ValidationErrors = {};
+      
+      // Only validate REQUIRED fields
+      const requiredFields: (keyof FormData)[] = [
+        'phone', 'address', 'gender', 'birth_date', 
+        'subject_specialization', 'hire_date'
+      ];
 
-    requiredFields.forEach(field => {
-      const error = validateField(field, formData[field]);
-      if (error) {
-        errors[field] = error;
+      requiredFields.forEach(field => {
+        const error = validateField(field, formData[field]);
+        if (error) {
+          errors[field] = error;
+        }
+      });
+
+      // Special handling for photo
+      if (!formData.photo && !previewImage) {
+        errors.photo = 'Profile photo is required';
       }
-    });
 
-    // Special handling for photo
-    if (!formData.photo && !previewImage) {
-      errors.photo = 'Profile photo is required';
-    }
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+      setValidationErrors(errors);
+      return Object.keys(errors).length === 0;
+    };
 
   // Check if user is already onboarded
   useEffect(() => {
@@ -476,20 +478,23 @@ export default function TeacherOnboarding() {
           />
 
           {/* Validation Summary */}
-          {Object.keys(validationErrors).length > 0 && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4">
-              <h3 className="text-red-800 font-medium mb-2">
-                Please fix the following errors:
-              </h3>
-              <ul className="text-red-700 text-sm list-disc list-inside space-y-1">
-                {Object.entries(validationErrors).map(([field, error]) => (
-                  <li key={field}>
-                    <span className="capitalize">{field.replace('_', ' ')}</span>: {error}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+            {Object.keys(validationErrors).filter(key => validationErrors[key]).length > 0 && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                <h3 className="text-red-800 font-medium mb-2">
+                  Please fix the following errors:
+                </h3>
+                <ul className="text-red-700 text-sm list-disc list-inside space-y-1">
+                  {Object.entries(validationErrors)
+                    .filter(([field, error]) => error && error.trim() !== '')
+                    .map(([field, error]) => (
+                      <li key={field}>
+                        <span className="capitalize">{field.replace('_', ' ')}</span>: {error}
+                      </li>
+                    ))
+                  }
+                </ul>
+              </div>
+            )}
 
           <div className="pt-6">
             <button
