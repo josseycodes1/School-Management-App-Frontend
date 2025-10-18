@@ -60,30 +60,31 @@ const handleSubmit = async (e: FormEvent) => {
   try {
     const { confirmPassword, ...submitData } = formData;
 
+    // 1) Create user (backend is expected to create an unverified user and return a token)
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
       submitData,
       {
-        timeout: 30000, // Increased timeout to 30 seconds
+        timeout: 30000,
         headers: {
           'Content-Type': 'application/json',
         },
       }
     );
 
-    const emailToStore = submitData.email.trim();
-    const token = (response?.data as any)?.token;
+    const emailToStore = (submitData.email || '').trim();
+    const token = (response?.data as any)?.token || null;
 
+    // persist the email so verify page can read it (safe fallback)
     try {
       localStorage.setItem('signupEmail', emailToStore);
     } catch {
       // ignore storage errors
     }
 
-    // Send verification email via EmailJS
+    // 2) Attempt to send verification email using EmailJS (best-effort)
     try {
       console.log('🔄 Starting EmailJS send...');
-      
       const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
       const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
       const userId = process.env.NEXT_PUBLIC_EMAILJS_USER_ID;
@@ -92,14 +93,6 @@ const handleSubmit = async (e: FormEvent) => {
         throw new Error('Missing EmailJS environment variables');
       }
 
-      console.log('📧 EmailJS Config:', {
-        serviceId: `${serviceId?.substring(0, 5)}...`,
-        templateId: `${templateId?.substring(0, 5)}...`,
-        userId: `${userId?.substring(0, 5)}...`,
-        to_email: emailToStore,
-        hasToken: !!token,
-      });
-
       const templateParams = {
         to_email: emailToStore,
         to_name: submitData.first_name || 'User',
@@ -107,13 +100,17 @@ const handleSubmit = async (e: FormEvent) => {
         email: emailToStore,
         first_name: submitData.first_name || '',
         last_name: submitData.last_name || '',
-        token: token || 'No token provided',
-        verification_token: token || 'No token provided',
-        verify_url: `${window.location.origin}/verify-email?token=${token}`,
+        token: token || '',
+        verification_token: token || '',
+        verify_url: `${window.location.origin}/verify-email?token=${token || ''}`,
         site_url: window.location.origin,
       };
 
-      console.log('📨 Sending with params:', templateParams);
+      console.log('📨 Sending with params:', {
+        to: emailToStore,
+        hasToken: !!token,
+        verify_url: templateParams.verify_url
+      });
 
       const emailjsResponse = await emailjs.send(
         serviceId,
@@ -124,67 +121,106 @@ const handleSubmit = async (e: FormEvent) => {
 
       console.log('EmailJS send successful:', {
         status: emailjsResponse.status,
-        text: emailjsResponse.text
+        text: (emailjsResponse as any).text
       });
 
-      // Success - redirect to verification page
-      setError('');
+      // Success: navigate to verify page
+      setLoading(false);
       router.push('/verify-signup');
 
     } catch (emailError: any) {
-      console.error('❌ EmailJS detailed error:', {
-        name: emailError?.name,
-        message: emailError?.message,
-        status: emailError?.status,
-        text: emailError?.text,
-        fullError: JSON.stringify(emailError, Object.getOwnPropertyNames(emailError), 2)
-      });
+      // If email sending fails, we still allow the user to go to verify page and request a new token
+      console.error('❌ EmailJS detailed error:', emailError);
 
-      // Even if EmailJS fails, the user is created as unverified
-      // They can still request a new verification token later
-      if (emailError?.text?.includes('template') || emailError?.status === 422) {
-        console.error('🔧 Template parameter issue detected');
-        setError('Signup successful but email service configuration issue. You can request a new verification token on the next page.');
-      } else {
-        setError('Signup successful but verification email failed. You can request a new token on the next page.');
-      }
-      
-      // Still redirect to verification page so they can request a new token
+      // Save email (again, in case previous setItem failed)
+      try {
+        localStorage.setItem('signupEmail', emailToStore);
+      } catch {}
+
+      // Show a helpful message, then redirect to verify page where they can resend token
+      const friendlyMessage =
+        (emailError?.text && String(emailError.text)) ||
+        (emailError?.message && String(emailError.message)) ||
+        'Signup succeeded but sending verification email failed. You can request a new token on the verification page.';
+
+      setError(friendlyMessage);
+      setLoading(false);
+
+      // Slight delay so user sees the message briefly, then redirect
       setTimeout(() => {
         router.push('/verify-signup');
-      }, 2000);
-      
-      setLoading(false);
+      }, 1200);
+
       return;
     }
 
   } catch (err: any) {
     const error = err as AxiosError;
     console.error('❌ Signup error:', error);
-    
+
+    // 1) Timeout or network error -> save email & redirect to verify page
+    if (error.code === 'ECONNABORTED' || error.message === 'Network Error') {
+      try {
+        localStorage.setItem('signupEmail', formData.email.trim());
+      } catch {}
+      setError('Request timeout or network error. Redirecting so you can request a new verification token.');
+      setLoading(false);
+      router.push('/verify-signup');
+      return;
+    }
+
+    // 2) Backend returned 400 and email exists -> assume unverified and redirect to verify page
+    if (error.response?.status === 400 && error.response.data && typeof error.response.data === 'object') {
+      const responseData = error.response.data as any;
+      const emailErr = responseData.email;
+      const message = Array.isArray(emailErr) ? emailErr[0] : responseData.message || responseData.error;
+
+      if (typeof message === 'string') {
+        const lowered = message.toLowerCase();
+
+        // If backend explicitly says the account is already verified, surface it as an error
+        if (lowered.includes('verified')) {
+          setError(message);
+          setLoading(false);
+          return;
+        }
+
+        // If it's an "already exists" message, treat it as unverified case and redirect
+        if (lowered.includes('already exists') || lowered.includes('exists')) {
+          try {
+            localStorage.setItem('signupEmail', formData.email.trim());
+          } catch {}
+
+          setError('An account with that email already exists but appears unverified. Redirecting to verification page.');
+          setLoading(false);
+          router.push('/verify-signup');
+          return;
+        }
+      }
+    }
+
+    // 3) Other server-side error payloads
     if (error.response?.data && typeof error.response.data === 'object') {
       const responseData = error.response.data as any;
       if (responseData.email) {
         setError(responseData.email[0]);
       } else if (responseData.error) {
         setError(responseData.error);
-      } else if (error.code === 'ECONNABORTED') {
-        setError('Request timeout. Please try again.');
+      } else if (responseData.message) {
+        setError(responseData.message);
       } else {
         setError('Signup failed. Please try again.');
       }
-    } else if (error.code === 'ECONNABORTED') {
-      setError('Request timeout. Please try again.');
-    } else if (error.message === 'Network Error') {
-      setError('Network error. Please check your connection.');
     } else if (error.response?.status === 500) {
       setError('Server error. Please try again later.');
     } else {
       setError('Signup failed. Please try again.');
     }
+
     setLoading(false);
   }
 };
+
 
 
   // const handleSubmit = async (e: FormEvent) => {
