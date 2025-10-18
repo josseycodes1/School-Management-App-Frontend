@@ -15,6 +15,16 @@ interface SignUpFormData {
   role: string;
 }
 
+type CreateUserPayload = Omit<SignUpFormData, 'confirmPassword'>;
+
+interface CreateUserResponse {
+  token?: string;
+  created?: boolean;
+  message?: string;
+  detail?: string;
+  // backend may return other fields — add them here if needed
+}
+
 export default function SignUp() {
   const router = useRouter();
   const [formData, setFormData] = useState<SignUpFormData>({
@@ -43,14 +53,12 @@ const handleSubmit = async (e: FormEvent) => {
   setLoading(true);
   setError('');
 
-  // Validate passwords match
+  // Validate passwords
   if (formData.password !== formData.confirmPassword) {
     setError('Passwords do not match');
     setLoading(false);
     return;
   }
-
-  // Validate password length
   if (formData.password.length < 6) {
     setError('Password must be at least 6 characters');
     setLoading(false);
@@ -58,168 +66,126 @@ const handleSubmit = async (e: FormEvent) => {
   }
 
   try {
-    const { confirmPassword, ...submitData } = formData;
+    // Build the payload with correct type by excluding confirmPassword
+    const { confirmPassword, ...rest } = formData;
+    const submitData: CreateUserPayload = rest;
 
-    // 1) Create user (backend is expected to create an unverified user and return a token)
-    const response = await axios.post(
+    // POST to create user with typed response
+    const response = await axios.post<CreateUserResponse>(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
       submitData,
       {
         timeout: 30000,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       }
     );
 
+    const status = response.status;
+    const data = response.data;
     const emailToStore = (submitData.email || '').trim();
-    const token = (response?.data as any)?.token || null;
 
-    // persist the email so verify page can read it (safe fallback)
-    try {
-      localStorage.setItem('signupEmail', emailToStore);
-    } catch {
-      // ignore storage errors
-    }
+    // Save email locally for verify page
+    try { localStorage.setItem('signupEmail', emailToStore); } catch {}
 
-    // 2) Attempt to send verification email using EmailJS (best-effort)
-    try {
-      console.log('🔄 Starting EmailJS send...');
-      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
-      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
-      const userId = process.env.NEXT_PUBLIC_EMAILJS_USER_ID;
+    // If server created user (201) or returned token, proceed to EmailJS / redirect
+    if (status === 201 || data?.created === true || !!data?.token) {
+      try {
+        const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+        const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+        const userId = process.env.NEXT_PUBLIC_EMAILJS_USER_ID;
 
-      if (!serviceId || !templateId || !userId) {
-        throw new Error('Missing EmailJS environment variables');
+        if (!serviceId || !templateId || !userId) {
+          throw new Error('Missing EmailJS env vars');
+        }
+
+        const templateParams = {
+          to_email: emailToStore,
+          to_name: submitData.first_name || 'User',
+          token: data?.token || '',
+          verification_token: data?.token || '',
+          verify_url: `${window.location.origin}/verify-email?token=${data?.token || ''}`,
+        };
+
+        await emailjs.send(serviceId, templateId, templateParams, userId);
+      } catch (emailErr) {
+        console.warn('EmailJS send failed (user still created):', emailErr);
+        // We do not delete the user here; they can use Resend on the verify page.
       }
 
-      const templateParams = {
-        to_email: emailToStore,
-        to_name: submitData.first_name || 'User',
-        user_email: emailToStore,
-        email: emailToStore,
-        first_name: submitData.first_name || '',
-        last_name: submitData.last_name || '',
-        token: token || '',
-        verification_token: token || '',
-        verify_url: `${window.location.origin}/verify-email?token=${token || ''}`,
-        site_url: window.location.origin,
-      };
-
-      console.log('📨 Sending with params:', {
-        to: emailToStore,
-        hasToken: !!token,
-        verify_url: templateParams.verify_url
-      });
-
-      const emailjsResponse = await emailjs.send(
-        serviceId,
-        templateId,
-        templateParams,
-        userId
-      );
-
-      console.log('EmailJS send successful:', {
-        status: emailjsResponse.status,
-        text: (emailjsResponse as any).text
-      });
-
-      // Success: navigate to verify page
       setLoading(false);
       router.push('/verify-signup');
-
-    } catch (emailError: any) {
-      // If email sending fails, we still allow the user to go to verify page and request a new token
-      console.error('❌ EmailJS detailed error:', emailError);
-
-      // Save email (again, in case previous setItem failed)
-      try {
-        localStorage.setItem('signupEmail', emailToStore);
-      } catch {}
-
-      // Show a helpful message, then redirect to verify page where they can resend token
-      const friendlyMessage =
-        (emailError?.text && String(emailError.text)) ||
-        (emailError?.message && String(emailError.message)) ||
-        'Signup succeeded but sending verification email failed. You can request a new token on the verification page.';
-
-      setError(friendlyMessage);
-      setLoading(false);
-
-      // Slight delay so user sees the message briefly, then redirect
-      setTimeout(() => {
-        router.push('/verify-signup');
-      }, 1200);
-
       return;
     }
 
+    // If backend returned 200 with explicit signal 'unverified_exists' in detail, redirect
+    if (status === 200 && (String(data?.detail || '').toLowerCase() === 'unverified_exists' || String(data?.detail || '').toLowerCase() === 'unverified_exists')) {
+      try { localStorage.setItem('signupEmail', emailToStore); } catch {}
+      setLoading(false);
+      router.push('/verify-signup');
+      return;
+    }
+
+    // Unexpected successful response shape
+    setError(String(data?.message || 'Signup failed: unexpected server response.'));
+    setLoading(false);
   } catch (err: any) {
     const error = err as AxiosError;
-    console.error('❌ Signup error:', error);
+    console.error('Signup error full object:', error);
 
-    // 1) Timeout or network error -> save email & redirect to verify page
-    if (error.code === 'ECONNABORTED' || error.message === 'Network Error') {
-      try {
-        localStorage.setItem('signupEmail', formData.email.trim());
-      } catch {}
-      setError('Request timeout or network error. Redirecting so you can request a new verification token.');
+    // NETWORK / TIMEOUT (no response present)
+    if (!error.response) {
+      const friendly = error.code === 'ECONNABORTED'
+        ? 'Request timeout. The server may be slow or unreachable. Please try again.'
+        : (error.message === 'Network Error'
+            ? 'Network error: cannot reach server. Check your connection or backend URL.'
+            : `Network or CORS error: ${error.message}`);
+
+      setError(friendly);
+      console.error('Network/Timeout error details:', {
+        message: error.message,
+        code: error.code,
+        config: error.config,
+      });
       setLoading(false);
-      router.push('/verify-signup');
       return;
     }
 
-    // 2) Backend returned 400 and email exists -> assume unverified and redirect to verify page
-    if (error.response?.status === 400 && error.response.data && typeof error.response.data === 'object') {
-      const responseData = error.response.data as any;
-      const emailErr = responseData.email;
-      const message = Array.isArray(emailErr) ? emailErr[0] : responseData.message || responseData.error;
+    // Server responded (inspect payload)
+    const resp = error.response;
+    console.warn('Server responded with status', resp.status, 'data:', resp.data);
 
-      if (typeof message === 'string') {
-        const lowered = message.toLowerCase();
+    if (resp.status === 400 && resp.data) {
+      const respData = resp.data as any;
+      const emailErr = Array.isArray(respData.email) ? respData.email[0] : respData.email;
+      const rawMsg = String(emailErr || respData.detail || respData.message || respData.error || '');
 
-        // If backend explicitly says the account is already verified, surface it as an error
-        if (lowered.includes('verified')) {
-          setError(message);
-          setLoading(false);
-          return;
-        }
+      const lower = rawMsg.toLowerCase();
 
-        // If it's an "already exists" message, treat it as unverified case and redirect
-        if (lowered.includes('already exists') || lowered.includes('exists')) {
-          try {
-            localStorage.setItem('signupEmail', formData.email.trim());
-          } catch {}
-
-          setError('An account with that email already exists but appears unverified. Redirecting to verification page.');
-          setLoading(false);
-          router.push('/verify-signup');
-          return;
-        }
+      // Redirect if it's an unverified-existing-user case
+      if (lower.includes('unverified') || lower.includes('already exists') || respData.detail === 'unverified_exists') {
+        try { localStorage.setItem('signupEmail', (formData.email || '').trim()); } catch {}
+        setError('An unverified account exists for that email. Redirecting to verification page.');
+        setLoading(false);
+        router.push('/verify-signup');
+        return;
       }
+
+      // Otherwise, show the validation error
+      setError(rawMsg || 'Signup validation failed.');
+      setLoading(false);
+      return;
     }
 
-    // 3) Other server-side error payloads
-    if (error.response?.data && typeof error.response.data === 'object') {
-      const responseData = error.response.data as any;
-      if (responseData.email) {
-        setError(responseData.email[0]);
-      } else if (responseData.error) {
-        setError(responseData.error);
-      } else if (responseData.message) {
-        setError(responseData.message);
-      } else {
-        setError('Signup failed. Please try again.');
-      }
-    } else if (error.response?.status === 500) {
-      setError('Server error. Please try again later.');
+    if (resp.status === 500) {
+      setError('Server error (500). Please try again later.');
     } else {
-      setError('Signup failed. Please try again.');
+      setError(String((resp.data as any)?.message || `Signup failed (${resp.status}).`));
     }
 
     setLoading(false);
   }
 };
+
 
 
 
