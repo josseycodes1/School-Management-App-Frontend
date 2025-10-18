@@ -67,75 +67,120 @@ const handleSubmit = async (e: FormEvent) => {
   }
 
   try {
-    // Build the payload
+    // Build payload
     const { confirmPassword, ...rest } = formData;
     const submitData: CreateUserPayload = rest;
 
-    console.log('Sending request to:', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`);
-    console.log('Payload:', submitData);
+    console.groupCollapsed('Signup: sending user-create request');
+    console.log('POST URL:', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`);
+    console.log('Payload (submitData):', submitData);
+    console.groupEnd();
 
-    // POST to create user with longer timeout
+    console.time('signup-request-time');
     const response = await axios.post<CreateUserResponse>(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
       submitData,
       {
-        timeout: 45000, // Increased to 45 seconds
-        headers: { 
+        timeout: 45000, // 45s
+        headers: {
           'Content-Type': 'application/json',
         },
       }
     );
+    console.timeEnd('signup-request-time');
 
-    console.log('Response received:', response.status, response.data);
+    console.groupCollapsed('Signup: response received');
+    console.log('Status:', response.status);
+    console.log('Response data:', response.data);
+    console.groupEnd();
 
     const status = response.status;
     const data = response.data;
     const emailToStore = (submitData.email || '').trim();
 
-    // Save email locally for verify page
-    try { 
-      localStorage.setItem('signupEmail', emailToStore); 
+    // Save email locally for verify page (best-effort)
+    try {
+      localStorage.setItem('signupEmail', emailToStore);
     } catch (storageError) {
       console.warn('Could not save to localStorage:', storageError);
     }
 
-    // Handle successful response
-    if (status === 201 || data?.created === true || !!data?.token) {
-      console.log('User created successfully, proceeding to email sending...');
-      
-      try {
-        const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
-        const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
-        const userId = process.env.NEXT_PUBLIC_EMAILJS_USER_ID;
+    // Check for token in response (we expect token since server returns it)
+    const tokenFromBackend = data?.token;
+    if (!tokenFromBackend) {
+      const msg = 'No verification token returned from backend.';
+      console.error(msg, { status, data });
+      setError(msg);
+      setLoading(false);
+      return;
+    }
 
-        if (!serviceId || !templateId || !userId) {
-          console.warn('Missing EmailJS environment variables');
-        } else {
-          const templateParams = {
-            to_email: emailToStore,
-            to_name: submitData.first_name || 'User',
-            token: data?.token || '',
-            verification_token: data?.token || '',
-            verify_url: `${window.location.origin}/verify-email?token=${data?.token || ''}`,
-          };
+    // Only proceed when the server created the user AND returned a token
+    if (status === 201 || data?.created === true || !!tokenFromBackend || status === 200) {
+      console.log('User created successfully on backend; token present:', !!tokenFromBackend);
 
-          await emailjs.send(serviceId, templateId, templateParams, userId);
-          console.log('Email sent successfully');
-        }
-      } catch (emailErr) {
-        console.warn('EmailJS send failed (user still created):', emailErr);
-        // Continue even if email fails
+      // EmailJS step — log env vars presence
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+      const userId = process.env.NEXT_PUBLIC_EMAILJS_USER_ID;
+
+      console.groupCollapsed('EmailJS: env & template params check');
+      console.log('EmailJS serviceId present:', Boolean(serviceId));
+      console.log('EmailJS templateId present:', Boolean(templateId));
+      console.log('EmailJS userId present:', Boolean(userId));
+      console.groupEnd();
+
+      // If you want to *require* EmailJS to be configured, fail early:
+      if (!serviceId || !templateId || !userId) {
+        const msg = 'EmailJS configuration missing. Please set NEXT_PUBLIC_EMAILJS_SERVICE_ID, NEXT_PUBLIC_EMAILJS_TEMPLATE_ID and NEXT_PUBLIC_EMAILJS_USER_ID.';
+        console.error(msg);
+        setError(msg);
+        setLoading(false);
+        // Throw so the outer catch treats this as a failure (and it will be visible in logs)
+        throw new Error(msg);
       }
 
+      // Build template params (avoid logging full token in prod; we show truncated)
+      const templateParams = {
+        to_email: emailToStore,
+        to_name: submitData.first_name || 'User',
+        token: tokenFromBackend,
+        verification_token: tokenFromBackend,
+        verify_url: `${window.location.origin}/verify-email?token=${tokenFromBackend}`,
+      };
+
+      // Log a redacted/summary view of the params for diagnostics
+      console.groupCollapsed('EmailJS: sending email with templateParams (redacted)');
+      console.log('to_email:', templateParams.to_email);
+      console.log('to_name:', templateParams.to_name);
+      console.log('token (first 8 chars):', String(templateParams.token).slice(0, 8) + '...');
+      console.log('verify_url:', templateParams.verify_url);
+      console.groupEnd();
+
+      // Attempt to send email via EmailJS - if this fails, we treat it as a hard failure
+      try {
+        console.time('emailjs-send-time');
+        await emailjs.send(serviceId, templateId, templateParams, userId);
+        console.timeEnd('emailjs-send-time');
+        console.log('EmailJS: email sent successfully');
+      } catch (emailErr) {
+        console.error('EmailJS send failed:', emailErr);
+        setError('Failed to send verification email. Please try again later.');
+        setLoading(false);
+        // Throw so outer catch will handle and log the failure
+        throw emailErr;
+      }
+
+      // Success: stop loading and navigate
       setLoading(false);
       router.push('/verify-signup');
       return;
     }
 
-    // Handle unverified user case
+    // Handle unverified user case (legacy fallback)
     if (status === 200 && String(data?.detail || '').toLowerCase().includes('unverified')) {
-      try { 
-        localStorage.setItem('signupEmail', emailToStore); 
+      try {
+        localStorage.setItem('signupEmail', emailToStore);
       } catch {}
       setLoading(false);
       router.push('/verify-signup');
@@ -143,21 +188,23 @@ const handleSubmit = async (e: FormEvent) => {
     }
 
     // Unexpected response
-    setError(String(data?.message || 'Signup completed but with unexpected response.'));
+    const unexpectedMsg = String(data?.message || 'Signup completed but with unexpected response.');
+    console.warn('Unexpected signup response:', status, data);
+    setError(unexpectedMsg);
     setLoading(false);
 
   } catch (err: any) {
-    console.error('Signup error:', err);
-    
+    console.error('Signup error handler caught:', err);
+
     if (axios.isAxiosError(err)) {
       if (err.code === 'ECONNABORTED') {
         setError('Request timeout. The server is taking too long to respond. Please try again.');
       } else if (err.message === 'Network Error') {
         setError('Network error: Cannot connect to the server. Please check your internet connection and ensure the backend is running.');
       } else if (err.response) {
-        // Server responded with error status
+        // Server responded with error status (maybe we threw earlier)
         console.error('Server error response:', err.response.status, err.response.data);
-        
+
         if (err.response.status === 400) {
           const errorData = err.response.data as any;
           const errorMessage = errorData.email?.[0] || errorData.detail || errorData.message || 'Validation failed';
@@ -168,12 +215,18 @@ const handleSubmit = async (e: FormEvent) => {
           setError(`Request failed with status ${err.response.status}`);
         }
       } else {
-        setError('An unexpected error occurred. Please try again.');
+        // This also catches errors we deliberately threw (e.g., missing EmailJS config or email send failure)
+        if (err.message) {
+          setError(String(err.message));
+        } else {
+          setError('An unexpected error occurred. Please try again.');
+        }
       }
     } else {
-      setError('An unexpected error occurred. Please try again.');
+      // Non-Axios error
+      setError(err?.message || 'An unexpected error occurred. Please try again.');
     }
-    
+
     setLoading(false);
   }
 };
