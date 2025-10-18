@@ -39,6 +39,7 @@ export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -66,50 +67,64 @@ const handleSubmit = async (e: FormEvent) => {
   }
 
   try {
-    // Build the payload with correct type by excluding confirmPassword
+    // Build the payload
     const { confirmPassword, ...rest } = formData;
     const submitData: CreateUserPayload = rest;
 
-    // POST to create user with typed response
+    console.log('Sending request to:', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`);
+    console.log('Payload:', submitData);
+
+    // POST to create user with longer timeout
     const response = await axios.post<CreateUserResponse>(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/`,
       submitData,
       {
-        timeout: 30000,
-        headers: { 'Content-Type': 'application/json' },
+        timeout: 45000, // Increased to 45 seconds
+        headers: { 
+          'Content-Type': 'application/json',
+        },
       }
     );
+
+    console.log('Response received:', response.status, response.data);
 
     const status = response.status;
     const data = response.data;
     const emailToStore = (submitData.email || '').trim();
 
     // Save email locally for verify page
-    try { localStorage.setItem('signupEmail', emailToStore); } catch {}
+    try { 
+      localStorage.setItem('signupEmail', emailToStore); 
+    } catch (storageError) {
+      console.warn('Could not save to localStorage:', storageError);
+    }
 
-    // If server created user (201) or returned token, proceed to EmailJS / redirect
+    // Handle successful response
     if (status === 201 || data?.created === true || !!data?.token) {
+      console.log('User created successfully, proceeding to email sending...');
+      
       try {
         const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
         const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
         const userId = process.env.NEXT_PUBLIC_EMAILJS_USER_ID;
 
         if (!serviceId || !templateId || !userId) {
-          throw new Error('Missing EmailJS env vars');
+          console.warn('Missing EmailJS environment variables');
+        } else {
+          const templateParams = {
+            to_email: emailToStore,
+            to_name: submitData.first_name || 'User',
+            token: data?.token || '',
+            verification_token: data?.token || '',
+            verify_url: `${window.location.origin}/verify-email?token=${data?.token || ''}`,
+          };
+
+          await emailjs.send(serviceId, templateId, templateParams, userId);
+          console.log('Email sent successfully');
         }
-
-        const templateParams = {
-          to_email: emailToStore,
-          to_name: submitData.first_name || 'User',
-          token: data?.token || '',
-          verification_token: data?.token || '',
-          verify_url: `${window.location.origin}/verify-email?token=${data?.token || ''}`,
-        };
-
-        await emailjs.send(serviceId, templateId, templateParams, userId);
       } catch (emailErr) {
         console.warn('EmailJS send failed (user still created):', emailErr);
-        // We do not delete the user here; they can use Resend on the verify page.
+        // Continue even if email fails
       }
 
       setLoading(false);
@@ -117,71 +132,48 @@ const handleSubmit = async (e: FormEvent) => {
       return;
     }
 
-    // If backend returned 200 with explicit signal 'unverified_exists' in detail, redirect
-    if (status === 200 && (String(data?.detail || '').toLowerCase() === 'unverified_exists' || String(data?.detail || '').toLowerCase() === 'unverified_exists')) {
-      try { localStorage.setItem('signupEmail', emailToStore); } catch {}
+    // Handle unverified user case
+    if (status === 200 && String(data?.detail || '').toLowerCase().includes('unverified')) {
+      try { 
+        localStorage.setItem('signupEmail', emailToStore); 
+      } catch {}
       setLoading(false);
       router.push('/verify-signup');
       return;
     }
 
-    // Unexpected successful response shape
-    setError(String(data?.message || 'Signup failed: unexpected server response.'));
+    // Unexpected response
+    setError(String(data?.message || 'Signup completed but with unexpected response.'));
     setLoading(false);
+
   } catch (err: any) {
-    const error = err as AxiosError;
-    console.error('Signup error full object:', error);
-
-    // NETWORK / TIMEOUT (no response present)
-    if (!error.response) {
-      const friendly = error.code === 'ECONNABORTED'
-        ? 'Request timeout. The server may be slow or unreachable. Please try again.'
-        : (error.message === 'Network Error'
-            ? 'Network error: cannot reach server. Check your connection or backend URL.'
-            : `Network or CORS error: ${error.message}`);
-
-      setError(friendly);
-      console.error('Network/Timeout error details:', {
-        message: error.message,
-        code: error.code,
-        config: error.config,
-      });
-      setLoading(false);
-      return;
-    }
-
-    // Server responded (inspect payload)
-    const resp = error.response;
-    console.warn('Server responded with status', resp.status, 'data:', resp.data);
-
-    if (resp.status === 400 && resp.data) {
-      const respData = resp.data as any;
-      const emailErr = Array.isArray(respData.email) ? respData.email[0] : respData.email;
-      const rawMsg = String(emailErr || respData.detail || respData.message || respData.error || '');
-
-      const lower = rawMsg.toLowerCase();
-
-      // Redirect if it's an unverified-existing-user case
-      if (lower.includes('unverified') || lower.includes('already exists') || respData.detail === 'unverified_exists') {
-        try { localStorage.setItem('signupEmail', (formData.email || '').trim()); } catch {}
-        setError('An unverified account exists for that email. Redirecting to verification page.');
-        setLoading(false);
-        router.push('/verify-signup');
-        return;
+    console.error('Signup error:', err);
+    
+    if (axios.isAxiosError(err)) {
+      if (err.code === 'ECONNABORTED') {
+        setError('Request timeout. The server is taking too long to respond. Please try again.');
+      } else if (err.message === 'Network Error') {
+        setError('Network error: Cannot connect to the server. Please check your internet connection and ensure the backend is running.');
+      } else if (err.response) {
+        // Server responded with error status
+        console.error('Server error response:', err.response.status, err.response.data);
+        
+        if (err.response.status === 400) {
+          const errorData = err.response.data as any;
+          const errorMessage = errorData.email?.[0] || errorData.detail || errorData.message || 'Validation failed';
+          setError(errorMessage);
+        } else if (err.response.status === 500) {
+          setError('Server error. Please try again later.');
+        } else {
+          setError(`Request failed with status ${err.response.status}`);
+        }
+      } else {
+        setError('An unexpected error occurred. Please try again.');
       }
-
-      // Otherwise, show the validation error
-      setError(rawMsg || 'Signup validation failed.');
-      setLoading(false);
-      return;
-    }
-
-    if (resp.status === 500) {
-      setError('Server error (500). Please try again later.');
     } else {
-      setError(String((resp.data as any)?.message || `Signup failed (${resp.status}).`));
+      setError('An unexpected error occurred. Please try again.');
     }
-
+    
     setLoading(false);
   }
 };
