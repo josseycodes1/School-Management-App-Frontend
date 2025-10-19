@@ -142,7 +142,7 @@ const handleSubmit = async (e: FormEvent) => {
 
   
       const templateParams = {
-        to_email: emailToStore,
+        email: emailToStore,
         to_name: submitData.first_name || 'User',
         token: tokenFromBackend,
         verification_token: tokenFromBackend,
@@ -151,7 +151,7 @@ const handleSubmit = async (e: FormEvent) => {
 
       
       console.groupCollapsed('EmailJS: sending email with templateParams (redacted)');
-      console.log('to_email:', templateParams.to_email);
+      console.log('to_email:', templateParams.email);
       console.log('to_name:', templateParams.to_name);
       console.log('token (first 8 chars):', String(templateParams.token).slice(0, 8) + '...');
       console.log('verify_url:', templateParams.verify_url);
