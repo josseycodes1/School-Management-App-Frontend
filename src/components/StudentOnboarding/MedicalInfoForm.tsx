@@ -1,13 +1,11 @@
-// MedicalInfoForm.tsx - Updated
 import { FormData } from './types';
 
 interface MedicalInfoFormProps {
   formData: FormData;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
-  onBlur: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
 }
 
-export default function MedicalInfoForm({ formData, onChange, onBlur }: MedicalInfoFormProps) {
+export default function MedicalInfoForm({ formData, onChange }: MedicalInfoFormProps) {
   return (
     <div className="border-b border-gray-200 pb-6">
       <h2 className="text-lg font-medium text-gray-900 mb-4">Medical Information</h2>
@@ -23,7 +21,6 @@ export default function MedicalInfoForm({ formData, onChange, onBlur }: MedicalI
             rows={3}
             value={formData.medical_notes}
             onChange={onChange}
-            onBlur={onBlur}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FC46AA] focus:ring-[#FC46AA] sm:text-sm p-2 border"
             placeholder="Any allergies, conditions, or special medical requirements"
           />

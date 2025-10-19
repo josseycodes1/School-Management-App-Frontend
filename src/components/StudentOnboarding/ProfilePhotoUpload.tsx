@@ -1,4 +1,3 @@
-
 import { ChangeEvent } from 'react';
 import { toast } from 'react-hot-toast';
 import { ProgressData } from './types';
@@ -6,11 +5,10 @@ import { ProgressData } from './types';
 interface ProfilePhotoUploadProps {
   previewImage: string | null;
   onFileChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  error?: string;
   progress: ProgressData;
 }
 
-export default function ProfilePhotoUpload({ previewImage, onFileChange, error, progress }: ProfilePhotoUploadProps) {
+export default function ProfilePhotoUpload({ previewImage, onFileChange, progress }: ProfilePhotoUploadProps) {
   return (
     <div className={`${!progress.required_fields.photo && 'border-l-4 border-red-500 pl-3'}`}>
       <h2 className="text-lg font-medium text-gray-900 mb-4">Profile Photo *</h2>
@@ -30,7 +28,7 @@ export default function ProfilePhotoUpload({ previewImage, onFileChange, error, 
           )}
         </div>
         
-        <div className="flex-1">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Upload a clear photo of your face
           </label>
@@ -51,9 +49,6 @@ export default function ProfilePhotoUpload({ previewImage, onFileChange, error, 
           <p className="mt-1 text-sm text-gray-500">
             JPEG or PNG, max 5MB
           </p>
-          {error && (
-            <p className="mt-1 text-sm text-red-600">{error}</p>
-          )}
         </div>
       </div>
     </div>
