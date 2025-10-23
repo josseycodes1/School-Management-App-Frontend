@@ -54,6 +54,39 @@ const handleSubmit = async (e: FormEvent) => {
   setLoading(true);
   setError('');
 
+    // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(formData.email)) {
+    setError('Please enter a valid email address');
+    setLoading(false);
+    return;
+  }
+
+  // Validate first name and last name
+  if (!formData.first_name.trim()) {
+    setError('First name is required');
+    setLoading(false);
+    return;
+  }
+
+  if (!formData.last_name.trim()) {
+    setError('Last name is required');
+    setLoading(false);
+    return;
+  }
+
+  // Validate name length
+  if (formData.first_name.trim().length < 2) {
+    setError('First name must be at least 2 characters long');
+    setLoading(false);
+    return;
+  }
+
+  if (formData.last_name.trim().length < 2) {
+    setError('Last name must be at least 2 characters long');
+    setLoading(false);
+    return;
+  }
  
   if (formData.password !== formData.confirmPassword) {
     setError('Passwords do not match');
@@ -62,6 +95,21 @@ const handleSubmit = async (e: FormEvent) => {
   }
   if (formData.password.length < 6) {
     setError('Password must be at least 6 characters');
+    setLoading(false);
+    return;
+  }
+  // Stronger password validation
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+  if (!passwordRegex.test(formData.password)) {
+    setError('Password must contain at least one uppercase letter, one lowercase letter, and one number');
+    setLoading(false);
+    return;
+  }
+
+// Validate name doesn't contain numbers/special characters
+const nameRegex = /^[a-zA-Z\s]+$/;
+  if (!nameRegex.test(formData.first_name)) {
+    setError('First name can only contain letters');
     setLoading(false);
     return;
   }
@@ -324,6 +372,7 @@ const handleSubmit = async (e: FormEvent) => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
               required
+              placeholder="Enter your email address"
               disabled={loading}
               autoComplete="email"
             />
@@ -340,6 +389,7 @@ const handleSubmit = async (e: FormEvent) => {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD] pr-10"
                 minLength={6}
+                placeholder="At least 6 characters"
                 required
                 disabled={loading}
                 autoComplete="new-password"
@@ -354,6 +404,7 @@ const handleSubmit = async (e: FormEvent) => {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters long</p>
           </div>
 
           <div className="mb-4">
@@ -367,6 +418,7 @@ const handleSubmit = async (e: FormEvent) => {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD] pr-10"
                 minLength={6}
+                placeholder="Re-enter your password"
                 required
                 disabled={loading}
                 autoComplete="new-password"
@@ -381,6 +433,7 @@ const handleSubmit = async (e: FormEvent) => {
                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            <p className="text-xs text-gray-500 mt-1">Make sure it matches your password</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-4">
@@ -394,6 +447,7 @@ const handleSubmit = async (e: FormEvent) => {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
                 required
+                placeholder="Your first name"
                 disabled={loading}
                 autoComplete="given-name"
               />
@@ -408,6 +462,7 @@ const handleSubmit = async (e: FormEvent) => {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
                 required
+                placeholder="Your last name"
                 disabled={loading}
                 autoComplete="family-name"
               />
@@ -427,7 +482,6 @@ const handleSubmit = async (e: FormEvent) => {
               <option value="student">Student</option>
               <option value="teacher">Teacher</option>
               <option value="parent">Parent</option>
-              <option value="admin">Admin</option>
             </select>
           </div>
 
