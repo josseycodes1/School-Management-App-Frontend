@@ -71,7 +71,10 @@ export default function LoginPage() {
         localStorage.setItem('user', JSON.stringify(user))
         localStorage.setItem('role', user.role)
 
-         console.log('✅ Stored user role:', user.role); 
+        localStorage.setItem('onboarding_complete', user.onboarding_complete ? 'true' : 'false');
+
+        console.log('✅ Stored user role:', user.role); 
+        console.log('✅ Stored onboarding status:', user.onboarding_complete);
 
         // If admin, go straight to dashboard
         if (user.role === 'admin') {

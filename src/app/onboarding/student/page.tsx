@@ -257,7 +257,12 @@ export default function StudentOnboarding() {
 
       setProgress(progressRes.data);
 
+      // In handleSubmit function, find the success section:
       if (progressRes.data.completed) {
+        // ADD THESE LINES - Store onboarding completion and profile data
+        localStorage.setItem('onboarding_complete', 'true');
+        localStorage.setItem('user_profile', JSON.stringify(response.data));
+        
         toast.success(`Onboarding completed! Your Admission Number is ${response.data.admission_number}`);
         router.push('/student');
       } else {

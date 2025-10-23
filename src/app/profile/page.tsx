@@ -37,69 +37,68 @@ const ProfilePage = () => {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    const loadProfileFromLocalStorage = () => {
-      try {
-        // Get user data from localStorage
-        const userData = localStorage.getItem("user");
-        const userRole = localStorage.getItem("role");
-        
-        if (!userData) {
-          setError("No user data found. Please log in again.");
-          setLoading(false);
-          return;
-        }
+ useEffect(() => {
+      const loadProfileFromLocalStorage = () => {
+        try {
+       
+          const userData = localStorage.getItem("user");
+          const userRole = localStorage.getItem("role");
+          const userProfile = localStorage.getItem("user_profile"); 
+          
+          if (!userData) {
+            setError("No user data found. Please log in again.");
+            setLoading(false);
+            return;
+          }
 
-        if (!userRole) {
-          setError("User role not found. Please log in again.");
-          setLoading(false);
-          return;
-        }
+          if (!userRole) {
+            setError("User role not found. Please log in again.");
+            setLoading(false);
+            return;
+          }
 
-        const user = JSON.parse(userData);
-        
-        // Create a basic profile from localStorage data
-        // In a real app, you might want to store more profile data in localStorage
-        // during login or onboarding
-        const profileData: Profile = {
-          id: user.id,
-          user: {
+          const user = JSON.parse(userData);
+          const profileFromStorage = userProfile ? JSON.parse(userProfile) : {}; // ADD THIS
+          
+          // Create a profile combining user data and stored profile data
+          const profileData: Profile = {
             id: user.id,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email: user.email,
-            role: user.role
-          },
-          // These fields would ideally be stored in localStorage during onboarding
-          // For now, we'll use empty values
-          phone: '',
-          address: '',
-          date_of_birth: '',
-          grade_level: '',
-          subjects: [],
-          children: [],
-          admission_number: '',
-          parent_name: '',
-          parent_contact: '',
-          subject_specialization: '',
-          hire_date: '',
-          emergency_contact: '',
-          occupation: ''
-        };
+            user: {
+              id: user.id,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              email: user.email,
+              role: user.role
+            },
+            // Use data from localStorage if available
+            phone: profileFromStorage.phone || '',
+            address: profileFromStorage.address || '',
+            date_of_birth: profileFromStorage.birth_date || profileFromStorage.date_of_birth || '',
+            grade_level: profileFromStorage.class_level || profileFromStorage.grade_level || '',
+            admission_number: profileFromStorage.admission_number || '',
+            parent_name: profileFromStorage.parent_name || '',
+            parent_contact: profileFromStorage.parent_contact || '',
+            subject_specialization: profileFromStorage.subject_specialization || '',
+            hire_date: profileFromStorage.hire_date || '',
+            emergency_contact: profileFromStorage.emergency_contact || '',
+            occupation: profileFromStorage.occupation || '',
+            subjects: profileFromStorage.subjects || [],
+            children: profileFromStorage.children || []
+          };
 
-        console.log('Profile data loaded from localStorage:', profileData);
-        setProfile(profileData);
-        
-      } catch (err: any) {
-        console.error('Profile load error:', err);
-        setError("Failed to load profile from local storage. Please complete your profile setup.");
-      } finally {
-        setLoading(false);
-      }
-    };
+          console.log('Profile data loaded from localStorage:', profileData);
+          setProfile(profileData);
+          
+        } catch (err: any) {
+          console.error('Profile load error:', err);
+          setError("Failed to load profile from local storage. Please complete your profile setup.");
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    loadProfileFromLocalStorage();
-  }, []);
+  loadProfileFromLocalStorage();
+}, []);
 
   const getDashboardRoute = () => {
     if (typeof window === 'undefined') return '/log-in';

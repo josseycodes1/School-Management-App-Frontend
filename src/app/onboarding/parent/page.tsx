@@ -222,11 +222,29 @@ export default function ParentOnboarding() {
 
       setProgress(progressRes.data)
 
+    
       if (progressRes.data.completed) {
-        toast.success('Onboarding completed successfully!')
-        router.push('/parent')
+        // ADD THESE LINES - Store onboarding completion and profile data
+        localStorage.setItem('onboarding_complete', 'true');
+        
+        // Create a safe profile object to store
+        const profileDataToStore = {
+          phone: formData.phone,
+          address: formData.address,
+          gender: formData.gender,
+          birth_date: formData.birth_date,
+          emergency_contact: formData.emergency_contact,
+          occupation: formData.occupation,
+          blood_type: formData.blood_type
+        
+        };
+        
+        localStorage.setItem('user_profile', JSON.stringify(profileDataToStore));
+        
+        toast.success('Onboarding completed successfully!');
+        router.push('/parent');
       } else {
-        toast.success('Progress saved successfully!')
+        toast.success('Progress saved successfully!');
       }
 
     } catch (error: any) {
