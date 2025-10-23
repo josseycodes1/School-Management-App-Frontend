@@ -18,7 +18,7 @@ export interface FormData {
   hire_date: string;
   qualifications: string;
   photo: File | null;
-  photo_url?: string; // For existing photo URL from backend
+  photo_url?: string; 
 }
 
 export interface ProgressData {
@@ -79,12 +79,12 @@ export default function TeacherOnboarding() {
     }
   });
 
-  // Validation functions
+ 
   const validateField = (name: string, value: any): string | undefined => {
     switch (name) {
       case 'phone':
         if (!value) return 'Phone number is required';
-        // More flexible phone validation
+        
         const cleanedPhone = value.replace(/[\s\-\(\)\+]/g, '');
         const phoneRegex = /^[0-9]{8,15}$/;
         if (!phoneRegex.test(cleanedPhone)) {
@@ -106,7 +106,7 @@ export default function TeacherOnboarding() {
         const birthDate = new Date(value);
         const today = new Date();
         if (birthDate > today) return 'Birth date cannot be in the future';
-        // Check if age is at least 18
+       
         const minAgeDate = new Date();
         minAgeDate.setFullYear(today.getFullYear() - 18);
         if (birthDate > minAgeDate) return 'You must be at least 18 years old';
@@ -136,7 +136,7 @@ export default function TeacherOnboarding() {
   const validateForm = (): boolean => {
       const errors: ValidationErrors = {};
       
-      // Only validate REQUIRED fields
+    
       const requiredFields: (keyof FormData)[] = [
         'phone', 'address', 'gender', 'birth_date', 
         'subject_specialization', 'hire_date'
@@ -149,7 +149,7 @@ export default function TeacherOnboarding() {
         }
       });
 
-      // Special handling for photo
+    
       if (!formData.photo && !previewImage) {
         errors.photo = 'Profile photo is required';
       }
@@ -158,7 +158,7 @@ export default function TeacherOnboarding() {
       return Object.keys(errors).length === 0;
     };
 
-  // Check if user is already onboarded
+
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       try {
@@ -168,7 +168,7 @@ export default function TeacherOnboarding() {
           return;
         }
 
-        // Get onboarding progress
+
         const progressRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/onboarding/progress/`, 
           {
@@ -180,13 +180,13 @@ export default function TeacherOnboarding() {
 
         setProgress(progressRes.data);
 
-        // If onboarding is complete, redirect to dashboard
+     
         if (progressRes.data.completed) {
           router.push('/teacher');
           return;
         }
 
-        // Pre-fill existing data if available
+      
         const profileRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/onboarding/`,
           {
@@ -227,10 +227,10 @@ export default function TeacherOnboarding() {
     [name]: value
   }));
 
-  // Mark field as touched
+
   setTouchedFields(prev => new Set(prev).add(name));
 
-  // Validate field in real-time
+ 
   const error = validateField(name, value);
   setValidationErrors(prev => ({
     ...prev,
@@ -242,7 +242,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
   if (e.target.files && e.target.files.length > 0) {
     const file = e.target.files[0];
     
-    // Validate file type
+
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       const errorMsg = 'Please select a valid image file (JPEG, PNG, or WebP)';
@@ -251,7 +251,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
       return;
     }
     
-    // Validate file size (5MB max)
+    
     if (file.size > 5 * 1024 * 1024) {
       const errorMsg = 'File size should be less than 5MB';
       setValidationErrors(prev => ({ ...prev, photo: errorMsg }));
@@ -264,10 +264,10 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
       photo: file
     }));
 
-    // Clear photo error
+   
     setValidationErrors(prev => ({ ...prev, photo: undefined }));
 
-    // Create preview
+    
     const reader = new FileReader();
     reader.onload = () => {
       setPreviewImage(reader.result as string);
@@ -302,7 +302,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         'subject_specialization', 'hire_date'
       ];
       
-      // Count how many required fields are filled and valid
+  
       const filledFields = requiredFields.filter(field => {
         const value = formData[field];
         const stringValue = value ? value.toString().trim() : '';
@@ -310,14 +310,14 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         return stringValue !== '' && !validationError;
       }).length;
       
-      // Add photo if present
+
       const hasPhoto = !!formData.photo || !!previewImage;
       const totalFilled = filledFields + (hasPhoto ? 1 : 0);
-      const totalRequired = requiredFields.length + 1; // +1 for photo
+      const totalRequired = requiredFields.length + 1; 
       
       const progressPercentage = Math.round((totalFilled / totalRequired) * 100);
       
-      // Update required_fields for the progress display
+     
       const requiredFieldsStatus = {
         phone: !!formData.phone && !validateField('phone', formData.phone),
         address: !!formData.address && !validateField('address', formData.address),
@@ -340,13 +340,13 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
   }, [formData, previewImage]);
 
   const isFormValid = (): boolean => {
-      // Define required fields with proper typing
+     
       const requiredFields: (keyof FormData)[] = [
         'phone', 'address', 'gender', 'birth_date', 
         'subject_specialization', 'hire_date'
       ];
       
-      // Check if all required fields have values and pass validation
+   
       const hasAllRequiredFields = requiredFields.every(field => {
         const value = formData[field];
         const stringValue = value ? value.toString().trim() : '';
@@ -354,10 +354,10 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         return stringValue !== '' && !validationError;
       });
       
-      // Check photo exists
+     
       const hasPhoto = !!formData.photo || !!previewImage;
       
-      // Check no validation errors - filter out undefined/empty errors
+     
       const actualErrors = Object.values(validationErrors).filter(error => 
         error && error.trim() !== ''
       );
@@ -369,11 +369,11 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Mark all fields as touched to show all errors
+    
     const allFields = ['phone', 'address', 'gender', 'birth_date', 'subject_specialization', 'hire_date', 'photo'];
     setTouchedFields(prev => new Set([...prev, ...allFields]));
 
-    // Final validation
+ 
     if (!validateForm()) {
       toast.error('Please fix the errors in the form before submitting');
       return;
@@ -394,7 +394,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         return d.toISOString().split('T')[0];
       }
 
-      // Append all fields with proper names
+     
       formPayload.append('phone', formData.phone);
       formPayload.append('address', formData.address);
       formPayload.append('gender', formData.gender);
@@ -406,7 +406,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         formPayload.append('photo', formData.photo);
       }
       
-      // Optional fields
+     
       if (formData.blood_type) {
         formPayload.append('blood_type', formData.blood_type);
       }
@@ -432,7 +432,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         }
       );
 
-      // Check progress after submission
+    
       const progressRes = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/onboarding/progress/`,
         {
@@ -444,9 +444,9 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
 
       setProgress(progressRes.data);
 
-      // In handleSubmit function, find the success section:
+    
       if (progressRes.data.completed) {
-        // ADD THESE LINES - Store onboarding completion and profile data
+       
         localStorage.setItem('onboarding_complete', 'true');
         localStorage.setItem('user_profile', JSON.stringify(response.data));
         
@@ -460,7 +460,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
       console.error('Error:', error);
       
       if (error.response?.data) {
-        // Handle backend validation errors
+       
         const backendErrors = error.response.data;
         if (typeof backendErrors === 'object') {
           const newErrors: ValidationErrors = {};

@@ -27,3 +27,16 @@ export interface ProgressData {
     parent_contact: boolean;
   };
 }
+
+export interface ValidationErrors {
+  phone?: string;
+  address?: string;
+  gender?: string;
+  birth_date?: string;
+  admission_number?: string;
+  class_level?: string;
+  photo?: string;
+  parent_name?: string;
+  parent_contact?: string;
+  [key: string]: string | undefined;
+}
