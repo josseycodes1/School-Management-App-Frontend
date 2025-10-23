@@ -186,13 +186,13 @@ const StudentResultsPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-pink-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Results</h1>
+              <h1 className="text-3xl font-bold text-josseypink1">My Results</h1>
               <p className="text-gray-600 mt-2">
                 {studentInfo && `${studentInfo.user.first_name} ${studentInfo.user.last_name}`} • {studentInfo && studentInfo.grade} • {studentInfo && studentInfo.class_name}
               </p>
