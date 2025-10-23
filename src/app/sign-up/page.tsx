@@ -404,7 +404,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters long</p>
+            <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters long and must contain at least one uppercase letter, one lowercase letter, and one number</p>
           </div>
 
           <div className="mb-4">
