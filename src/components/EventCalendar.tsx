@@ -21,7 +21,7 @@ type EventItem = {
   updated_at?: string;
 };
 
-const MAX_EVENTS = 3;
+const MAX_EVENTS = 2; // Changed from 3 to 2
 
 const EventCalendar = () => {
   const [value, onChange] = useState<Value>(new Date());
@@ -96,11 +96,10 @@ const EventCalendar = () => {
             />
           )}
           <button
-            aria-label="See more events"
-            className="p-1 rounded-md bg-josseypink1 hover:bg-josseypink2"
+            className="text-xs text-gray-400 cursor-pointer hover:bg-josseypink1 hover:text-white p-2 rounded transition-colors"
             onClick={() => router.push("/list/events")}
           >
-            <Image src="/more.png" alt="more" width={20} height={20} />
+            View All
           </button>
         </div>
       </div>
