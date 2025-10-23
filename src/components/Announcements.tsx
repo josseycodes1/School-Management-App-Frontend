@@ -1,21 +1,17 @@
-
 "use client";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-
-interface Audience {
-  student_first_name?: string | null;
-  teacher_first_name?: string | null;
-  parent_first_name?: string | null;
-}
 
 interface Announcement {
   id: number;
   title: string;
   message: string;
   start_date: string;
-  audiences: Audience[];
+  target_students: boolean;
+  target_teachers: boolean;
+  target_parents: boolean;
+  target_roles: string[];
 }
 
 const Announcements = ({ limit = 3 }: { limit?: number }) => {
@@ -82,19 +78,9 @@ const Announcements = ({ limit = 3 }: { limit?: number }) => {
                 View More
               </button>
 
-
-            {announcement.audiences.length > 0 && (
-              <div className="mt-2 text-xs text-white">
-                <strong>Audience:</strong>{" "}
-                {[
-                  announcement.audiences.some(a => a.student_first_name) ? "Students" : null,
-                  announcement.audiences.some(a => a.teacher_first_name) ? "Teachers" : null,
-                  announcement.audiences.some(a => a.parent_first_name) ? "Parents" : null,
-                ]
-                  .filter(Boolean)
-                  .join(", ")}
-              </div>
-            )}
+            <div className="mt-2 text-xs text-white">
+              <strong>Audience:</strong> {announcement.target_roles.join(", ")}
+            </div>
           </div>
         ))}
       </div>

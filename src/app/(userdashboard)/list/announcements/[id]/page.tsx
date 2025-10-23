@@ -8,21 +8,19 @@ import Image from "next/image";
 import FormModal from "@/components/FormModal";
 import { isAdmin } from "@/lib/user-role";
 
-type Audience = {
-  student_first_name?: string | null;
-  teacher_first_name?: string | null;
-  parent_first_name?: string | null;
-};
-
 type Announcement = {
   id: number;
   title: string;
   message: string;
   start_date: string;
   end_date?: string;
-  audiences: Audience[];
+  target_students: boolean;
+  target_teachers: boolean;
+  target_parents: boolean;
+  target_roles: string[];
   created_at: string;
   updated_at: string;
+  is_active: boolean;
   created_by?: {
     id: number;
     first_name: string;
@@ -88,16 +86,6 @@ const AnnouncementDetailPage = () => {
     } else if (type === "delete") {
       router.push("/list/announcements");
     }
-  };
-
-  const formatAudience = (audiences: Audience[]) => {
-    return [
-      audiences.some((a) => a.student_first_name) ? "Students" : null,
-      audiences.some((a) => a.teacher_first_name) ? "Teachers" : null,
-      audiences.some((a) => a.parent_first_name) ? "Parents" : null,
-    ]
-      .filter(Boolean)
-      .join(", ");
   };
 
   const formatDate = (dateString: string) => {
@@ -246,7 +234,7 @@ const AnnouncementDetailPage = () => {
           <div className="flex items-center">
             <span className="text-sm font-medium text-gray-500 mr-2">Audience:</span>
             <span className="px-2 py-1 text-xs font-semibold rounded-full bg-josseypink1 text-white">
-              {formatAudience(announcement.audiences)}
+              {announcement.target_roles.join(", ")}
             </span>
           </div>
           
@@ -261,6 +249,13 @@ const AnnouncementDetailPage = () => {
               <span className="text-sm text-gray-700">{formatDate(announcement.end_date)}</span>
             </div>
           )}
+          
+          <div className="flex items-center">
+            <span className="text-sm font-medium text-gray-500 mr-2">Status:</span>
+            <span className={`text-sm ${announcement.is_active ? 'text-green-600' : 'text-red-600'}`}>
+              {announcement.is_active ? 'Active' : 'Inactive'}
+            </span>
+          </div>
           
           {announcement.created_by && (
             <div className="flex items-center">
@@ -298,7 +293,7 @@ const AnnouncementDetailPage = () => {
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Target Audience</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {announcement.audiences.some(a => a.student_first_name) && (
+          {announcement.target_students && (
             <div className="border border-gray-200 rounded-lg p-4">
               <h3 className="font-medium text-gray-700 mb-2 flex items-center">
                 <svg className="w-5 h-5 text-josseypink1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,20 +301,11 @@ const AnnouncementDetailPage = () => {
                 </svg>
                 Students
               </h3>
-              <ul className="text-sm text-gray-600">
-                {announcement.audiences
-                  .filter(a => a.student_first_name)
-                  .map((audience, index) => (
-                    <li key={index} className="truncate">
-                      {audience.student_first_name}
-                    </li>
-                  ))
-                }
-              </ul>
+              <p className="text-sm text-gray-600">All students can view this announcement</p>
             </div>
           )}
           
-          {announcement.audiences.some(a => a.teacher_first_name) && (
+          {announcement.target_teachers && (
             <div className="border border-gray-200 rounded-lg p-4">
               <h3 className="font-medium text-gray-700 mb-2 flex items-center">
                 <svg className="w-5 h-5 text-josseypink1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -327,20 +313,11 @@ const AnnouncementDetailPage = () => {
                 </svg>
                 Teachers
               </h3>
-              <ul className="text-sm text-gray-600">
-                {announcement.audiences
-                  .filter(a => a.teacher_first_name)
-                  .map((audience, index) => (
-                    <li key={index} className="truncate">
-                      {audience.teacher_first_name}
-                    </li>
-                  ))
-                }
-              </ul>
+              <p className="text-sm text-gray-600">All teachers can view this announcement</p>
             </div>
           )}
           
-          {announcement.audiences.some(a => a.parent_first_name) && (
+          {announcement.target_parents && (
             <div className="border border-gray-200 rounded-lg p-4">
               <h3 className="font-medium text-gray-700 mb-2 flex items-center">
                 <svg className="w-5 h-5 text-josseypink1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -348,16 +325,7 @@ const AnnouncementDetailPage = () => {
                 </svg>
                 Parents
               </h3>
-              <ul className="text-sm text-gray-600">
-                {announcement.audiences
-                  .filter(a => a.parent_first_name)
-                  .map((audience, index) => (
-                    <li key={index} className="truncate">
-                      {audience.parent_first_name}
-                    </li>
-                  ))
-                }
-              </ul>
+              <p className="text-sm text-gray-600">All parents can view this announcement</p>
             </div>
           )}
         </div>

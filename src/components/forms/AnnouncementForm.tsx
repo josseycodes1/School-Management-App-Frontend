@@ -11,7 +11,10 @@ const schema = z.object({
   title: z.string().min(1, "Title is required"),
   message: z.string().min(1, "Message is required"),
   start_date: z.string().min(1, "Date is required"),
-  audiences: z.array(z.string()).min(1, "At least one audience is required"),
+  target_students: z.boolean().default(false),
+  target_teachers: z.boolean().default(false),
+  target_parents: z.boolean().default(false),
+  is_active: z.boolean().default(true),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -28,7 +31,13 @@ const AnnouncementForm = ({
   onClose?: () => void;
 }) => {
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<FormData>({
-    resolver: zodResolver(schema)
+    resolver: zodResolver(schema),
+    defaultValues: {
+      target_students: false,
+      target_teachers: false,
+      target_parents: false,
+      is_active: true,
+    }
   });
 
   useEffect(() => {
@@ -37,11 +46,10 @@ const AnnouncementForm = ({
         title: data.title || "",
         message: data.message || "",
         start_date: data.start_date?.split('T')[0] || "",
-        audiences: data.audiences?.map((a: any) => 
-          a.student_first_name ? "students" : 
-          a.teacher_first_name ? "teachers" : 
-          "parents"
-        ) || []
+        target_students: data.target_students || false,
+        target_teachers: data.target_teachers || false,
+        target_parents: data.target_parents || false,
+        is_active: data.is_active !== undefined ? data.is_active : true,
       });
     }
   }, [data, reset]);
@@ -64,15 +72,6 @@ const AnnouncementForm = ({
       onSuccess?.(response.data);
     } catch (error) {
       console.error("Form submission error:", error);
-    }
-  };
-
-  const toggleAudience = (audience: string) => {
-    const currentAudiences = watch("audiences") || [];
-    if (currentAudiences.includes(audience)) {
-      setValue("audiences", currentAudiences.filter(a => a !== audience));
-    } else {
-      setValue("audiences", [...currentAudiences, audience]);
     }
   };
 
@@ -119,7 +118,7 @@ const AnnouncementForm = ({
             </div>
 
             <InputField
-              label="Date*"
+              label="Start Date*"
               name="start_date"
               type="date"
               register={register}
@@ -127,25 +126,50 @@ const AnnouncementForm = ({
               wrapperClassName="w-full"
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-josseypink2 focus:border-josseypink2 block w-full p-2.5"
             />
-            
+
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-900">Audience*</label>
+              <label className="block mb-2 text-sm font-medium text-gray-900">Target Audience*</label>
               <div className="flex gap-6">
-                {["students", "teachers", "parents"].map((audience) => (
-                  <label key={audience} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={watch("audiences")?.includes(audience) || false}
-                      onChange={() => toggleAudience(audience)}
-                      className="w-4 h-4 text-josseypink1 rounded border-gray-300 focus:ring-josseypink2"
-                    />
-                    <span className="capitalize">{audience}</span>
-                  </label>
-                ))}
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    {...register("target_students")}
+                    className="w-4 h-4 text-josseypink1 rounded border-gray-300 focus:ring-josseypink2"
+                  />
+                  <span>Students</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    {...register("target_teachers")}
+                    className="w-4 h-4 text-josseypink1 rounded border-gray-300 focus:ring-josseypink2"
+                  />
+                  <span>Teachers</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    {...register("target_parents")}
+                    className="w-4 h-4 text-josseypink1 rounded border-gray-300 focus:ring-josseypink2"
+                  />
+                  <span>Parents</span>
+                </label>
               </div>
-              {errors.audiences && (
-                <p className="mt-1 text-sm text-red-600">{errors.audiences.message}</p>
+              {!watch("target_students") && !watch("target_teachers") && !watch("target_parents") && (
+                <p className="mt-1 text-sm text-red-600">At least one audience is required</p>
               )}
+            </div>
+
+            <div>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  {...register("is_active")}
+                  className="w-4 h-4 text-josseypink1 rounded border-gray-300 focus:ring-josseypink2"
+                />
+                <span className="text-sm font-medium text-gray-900">Active</span>
+              </label>
+              <p className="mt-1 text-sm text-gray-500">Inactive announcements won't be visible to users</p>
             </div>
           </div>
 
@@ -159,7 +183,8 @@ const AnnouncementForm = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 text-sm font-medium text-white bg-josseypink1 rounded-lg hover:bg-josseypink2 focus:outline-none focus:ring-4 focus:ring-pink100"
+              disabled={!watch("target_students") && !watch("target_teachers") && !watch("target_parents")}
+              className="px-5 py-2.5 text-sm font-medium text-white bg-josseypink1 rounded-lg hover:bg-josseypink2 focus:outline-none focus:ring-4 focus:ring-pink100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {type === "create" ? "Create Announcement" : "Save Changes"}
             </button>

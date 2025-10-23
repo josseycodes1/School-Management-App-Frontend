@@ -9,18 +9,15 @@ import usePagination from "@/hooks/usePagination";
 import { useState } from "react";
 import { isAdmin } from "@/lib/user-role";
 
-type Audience = {
-  student_first_name?: string | null;
-  teacher_first_name?: string | null;
-  parent_first_name?: string | null;
-};
-
 type Announcement = {
   id: number;
   title: string;
   message: string;
   start_date: string;
-  audiences: Audience[];
+  target_students: boolean;
+  target_teachers: boolean;
+  target_parents: boolean;
+  target_roles: string[];
 };
 
 const AnnouncementListPage = () => {
@@ -50,14 +47,8 @@ const AnnouncementListPage = () => {
     refreshData();
   };
 
-  const formatAudience = (audiences: Audience[]) => {
-    return [
-      audiences.some((a) => a.student_first_name) ? "Students" : null,
-      audiences.some((a) => a.teacher_first_name) ? "Teachers" : null,
-      audiences.some((a) => a.parent_first_name) ? "Parents" : null,
-    ]
-      .filter(Boolean)
-      .join(", ");
+  const formatAudience = (announcement: Announcement) => {
+    return announcement.target_roles.join(", ");
   };
 
   // Check if user can edit/delete (only admin)
@@ -228,7 +219,7 @@ const AnnouncementListPage = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-josseypink1 text-white">
-                      {formatAudience(announcement.audiences)}
+                      {formatAudience(announcement)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -423,7 +414,7 @@ const AnnouncementListPage = () => {
                 <div className="flex justify-between">
                   <span className="font-medium">Audience:</span>
                   <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-josseypink1 text-white">
-                    {formatAudience(announcement.audiences)}
+                    {formatAudience(announcement)}
                   </span>
                 </div>
                 
