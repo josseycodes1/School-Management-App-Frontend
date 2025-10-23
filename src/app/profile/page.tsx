@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -19,9 +18,16 @@ interface Profile {
   grade_level?: string;
   subjects?: string[];
   children?: any[];
-  phone_number?: string;
+  phone?: string;
   address?: string;
   date_of_birth?: string;
+  admission_number?: string;
+  parent_name?: string;
+  parent_contact?: string;
+  subject_specialization?: string;
+  hire_date?: string;
+  emergency_contact?: string;
+  occupation?: string;
   // Add other role-specific fields as needed
 }
 
@@ -32,13 +38,14 @@ const ProfilePage = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const loadProfileFromLocalStorage = () => {
       try {
-        const token = localStorage.getItem("accessToken");
+        // Get user data from localStorage
+        const userData = localStorage.getItem("user");
         const userRole = localStorage.getItem("role");
         
-        if (!token) {
-          setError("No access token found. Please log in again.");
+        if (!userData) {
+          setError("No user data found. Please log in again.");
           setLoading(false);
           return;
         }
@@ -49,59 +56,54 @@ const ProfilePage = () => {
           return;
         }
 
-        // Construct endpoint based on user role
-        let endpoint = '';
-        switch (userRole) {
-          case 'student':
-            endpoint = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/me/`;
-            break;
-          case 'teacher':
-            endpoint = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/me/`;
-            break;
-          case 'parent':
-            endpoint = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/me/`;
-            break;
-          case 'admin':
-            endpoint = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/me/`;
-            break;
-          default:
-            setError(`Unknown user role: ${userRole}`);
-            setLoading(false);
-            return;
-        }
-
-        console.log(`Fetching profile from: ${endpoint}`);
+        const user = JSON.parse(userData);
         
-        const response = await axios.get(endpoint, {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        // Create a basic profile from localStorage data
+        // In a real app, you might want to store more profile data in localStorage
+        // during login or onboarding
+        const profileData: Profile = {
+          id: user.id,
+          user: {
+            id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            role: user.role
           },
-        });
+          // These fields would ideally be stored in localStorage during onboarding
+          // For now, we'll use empty values
+          phone: '',
+          address: '',
+          date_of_birth: '',
+          grade_level: '',
+          subjects: [],
+          children: [],
+          admission_number: '',
+          parent_name: '',
+          parent_contact: '',
+          subject_specialization: '',
+          hire_date: '',
+          emergency_contact: '',
+          occupation: ''
+        };
 
-        console.log('Profile data received:', response.data);
-        setProfile(response.data);
+        console.log('Profile data loaded from localStorage:', profileData);
+        setProfile(profileData);
         
       } catch (err: any) {
-        console.error('Profile fetch error:', err);
-        if (err.response?.status === 401) {
-          setError("Session expired. Please log in again.");
-          // Clear invalid token
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("role");
-        } else if (err.response?.status === 404) {
-          setError("Profile not found. Please complete your profile setup.");
-        } else {
-          setError(err.response?.data?.detail || err.response?.data?.message || "Failed to load profile. Please try again.");
-        }
+        console.error('Profile load error:', err);
+        setError("Failed to load profile from local storage. Please complete your profile setup.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProfile();
+    loadProfileFromLocalStorage();
   }, []);
 
   const getDashboardRoute = () => {
+    if (typeof window === 'undefined') return '/log-in';
+    
     const userRole = localStorage.getItem("role");
     switch (userRole) {
       case 'admin':
@@ -119,11 +121,23 @@ const ProfilePage = () => {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'Not provided';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch {
+      return 'Invalid date';
+    }
+  };
+
+  // Helper to check if user has completed onboarding
+  const hasCompletedOnboarding = () => {
+    if (typeof window === 'undefined') return false;
+    
+    const onboardingComplete = localStorage.getItem("onboarding_complete");
+    return onboardingComplete === "true";
   };
 
   if (loading) {
@@ -139,6 +153,7 @@ const ProfilePage = () => {
 
   if (error || !profile) {
     const dashboardRoute = getDashboardRoute();
+    const hasOnboarding = hasCompletedOnboarding();
     
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -149,15 +164,30 @@ const ProfilePage = () => {
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            {error ? "Error Loading Profile" : "Profile Not Found"}
+            {error ? "Profile Setup Required" : "Profile Not Found"}
           </h2>
           <p className="text-gray-600 mb-6">
-            {error || "Unable to load your profile information."}
+            {error || "Please complete your profile setup to view your information."}
           </p>
           <div className="space-y-3">
+            {!hasOnboarding && (
+              <button
+                onClick={() => {
+                  const role = localStorage.getItem("role");
+                  if (role) {
+                    router.push(`/onboarding/${role}`);
+                  } else {
+                    router.push('/log-in');
+                  }
+                }}
+                className="w-full bg-josseypink1 text-white px-4 py-3 rounded-lg hover:bg-josseypink2 transition-colors font-medium"
+              >
+                Complete Profile Setup
+              </button>
+            )}
             <button
               onClick={() => window.location.reload()}
-              className="w-full bg-josseypink1 text-white px-4 py-3 rounded-lg hover:bg-josseypink2 transition-colors font-medium"
+              className="w-full border border-gray-300 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
             >
               Try Again
             </button>
@@ -187,6 +217,32 @@ const ProfilePage = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800">My Profile</h1>
           <p className="text-gray-600 mt-2">View and manage your personal information</p>
+          
+          {/* Onboarding reminder */}
+          {!hasCompletedOnboarding() && (
+            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-md p-4">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <p className="text-yellow-700">
+                  Your profile is incomplete.{" "}
+                  <button
+                    onClick={() => {
+                      const role = localStorage.getItem("role");
+                      if (role) {
+                        router.push(`/onboarding/${role}`);
+                      }
+                    }}
+                    className="underline font-medium hover:text-yellow-800"
+                  >
+                    Complete your profile setup
+                  </button>{" "}
+                  to access all features.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Profile Card */}
@@ -252,7 +308,7 @@ const ProfilePage = () => {
                   <div className="space-y-3">
                     <div>
                       <label className="text-sm font-medium text-gray-500 block">Phone Number</label>
-                      <p className="text-gray-800 font-medium">{profile.phone_number || 'Not provided'}</p>
+                      <p className="text-gray-800 font-medium">{profile.phone || 'Not provided'}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500 block">Address</label>
@@ -270,12 +326,14 @@ const ProfilePage = () => {
                     <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                       <svg className="w-5 h-5 text-josseypink1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14v6l9-5-9-5-9 5 9 5z" />
                       </svg>
                       Student Information
                     </h3>
                     <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium text-gray-500 block">Admission Number</label>
+                        <p className="text-gray-800 font-medium">{profile.admission_number || 'Not assigned'}</p>
+                      </div>
                       <div>
                         <label className="text-sm font-medium text-gray-500 block">Grade Level</label>
                         <p className="text-gray-800 font-medium">{profile.grade_level || 'Not specified'}</p>
@@ -284,6 +342,13 @@ const ProfilePage = () => {
                         <label className="text-sm font-medium text-gray-500 block">Date of Birth</label>
                         <p className="text-gray-800 font-medium">{formatDate(profile.date_of_birth || '')}</p>
                       </div>
+                      {profile.parent_name && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-500 block">Parent/Guardian</label>
+                          <p className="text-gray-800 font-medium">{profile.parent_name}</p>
+                          <p className="text-sm text-gray-600">{profile.parent_contact}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -299,18 +364,12 @@ const ProfilePage = () => {
                     </h3>
                     <div className="space-y-3">
                       <div>
-                        <label className="text-sm font-medium text-gray-500 block">Subjects</label>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {profile.subjects && profile.subjects.length > 0 ? (
-                            profile.subjects.map((subject, index) => (
-                              <span key={index} className="px-2 py-1 bg-josseypink1 text-white text-xs rounded-full">
-                                {subject}
-                              </span>
-                            ))
-                          ) : (
-                            <p className="text-gray-800 font-medium">No subjects assigned</p>
-                          )}
-                        </div>
+                        <label className="text-sm font-medium text-gray-500 block">Subject Specialization</label>
+                        <p className="text-gray-800 font-medium">{profile.subject_specialization || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500 block">Hire Date</label>
+                        <p className="text-gray-800 font-medium">{formatDate(profile.hire_date || '')}</p>
                       </div>
                     </div>
                   </div>
@@ -327,19 +386,12 @@ const ProfilePage = () => {
                     </h3>
                     <div className="space-y-3">
                       <div>
-                        <label className="text-sm font-medium text-gray-500 block">Children</label>
-                        {profile.children && profile.children.length > 0 ? (
-                          <div className="space-y-2">
-                            {profile.children.map((child, index) => (
-                              <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                                <p className="text-gray-800 font-medium">{child.name}</p>
-                                <p className="text-sm text-gray-600">{child.grade_level}</p>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-gray-800 font-medium">No children linked</p>
-                        )}
+                        <label className="text-sm font-medium text-gray-500 block">Occupation</label>
+                        <p className="text-gray-800 font-medium">{profile.occupation || 'Not provided'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500 block">Emergency Contact</label>
+                        <p className="text-gray-800 font-medium">{profile.emergency_contact || 'Not provided'}</p>
                       </div>
                     </div>
                   </div>
@@ -360,8 +412,10 @@ const ProfilePage = () => {
                       <p className="text-gray-800 font-medium">{profile.user.id}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-500 block">Profile ID</label>
-                      <p className="text-gray-800 font-medium">{profile.id}</p>
+                      <label className="text-sm font-medium text-gray-500 block">Profile Status</label>
+                      <p className={`font-medium ${hasCompletedOnboarding() ? 'text-green-600' : 'text-yellow-600'}`}>
+                        {hasCompletedOnboarding() ? 'Complete' : 'Incomplete - Setup Required'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -370,6 +424,19 @@ const ProfilePage = () => {
 
             {/* Action Buttons */}
             <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row gap-3 justify-end">
+              {!hasCompletedOnboarding() && (
+                <button
+                  onClick={() => {
+                    const role = localStorage.getItem("role");
+                    if (role) {
+                      router.push(`/onboarding/${role}`);
+                    }
+                  }}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                >
+                  Complete Profile Setup
+                </button>
+              )}
               <button
                 onClick={() => router.push(getDashboardRoute())}
                 className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
