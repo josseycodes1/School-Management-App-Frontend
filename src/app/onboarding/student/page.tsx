@@ -122,11 +122,6 @@ export default function StudentOnboarding() {
         if (birthDate > minStudentAge) return 'Student must be at least 6 years old';
         return undefined;
 
-      case 'admission_number':
-        if (!value) return 'Admission number is required';
-        if (value.length < 3) return 'Admission number should be at least 3 characters';
-        return undefined;
-
       case 'class_level':
         if (!value) return 'Class level is required';
         return undefined;
@@ -159,7 +154,7 @@ export default function StudentOnboarding() {
     
     const requiredFields: (keyof FormData)[] = [
       'phone', 'address', 'gender', 'birth_date', 
-      'admission_number', 'class_level', 'parent_name', 'parent_contact'
+      'class_level', 'parent_name', 'parent_contact'
     ];
 
     requiredFields.forEach(field => {
@@ -354,7 +349,7 @@ export default function StudentOnboarding() {
   const isFormValid = (): boolean => {
     const requiredFields: (keyof FormData)[] = [
       'phone', 'address', 'gender', 'birth_date', 
-      'admission_number', 'class_level', 'parent_name', 'parent_contact'
+      'class_level', 'parent_name', 'parent_contact'
     ];
     
     const hasAllRequiredFields = requiredFields.every(field => {

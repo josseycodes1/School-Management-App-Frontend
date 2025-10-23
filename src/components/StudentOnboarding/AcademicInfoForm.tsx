@@ -51,31 +51,26 @@ export default function AcademicInfoForm({
       <h2 className="text-lg font-medium text-gray-900 mb-4">Academic Information</h2>
       
       <div className="grid grid-cols-1 gap-y-4 gap-x-6 sm:grid-cols-6">
-        {/* Admission Number */}
-        <div className={`sm:col-span-3 ${getFieldError('admission_number') && 'border-l-4 border-red-500 pl-3'}`}>
+        {/* Admission Number - Auto-generated */}
+        <div className="sm:col-span-3">
           <label htmlFor="admission_number" className="block text-sm font-medium text-gray-700">
-            Admission Number *
+            Admission Number
           </label>
           <input
             type="text"
             name="admission_number"
             id="admission_number"
             value={formData.admission_number}
-            onChange={onChange}
-            onBlur={onBlur}
-            className={getInputClass('admission_number')}
-            placeholder="Enter admission number"
-            required
+            readOnly
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 cursor-not-allowed sm:text-sm p-2 border"
+            placeholder="Will be generated automatically"
           />
-          {getFieldError('admission_number') && (
-            <p className="mt-1 text-sm text-red-600">{getFieldError('admission_number')}</p>
-          )}
-          {!getFieldError('admission_number') && formData.admission_number && (
-            <p className="mt-1 text-sm text-green-600">✓ Valid admission number</p>
-          )}
-          <p className="text-sm text-gray-500 mt-1">
-            Your admission number will be verified with school records.
+          <p className="mt-1 text-sm text-gray-500">
+            Your admission number will be automatically generated after you submit the form.
           </p>
+          {formData.admission_number && (
+            <p className="mt-1 text-sm text-green-600">✓ Admission number assigned</p>
+          )}
         </div>
 
         {/* Class Level */}
