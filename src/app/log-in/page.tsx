@@ -8,8 +8,12 @@ import axios from 'axios'
 import { Eye, EyeOff } from 'lucide-react'
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required")
+  email: z.string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address"),
+  password: z.string()
+    .min(1, "Password is required")
+    .min(6, "Password must be at least 6 characters")
 })
 
 export default function LoginPage() {
@@ -90,6 +94,15 @@ export default function LoginPage() {
       return
     }
 
+    // Additional email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      setErrors(prev => ({ ...prev, email: 'Please enter a valid email address' }))
+      setIsLoading(false)
+      toast.error('Please enter a valid email address')
+      return
+    }
+
     try {
       console.log('Backend URL:', process.env.NEXT_PUBLIC_BACKEND_URL)
       console.log('Login attempt to:', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/login/`)
@@ -149,15 +162,41 @@ export default function LoginPage() {
 
         switch (status) {
           case 401:
-            toast.error('Invalid email or password. Please check your credentials.')
-            setErrors({
-              email: 'Invalid credentials',
-              password: 'Invalid credentials'
-            })
+            // Check if it's a specific error message from backend
+            const errorMessage = errorData?.error?.toLowerCase()
+            
+            if (errorMessage?.includes('email') || errorMessage?.includes('account')) {
+              setErrors({
+                email: 'Account not found with this email'
+              })
+              toast.error('Account not found. Please check your email or sign up.')
+            } else if (errorMessage?.includes('password') || errorMessage?.includes('credential')) {
+              setErrors({
+                password: 'Incorrect password'
+              })
+              toast.error('Incorrect password. Please try again.')
+            } else {
+              setErrors({
+                email: 'Invalid credentials',
+                password: 'Invalid credentials'
+              })
+              toast.error('Invalid email or password. Please check your credentials.')
+            }
             break
           case 400:
             if (errorData?.error) {
-              toast.error(errorData.error)
+              // Handle specific backend validation errors
+              const errorMsg = errorData.error.toLowerCase()
+              
+              if (errorMsg.includes('email') && errorMsg.includes('required')) {
+                setErrors({ email: 'Email is required' })
+              } else if (errorMsg.includes('password') && errorMsg.includes('required')) {
+                setErrors({ password: 'Password is required' })
+              } else if (errorMsg.includes('email') && errorMsg.includes('valid')) {
+                setErrors({ email: 'Please enter a valid email address' })
+              } else {
+                toast.error(errorData.error)
+              }
             } else if (errorData?.email || errorData?.password) {
               // Handle field-specific errors from backend
               setErrors({
@@ -170,12 +209,18 @@ export default function LoginPage() {
             }
             break
           case 404:
+            setErrors({
+              email: 'Service unavailable'
+            })
             toast.error('Service unavailable. Please try again later.')
             break
           case 500:
             toast.error('Server error. Please try again later.')
             break
           case 403:
+            setErrors({
+              email: 'Email not verified'
+            })
             toast.error('Account not verified. Please verify your email first.')
             break
           default:
@@ -292,7 +337,7 @@ export default function LoginPage() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 className={getInputClass('password')}
-                placeholder="••••••••"
+                placeholder="Enter your password"
                 disabled={isLoading}
               />
               <button
