@@ -10,17 +10,19 @@ interface User {
   last_name: string;
   email: string;
   role: string;
+  admission_number?: string;
+  class_level?: string;
 }
 
 interface Profile {
   id: number;
   user: User;
-  grade_level?: string;
+  class_level?: string;
   subjects?: string[];
   children?: any[];
   phone?: string;
   address?: string;
-  date_of_birth?: string;
+  birth_date?: string;
   admission_number?: string;
   parent_name?: string;
   parent_contact?: string;
@@ -28,7 +30,7 @@ interface Profile {
   hire_date?: string;
   emergency_contact?: string;
   occupation?: string;
-  // Add other role-specific fields as needed
+  photo?: string;
 }
 
 const ProfilePage = () => {
@@ -37,68 +39,77 @@ const ProfilePage = () => {
   const [error, setError] = useState("");
   const router = useRouter();
 
- useEffect(() => {
-      const loadProfileFromLocalStorage = () => {
-        try {
-       
-          const userData = localStorage.getItem("user");
-          const userRole = localStorage.getItem("role");
-          const userProfile = localStorage.getItem("user_profile"); 
-          
-          if (!userData) {
-            setError("No user data found. Please log in again.");
-            setLoading(false);
-            return;
-          }
+  useEffect(() => {
+    const loadProfileFromLocalStorage = () => {
+      try {
+        const userData = localStorage.getItem("user");
+        const userRole = localStorage.getItem("role");
+        const userProfile = localStorage.getItem("user_profile"); 
+        
+        console.log('🔍 Loading profile data...');
+        console.log('User data:', userData);
+        console.log('User role:', userRole);
+        console.log('User profile:', userProfile);
 
-          if (!userRole) {
-            setError("User role not found. Please log in again.");
-            setLoading(false);
-            return;
-          }
-
-          const user = JSON.parse(userData);
-          const profileFromStorage = userProfile ? JSON.parse(userProfile) : {}; // ADD THIS
-          
-          // Create a profile combining user data and stored profile data
-          const profileData: Profile = {
-            id: user.id,
-            user: {
-              id: user.id,
-              first_name: user.first_name,
-              last_name: user.last_name,
-              email: user.email,
-              role: user.role
-            },
-            // Use data from localStorage if available
-            phone: profileFromStorage.phone || '',
-            address: profileFromStorage.address || '',
-            date_of_birth: profileFromStorage.birth_date || profileFromStorage.date_of_birth || '',
-            grade_level: profileFromStorage.class_level || profileFromStorage.grade_level || '',
-            admission_number: profileFromStorage.admission_number || '',
-            parent_name: profileFromStorage.parent_name || '',
-            parent_contact: profileFromStorage.parent_contact || '',
-            subject_specialization: profileFromStorage.subject_specialization || '',
-            hire_date: profileFromStorage.hire_date || '',
-            emergency_contact: profileFromStorage.emergency_contact || '',
-            occupation: profileFromStorage.occupation || '',
-            subjects: profileFromStorage.subjects || [],
-            children: profileFromStorage.children || []
-          };
-
-          console.log('Profile data loaded from localStorage:', profileData);
-          setProfile(profileData);
-          
-        } catch (err: any) {
-          console.error('Profile load error:', err);
-          setError("Failed to load profile from local storage. Please complete your profile setup.");
-        } finally {
+        if (!userData) {
+          setError("No user data found. Please log in again.");
           setLoading(false);
+          return;
         }
-      };
 
-  loadProfileFromLocalStorage();
-}, []);
+        if (!userRole) {
+          setError("User role not found. Please log in again.");
+          setLoading(false);
+          return;
+        }
+
+        const user = JSON.parse(userData);
+        const profileFromStorage = userProfile ? JSON.parse(userProfile) : {};
+        
+        console.log('📊 Parsed profile data:', profileFromStorage);
+
+        // Create a profile combining user data and stored profile data
+        const profileData: Profile = {
+          id: user.id,
+          user: {
+            id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            role: user.role,
+            admission_number: user.admission_number || profileFromStorage.admission_number,
+            class_level: user.class_level || profileFromStorage.class_level
+          },
+          // Use data from localStorage if available
+          phone: profileFromStorage.phone || '',
+          address: profileFromStorage.address || '',
+          birth_date: profileFromStorage.birth_date || '',
+          class_level: profileFromStorage.class_level || user.class_level || '',
+          admission_number: profileFromStorage.admission_number || user.admission_number || '',
+          parent_name: profileFromStorage.parent_name || '',
+          parent_contact: profileFromStorage.parent_contact || '',
+          subject_specialization: profileFromStorage.subject_specialization || '',
+          hire_date: profileFromStorage.hire_date || '',
+          emergency_contact: profileFromStorage.emergency_contact || '',
+          occupation: profileFromStorage.occupation || '',
+          photo: profileFromStorage.photo || '',
+          subjects: profileFromStorage.subjects || [],
+          children: profileFromStorage.children || []
+        };
+
+        console.log('✅ Final profile data to display:', profileData);
+        setProfile(profileData);
+        
+      } catch (err: any) {
+        console.error('❌ Profile load error:', err);
+        setError("Failed to load profile from local storage. Please complete your profile setup.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfileFromLocalStorage();
+  }, []);
 
   const getDashboardRoute = () => {
     if (typeof window === 'undefined') return '/log-in';
@@ -249,16 +260,44 @@ const ProfilePage = () => {
           {/* Profile Header */}
           <div className="bg-josseypink1 px-6 py-8 text-white">
             <div className="flex items-center space-x-4">
-              <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                <span className="text-2xl font-bold">
-                  {profile.user.first_name?.[0]}{profile.user.last_name?.[0]}
-                </span>
-              </div>
+              {profile.photo ? (
+                <div className="w-20 h-20 rounded-full overflow-hidden bg-white">
+                  <img 
+                    src={profile.photo} 
+                    alt={`${profile.user.first_name} ${profile.user.last_name}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                  <span className="text-2xl font-bold">
+                    {profile.user.first_name?.[0]}{profile.user.last_name?.[0]}
+                  </span>
+                </div>
+              )}
               <div>
                 <h2 className="text-2xl font-bold">
                   {profile.user.first_name} {profile.user.last_name}
                 </h2>
-                <p className="text-josseypink2 opacity-90 capitalize">{profile.user.role}</p>
+                <div className="flex items-center space-x-2 mt-1">
+                  <p className="text-josseypink2 opacity-90 capitalize">{profile.user.role}</p>
+                  {profile.user.admission_number && (
+                    <>
+                      <span>•</span>
+                      <p className="text-josseypink2 opacity-90 font-mono">
+                        {profile.user.admission_number}
+                      </p>
+                    </>
+                  )}
+                  {profile.user.class_level && (
+                    <>
+                      <span>•</span>
+                      <p className="text-josseypink2 opacity-90">
+                        {profile.user.class_level}
+                      </p>
+                    </>
+                  )}
+                </div>
                 <p className="text-sm opacity-80 mt-1">{profile.user.email}</p>
               </div>
             </div>
@@ -331,15 +370,21 @@ const ProfilePage = () => {
                     <div className="space-y-3">
                       <div>
                         <label className="text-sm font-medium text-gray-500 block">Admission Number</label>
-                        <p className="text-gray-800 font-medium">{profile.admission_number || 'Not assigned'}</p>
+                        <p className="text-gray-800 font-medium font-mono">
+                          {profile.admission_number || profile.user.admission_number || 'Not assigned'}
+                        </p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-500 block">Grade Level</label>
-                        <p className="text-gray-800 font-medium">{profile.grade_level || 'Not specified'}</p>
+                        <label className="text-sm font-medium text-gray-500 block">Class Level</label>
+                        <p className="text-gray-800 font-medium">
+                          {profile.class_level || profile.user.class_level || 'Not specified'}
+                        </p>
                       </div>
                       <div>
                         <label className="text-sm font-medium text-gray-500 block">Date of Birth</label>
-                        <p className="text-gray-800 font-medium">{formatDate(profile.date_of_birth || '')}</p>
+                        <p className="text-gray-800 font-medium">
+                          {formatDate(profile.birth_date || '')}
+                        </p>
                       </div>
                       {profile.parent_name && (
                         <div>

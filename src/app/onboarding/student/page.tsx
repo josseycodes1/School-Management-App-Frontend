@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -90,7 +89,7 @@ export default function StudentOnboarding() {
     }
   });
 
-  // Validation functions
+  // Validation functions - KEEP YOUR EXISTING VALIDATION LOGIC
   const validateField = (name: string, value: any): string | undefined => {
     switch (name) {
       case 'phone':
@@ -210,14 +209,27 @@ export default function StudentOnboarding() {
           }
         );
 
+        const profileData = profileRes.data;
+        console.log('📥 Fetched profile data:', profileData);
+
         setFormData(prev => ({
           ...prev,
-          ...profileRes.data,
-          photo: null
+          ...profileData,
+          photo: null,
+          birth_date: profileData.birth_date || '',
+          class_level: profileData.class_level || ''
         }));
 
-        if (profileRes.data.photo) {
-          setPreviewImage(profileRes.data.photo);
+        if (profileData.photo) {
+          setPreviewImage(profileData.photo);
+        }
+
+        // If admission number is already generated, update form data
+        if (profileData.admission_number) {
+          setFormData(prev => ({
+            ...prev,
+            admission_number: profileData.admission_number
+          }));
         }
 
       } catch (error) {
@@ -307,7 +319,7 @@ export default function StudentOnboarding() {
   const calculateProgress = (): void => {
     const requiredFields: (keyof FormData)[] = [
       'phone', 'address', 'gender', 'birth_date', 
-      'admission_number', 'class_level', 'parent_name', 'parent_contact'
+      'class_level', 'parent_name', 'parent_contact'
     ];
     
     const filledFields = requiredFields.filter(field => {
@@ -328,7 +340,7 @@ export default function StudentOnboarding() {
       address: !!formData.address && !validateField('address', formData.address),
       gender: !!formData.gender && !validateField('gender', formData.gender),
       birth_date: !!formData.birth_date && !validateField('birth_date', formData.birth_date),
-      admission_number: !!formData.admission_number && !validateField('admission_number', formData.admission_number),
+      admission_number: !!formData.admission_number,
       class_level: !!formData.class_level && !validateField('class_level', formData.class_level),
       photo: hasPhoto,
       parent_name: !!formData.parent_name && !validateField('parent_name', formData.parent_name),
@@ -373,7 +385,7 @@ export default function StudentOnboarding() {
     e.preventDefault();
     
     // Mark all fields as touched
-    const allFields = ['phone', 'address', 'gender', 'birth_date', 'admission_number', 'class_level', 'parent_name', 'parent_contact', 'photo'];
+    const allFields = ['phone', 'address', 'gender', 'birth_date', 'class_level', 'parent_name', 'parent_contact', 'photo'];
     setTouchedFields(prev => new Set([...prev, ...allFields]));
 
     if (!validateForm()) {
@@ -401,7 +413,6 @@ export default function StudentOnboarding() {
       formPayload.append('address', formData.address);
       formPayload.append('gender', formData.gender);
       formPayload.append('birth_date', formatDateForBackend(formData.birth_date));
-      formPayload.append('admission_number', formData.admission_number);
       formPayload.append('class_level', formData.class_level);
       if (formData.photo) formPayload.append('photo', formData.photo);
       formPayload.append('parent_name', formData.parent_name);
@@ -422,6 +433,7 @@ export default function StudentOnboarding() {
         return;
       }
 
+      console.log('🚀 Submitting onboarding data...');
       const response = await axios.patch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/onboarding/`,
         formPayload,
@@ -432,6 +444,26 @@ export default function StudentOnboarding() {
           }
         }
       );
+
+      const userProfileData = response.data;
+      console.log('✅ Onboarding response:', userProfileData);
+      
+      // ✅ CRITICAL: Save the complete response data to localStorage
+      localStorage.setItem('user_profile', JSON.stringify(userProfileData));
+      localStorage.setItem('onboarding_complete', 'true');
+      
+      // Also update the user data with admission number and class level
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        const updatedUser = {
+          ...user,
+          admission_number: userProfileData.admission_number,
+          class_level: userProfileData.class_level
+        };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        console.log('✅ Updated user data with admission number:', updatedUser.admission_number);
+      }
 
       // Check progress after submission
       const progressRes = await axios.get(
@@ -446,26 +478,29 @@ export default function StudentOnboarding() {
       setProgress(progressRes.data);
 
       if (progressRes.data.completed) {
-        localStorage.setItem('onboarding_complete', 'true');
-        localStorage.setItem('user_profile', JSON.stringify(response.data));
+        console.log('🎉 Onboarding completed successfully!');
+        console.log('📝 Admission Number:', userProfileData.admission_number);
+        console.log('🏫 Class Level:', userProfileData.class_level);
         
-        toast.success(`Onboarding completed! Your Admission Number is ${response.data.admission_number}`);
+        toast.success(`Onboarding completed! Your Admission Number is ${userProfileData.admission_number}`);
         router.push('/student');
       } else {
         toast.success('Progress saved!');
       }
 
     } catch (error: any) {
-      console.error('Error:', error);
+      console.error('❌ Onboarding error:', error);
       
       if (error.response?.data) {
         const backendErrors = error.response.data;
+        console.error('Backend errors:', backendErrors);
+        
         if (typeof backendErrors === 'object') {
           const newErrors: ValidationErrors = {};
           Object.entries(backendErrors).forEach(([key, value]) => {
             if (Array.isArray(value)) {
               newErrors[key] = value.join(', ');
-              value.forEach(err => toast.error(`${key}: ${err}`));
+              value.forEach((err: string) => toast.error(`${key}: ${err}`));
             } else {
               newErrors[key] = value as string;
               toast.error(`${key}: ${value}`);
@@ -543,6 +578,16 @@ export default function StudentOnboarding() {
             error={getFieldError('photo')}
             progress={progress} 
           />
+
+          {/* Debug Info */}
+          <div className="bg-gray-100 p-4 rounded-md text-xs">
+            <h4 className="font-bold mb-2">Debug Info:</h4>
+            <p>Admission Number: {formData.admission_number || 'Not generated'}</p>
+            <p>Class Level: {formData.class_level || 'Not selected'}</p>
+            <p>Form Valid: {isFormValid() ? 'Yes' : 'No'}</p>
+            <p>Progress: {progress.progress}%</p>
+            <p>Completed: {progress.completed ? 'Yes' : 'No'}</p>
+          </div>
 
           {/* Validation Summary */}
           {Object.keys(validationErrors).filter(key => validationErrors[key]).length > 0 && (

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useUserData } from "@/hooks/useUserData"
@@ -20,15 +20,44 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
+  const [userProfile, setUserProfile] = useState<any>(null)
   const { userData, loading: userLoading } = useUserData()
   const { unreadCount } = useAnnouncements()
   const router = useRouter()
+
+  // Load user profile data from localStorage
+  useEffect(() => {
+    const loadUserProfile = () => {
+      try {
+        const userProfileData = localStorage.getItem("user_profile")
+        if (userProfileData) {
+          setUserProfile(JSON.parse(userProfileData))
+        }
+      } catch (error) {
+        console.error('Error loading user profile:', error)
+      }
+    }
+
+    loadUserProfile()
+    
+    // Listen for storage changes
+    const handleStorageChange = () => {
+      loadUserProfile()
+    }
+    
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
 
   const fullName = userData
     ? `${userData.first_name || ""} ${userData.last_name || ""}`.trim() || "Admin User"
     : "Admin User"
 
   const role = userData ? userData.role || "admin" : "admin"
+
+  // Safely get admission number and class level - FIXED
+  const admissionNumber = (userData as any)?.admission_number || userProfile?.admission_number
+  const classLevel = (userData as any)?.class_level || userProfile?.class_level
 
   const searchableItems = menuItems
     .flatMap(section => section.items)
@@ -175,9 +204,21 @@ const Navbar = () => {
           ) : (
             <>
               <span className="text-xs leading-3 font-medium">{fullName}</span>
-              <span className="text-[10px] text-gray-500 text-right capitalize">
-                {role}
-              </span>
+              <div className="flex items-center space-x-1 text-[10px] text-gray-500">
+                <span className="capitalize">{role}</span>
+                {admissionNumber && (
+                  <>
+                    <span>•</span>
+                    <span className="font-mono">{admissionNumber}</span>
+                  </>
+                )}
+                {classLevel && (
+                  <>
+                    <span>•</span>
+                    <span>{classLevel}</span>
+                  </>
+                )}
+              </div>
             </>
           )}
         </div>
