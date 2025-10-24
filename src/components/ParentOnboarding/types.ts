@@ -7,6 +7,7 @@ export interface FormData {
   occupation: string;
   blood_type: string;
   photo: File | null;
+  photo_url?: string;
 }
 
 export interface ProgressData {
@@ -20,4 +21,14 @@ export interface ProgressData {
     emergency_contact: boolean;
     photo: boolean;
   };
+}
+
+export interface ValidationErrors {
+  phone?: string;
+  address?: string;
+  gender?: string;
+  birth_date?: string;
+  emergency_contact?: string;
+  photo?: string;
+  [key: string]: string | undefined;
 }
