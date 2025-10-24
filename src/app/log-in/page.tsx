@@ -9,7 +9,7 @@ import { Eye, EyeOff } from 'lucide-react'
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters")
+  password: z.string().min(1, "Password is required")
 })
 
 export default function LoginPage() {
@@ -20,6 +20,42 @@ export default function LoginPage() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [errors, setErrors] = useState<{email?: string; password?: string}>({})
+  const [touched, setTouched] = useState<{email?: boolean; password?: boolean}>({})
+
+  const validateField = (name: string, value: string) => {
+    try {
+      if (name === 'email') {
+        loginSchema.pick({ email: true }).parse({ email: value })
+      } else if (name === 'password') {
+        loginSchema.pick({ password: true }).parse({ password: value })
+      }
+      return undefined
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return error.errors[0].message
+      }
+      return undefined
+    }
+  }
+
+  const validateForm = () => {
+    try {
+      loginSchema.parse(formData)
+      setErrors({})
+      return true
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: {email?: string; password?: string} = {}
+        error.errors.forEach(err => {
+          if (err.path[0] === 'email') newErrors.email = err.message
+          if (err.path[0] === 'password') newErrors.password = err.message
+        })
+        setErrors(newErrors)
+      }
+      return false
+    }
+  }
 
   const checkOnboardingProgress = async (role: string, accessToken: string) => {
     try {
@@ -32,24 +68,32 @@ export default function LoginPage() {
         }
       )
       
-      return response.data.completed // Assuming this returns boolean
+      return response.data.completed
     } catch (error) {
       console.error('Error checking onboarding progress:', error)
-      return false // Default to false if there's an error
+      return false
     }
   }
-
-  console.log('Backend URL:', process.env.NEXT_PUBLIC_BACKEND_URL)
-  console.log('Login attempt to:', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/login/`)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setErrors({})
+
+    // Mark all fields as touched
+    setTouched({ email: true, password: true })
+
+    // Validate form
+    if (!validateForm()) {
+      setIsLoading(false)
+      toast.error('Please fix the form errors before submitting')
+      return
+    }
 
     try {
-      // Validate form data
-      loginSchema.parse(formData)
-      
+      console.log('Backend URL:', process.env.NEXT_PUBLIC_BACKEND_URL)
+      console.log('Login attempt to:', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/login/`)
+
       // Make login request
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/login/`, 
@@ -57,7 +101,8 @@ export default function LoginPage() {
         {
           headers: {
             'Content-Type': 'application/json'
-          }
+          },
+          timeout: 10000 // 10 second timeout
         }
       )
 
@@ -70,11 +115,10 @@ export default function LoginPage() {
         localStorage.setItem('refreshToken', response.data.refresh)
         localStorage.setItem('user', JSON.stringify(user))
         localStorage.setItem('role', user.role)
+        localStorage.setItem('onboarding_complete', user.onboarding_complete ? 'true' : 'false')
 
-        localStorage.setItem('onboarding_complete', user.onboarding_complete ? 'true' : 'false');
-
-        console.log('✅ Stored user role:', user.role); 
-        console.log('✅ Stored onboarding status:', user.onboarding_complete);
+        console.log('✅ Stored user role:', user.role)
+        console.log('✅ Stored onboarding status:', user.onboarding_complete)
 
         // If admin, go straight to dashboard
         if (user.role === 'admin') {
@@ -86,31 +130,68 @@ export default function LoginPage() {
         const isOnboardingComplete = await checkOnboardingProgress(user.role, access)
         
         if (isOnboardingComplete) {
-          // Redirect to dashboard if onboarding is complete
           router.push(`/${user.role}`)
         } else {
-          // Redirect to onboarding if not complete
           router.push(`/onboarding/${user.role}`)
         }
       }
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.errors[0].message)
-      } else if (axios.isAxiosError(error)) {
+      if (axios.isAxiosError(error)) {
         // Handle axios error
-        const errorMessage = error.response?.data?.message || 
-                            error.response?.data?.detail || 
-                            'Login failed'
-        toast.error(errorMessage)
-        
-        // Log detailed error for debugging
+        const status = error.response?.status
+        const errorData = error.response?.data
+
         console.error('Login error:', {
-          status: error.response?.status,
-          data: error.response?.data,
+          status,
+          data: errorData,
           url: error.config?.url
         })
+
+        switch (status) {
+          case 401:
+            toast.error('Invalid email or password. Please check your credentials.')
+            setErrors({
+              email: 'Invalid credentials',
+              password: 'Invalid credentials'
+            })
+            break
+          case 400:
+            if (errorData?.error) {
+              toast.error(errorData.error)
+            } else if (errorData?.email || errorData?.password) {
+              // Handle field-specific errors from backend
+              setErrors({
+                email: errorData.email?.[0],
+                password: errorData.password?.[0]
+              })
+              toast.error('Please check your input fields')
+            } else {
+              toast.error('Invalid request. Please check your input.')
+            }
+            break
+          case 404:
+            toast.error('Service unavailable. Please try again later.')
+            break
+          case 500:
+            toast.error('Server error. Please try again later.')
+            break
+          case 403:
+            toast.error('Account not verified. Please verify your email first.')
+            break
+          default:
+            if (error.code === 'NETWORK_ERROR' || error.code === 'ECONNREFUSED') {
+              toast.error('Cannot connect to server. Please check your internet connection.')
+            } else if (error.code === 'TIMEOUT') {
+              toast.error('Request timeout. Please try again.')
+            } else {
+              toast.error(errorData?.detail || errorData?.error || 'Login failed. Please try again.')
+            }
+        }
+      } else if (error instanceof z.ZodError) {
+        // This should already be handled by validateForm, but just in case
+        toast.error('Please fix the form errors before submitting')
       } else {
-        toast.error('An error occurred. Please try again.')
+        toast.error('An unexpected error occurred. Please try again.')
         console.error('Unexpected error:', error)
       }
     } finally {
@@ -124,6 +205,35 @@ export default function LoginPage() {
       ...prev,
       [name]: value
     }))
+
+    // Clear error when user starts typing
+    if (errors[name as keyof typeof errors]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }))
+    }
+
+    // Validate field in real-time if it's been touched
+    if (touched[name as keyof typeof touched]) {
+      const error = validateField(name, value)
+      setErrors(prev => ({ ...prev, [name]: error }))
+    }
+  }
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setTouched(prev => ({ ...prev, [name]: true }))
+    
+    const error = validateField(name, value)
+    setErrors(prev => ({ ...prev, [name]: error }))
+  }
+
+  const getInputClass = (fieldName: string) => {
+    const baseClass = "w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA] transition-colors"
+    const hasError = errors[fieldName as keyof typeof errors] && touched[fieldName as keyof typeof touched]
+    
+    if (hasError) {
+      return `${baseClass} border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500`
+    }
+    return `${baseClass} border-gray-300`
   }
 
   return (
@@ -140,9 +250,10 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Email Field */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
+              Email Address *
             </label>
             <input
               id="email"
@@ -151,14 +262,25 @@ export default function LoginPage() {
               required
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA]"
+              onBlur={handleBlur}
+              className={getInputClass('email')}
               placeholder="your@email.com"
+              disabled={isLoading}
             />
+            {errors.email && touched.email && (
+              <p className="mt-1 text-sm text-red-600 flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                {errors.email}
+              </p>
+            )}
           </div>
 
+          {/* Password Field */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+              Password *
             </label>
             <div className="relative">
               <input
@@ -168,35 +290,63 @@ export default function LoginPage() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA] pr-10"
+                onBlur={handleBlur}
+                className={getInputClass('password')}
                 placeholder="••••••••"
+                disabled={isLoading}
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
                 onClick={() => setShowPassword(!showPassword)}
+                disabled={isLoading}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            {errors.password && touched.password && (
+              <p className="mt-1 text-sm text-red-600 flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                {errors.password}
+              </p>
+            )}
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#FC46AA] text-white py-2 rounded-md hover:bg-[#F699CD] transition-colors disabled:opacity-70"
+            className="w-full bg-[#FC46AA] text-white py-2 rounded-md hover:bg-[#F699CD] transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            {isLoading ? 'Logging in...' : 'Login'}
+            {isLoading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Logging in...
+              </>
+            ) : (
+              'Login'
+            )}
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-600">
-          <Link href="/forgot-password" className="font-medium text-[#FC46AA] hover:text-[#F699CD]">
+          <Link 
+            href="/forgot-password" 
+            className="font-medium text-[#FC46AA] hover:text-[#F699CD] transition-colors"
+          >
             Forgot password?
           </Link>
           <p className="mt-2">
             Don't have an account?{' '}
-            <Link href="/sign-up" className="font-medium text-[#FC46AA] hover:text-[#F699CD]">
+            <Link 
+              href="/sign-up" 
+              className="font-medium text-[#FC46AA] hover:text-[#F699CD] transition-colors"
+            >
               Sign up
             </Link>
           </p>
