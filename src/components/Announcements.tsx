@@ -14,7 +14,33 @@ interface Announcement {
   target_roles: string[];
 }
 
-const Announcements = ({ limit = 2 }: { limit?: number }) => { // Changed from 3 to 2
+// Skeleton Loading Component for Announcements
+const AnnouncementSkeleton = ({ limit = 2 }: { limit?: number }) => {
+  return (
+    <div className="flex flex-col gap-4 mt-4">
+      {[...Array(limit)].map((_, index) => (
+        <div
+          key={index}
+          className="bg-gray-200 rounded-md p-4 animate-pulse"
+        >
+          <div className="flex items-center justify-between">
+            <div className="h-5 bg-gray-300 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-300 rounded w-16"></div>
+          </div>
+          <div className="mt-2 space-y-2">
+            <div className="h-4 bg-gray-300 rounded w-full"></div>
+            <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+          </div>
+          <div className="mt-2">
+            <div className="h-3 bg-gray-300 rounded w-20"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const Announcements = ({ limit = 2 }: { limit?: number }) => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -34,13 +60,10 @@ const Announcements = ({ limit = 2 }: { limit?: number }) => { // Changed from 3
         let announcementsData: Announcement[] = [];
         
         if (Array.isArray(res.data)) {
-          // If response is directly an array
           announcementsData = res.data;
         } else if (res.data.results && Array.isArray(res.data.results)) {
-          // If response has pagination structure
           announcementsData = res.data.results;
         } else if (res.data.data && Array.isArray(res.data.data)) {
-          // If response has data property
           announcementsData = res.data.data;
         }
         
@@ -64,27 +87,6 @@ const Announcements = ({ limit = 2 }: { limit?: number }) => { // Changed from 3
     fetchAnnouncements();
   }, [limit]);
 
-  if (loading) {
-    return (
-      <div className="bg-white p-4 rounded-md">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Announcements</h1>
-          <button>
-            <span 
-              className="text-xs text-gray-400 cursor-pointer hover:bg-josseypink1 p-2" 
-              onClick={() => router.push("/list/announcements")}
-            >
-              View All
-            </span>
-          </button>
-        </div>
-        <div className="mt-4">
-          <p className="text-gray-500 text-sm">Loading announcements...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-white p-4 rounded-md">
       <div className="flex items-center justify-between">
@@ -99,11 +101,15 @@ const Announcements = ({ limit = 2 }: { limit?: number }) => { // Changed from 3
         </button>
       </div>
 
-      <div className="flex flex-col gap-4 mt-4">
-        {announcements.length === 0 ? (
-          <p className="text-gray-400 text-sm">No announcements found.</p>
-        ) : (
-          announcements.map((announcement) => (
+      {loading ? (
+        <AnnouncementSkeleton limit={limit} />
+      ) : announcements.length === 0 ? (
+        <div className="mt-4">
+          <p className="text-gray-500 text-sm">No announcements found.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4 mt-4">
+          {announcements.map((announcement) => (
             <div key={announcement.id} className="bg-josseypink1 rounded-md p-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-medium text-white">{announcement.title}</h2>
@@ -127,9 +133,9 @@ const Announcements = ({ limit = 2 }: { limit?: number }) => { // Changed from 3
                 <strong>Audience:</strong> {announcement.target_roles.join(", ")}
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
