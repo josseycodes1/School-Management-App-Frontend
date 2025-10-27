@@ -62,7 +62,7 @@ const ExamListPage = () => {
     return "No time specified";
   };
 
-  // Check if user can edit/delete (only admin)
+
   const canEditDelete = isAdmin();
   const canCreate = isAdmin();
 
@@ -73,7 +73,7 @@ const ExamListPage = () => {
   );
 
   if (error) return (
-    <div className="bg-pink-100 border-l-4 border-josseypink1 p-4 mb-4">
+    <div className="bg-josseypink2 border-l-4 border-josseypink1 p-4 mb-4">
       <div className="flex items-center text-josseypink1">
         <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
@@ -249,7 +249,7 @@ const ExamListPage = () => {
                           />
                         </>
                       ) : (
-                        // Show disabled buttons with tooltip for non-admin users
+                    
                         <>
                           <button 
                             className="text-gray-400 cursor-not-allowed p-1 rounded relative group"
@@ -298,7 +298,7 @@ const ExamListPage = () => {
                 <div className="flex space-x-1">
                   <button 
                     onClick={() => router.push(`/list/exams/${exam.id}`)} 
-                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
+                    className="text-white hover:josseypink2 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
                   >
                     <Image src="/view.png" alt="View" width={14} height={14} />
                   </button>
@@ -311,7 +311,7 @@ const ExamListPage = () => {
                         data={exam}
                         onSuccess={(updatedExam) => handleSuccess(updatedExam, "update")}
                         trigger={
-                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                          <button className="text-white hover:josseypink2 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                             <Image src="/update.png" alt="Update" width={14} height={14} />
                           </button>
                         }
@@ -322,14 +322,14 @@ const ExamListPage = () => {
                         id={String(exam.id)}
                         onSuccess={() => handleSuccess(exam, "delete")}
                         trigger={
-                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                          <button className="text-white hover:text-josseypink2 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                             <Image src="/delete.png" alt="Delete" width={14} height={14} />
                           </button>
                         }
                       />
                     </>
                   ) : (
-                    // Show disabled buttons for mobile
+                   
                     <>
                       <button 
                         className="text-gray-400 cursor-not-allowed p-1 rounded bg-josseypink1"
@@ -358,7 +358,7 @@ const ExamListPage = () => {
                 
                 <div className="flex justify-between">
                   <span className="font-medium">Time:</span>
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-josseypink2 text-josseypink1">
                     {formatTimeRange(exam)}
                   </span>
                 </div>

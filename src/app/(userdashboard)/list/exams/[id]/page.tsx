@@ -65,7 +65,7 @@ const ExamDetailPage = () => {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("details");
 
-  // Check if user can edit/delete (only admin)
+
   const canEditDelete = isAdmin();
 
   useEffect(() => {
@@ -143,7 +143,7 @@ const ExamDetailPage = () => {
   if (error) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <div className="bg-pink-100 border-l-4 border-josseypink1 p-4 mb-4">
+        <div className="bg-josseypink2 border-l-4 border-josseypink1 p-4 mb-4">
           <div className="flex items-center text-josseypink1">
             <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path

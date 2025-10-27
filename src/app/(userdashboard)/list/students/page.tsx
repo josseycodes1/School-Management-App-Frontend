@@ -54,7 +54,6 @@ const StudentListPage = () => {
     return `${process.env.NEXT_PUBLIC_BACKEND_URL}${url}`;
   };
 
-  // Check if user can edit/delete (only admin)
   const canEditDelete = role === "admin";
   const canCreate = role === "admin";
 
@@ -67,7 +66,7 @@ const StudentListPage = () => {
 
   if (error)
     return (
-      <div className="bg-pink-100 border-l-4 border-josseypink1 p-4 mb-4">
+      <div className="bg-josseypink2 border-l-4 border-josseypink1 p-4 mb-4">
         <div className="flex items-center text-josseypink1">
           <svg
             className="h-5 w-5 mr-2"
