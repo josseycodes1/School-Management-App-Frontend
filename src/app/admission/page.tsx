@@ -25,11 +25,11 @@ const AdmissionPage = () => {
 
   const handleWaitlistSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, you would submit this data to your backend
+    
     console.log("Waitlist form submitted:", waitlistForm);
     setSubmitted(true);
     
-    // Reset form after submission
+    
     setTimeout(() => {
       setSubmitted(false);
       setWaitlistForm({
@@ -95,7 +95,7 @@ const AdmissionPage = () => {
                 However, we understand your interest in our institution and would be delighted to 
                 have you join our waitlist for the next admission period.
               </p>
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+              <div className="bg-josseypink2 border-l-4 border-josseypink5 p-4 mb-6">
                 <p className="text-blue-700">
                   <span className="font-semibold">Next admission period:</span> January 2024
                 </p>
