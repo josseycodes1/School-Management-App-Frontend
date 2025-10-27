@@ -14,7 +14,7 @@ const SettingsPage = () => {
   const [saveMessage, setSaveMessage] = useState({ type: '', text: '' });
   const router = useRouter();
 
-  // Form states
+
   const [profileData, setProfileData] = useState({
     first_name: '',
     last_name: '',
@@ -39,7 +39,7 @@ const SettingsPage = () => {
     contact_info_visibility: 'teachers'
   });
 
-  // Safe dashboard route function
+ 
   const getDashboardRoute = () => {
     if (typeof window === 'undefined') return '/log-in';
     
@@ -61,7 +61,7 @@ const SettingsPage = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Check if we're on client side before accessing localStorage
+       
         if (typeof window === 'undefined') {
           setLoading(false);
           return;
@@ -73,7 +73,7 @@ const SettingsPage = () => {
           return;
         }
 
-        // First get user info to determine role
+        
         const userRes = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/user/`, {
           headers: {
             Authorization: `Bearer ${accessToken}`
@@ -83,7 +83,7 @@ const SettingsPage = () => {
         const user = userRes.data;
         setUserRole(user.role);
         
-        // Then fetch profile data based on role
+        
         let profileUrl = '';
         if (user.role === 'student') {
           profileUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/me/`;
@@ -103,7 +103,7 @@ const SettingsPage = () => {
 
         setUserData(profileRes.data);
         
-        // Set profile form data
+      
         setProfileData({
           first_name: profileRes.data.user.first_name || '',
           last_name: profileRes.data.user.last_name || '',
@@ -113,8 +113,7 @@ const SettingsPage = () => {
           date_of_birth: profileRes.data.date_of_birth || ''
         });
 
-        // TODO: Fetch actual notification and privacy settings from API
-        // For now using defaults
+       
 
       } catch (err) {
         console.error('Failed to load user data', err);
@@ -157,14 +156,13 @@ const SettingsPage = () => {
         return;
       }
 
-      // In a real application, you would make API calls to save the settings
-      // For now, we'll simulate a successful save
+    
       
       setTimeout(() => {
         setSaveMessage({ type: 'success', text: `${section} settings saved successfully!` });
         setSaving(false);
         
-        // Clear success message after 3 seconds
+       
         setTimeout(() => {
           setSaveMessage({ type: '', text: '' });
         }, 3000);
