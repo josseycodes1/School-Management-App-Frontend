@@ -52,7 +52,7 @@ const EventListPage = () => {
     });
   };
 
-  // Check if user can edit/delete (only admin)
+
   const canEditDelete = isAdmin();
   const canCreate = isAdmin();
 
@@ -216,7 +216,7 @@ const EventListPage = () => {
                     <div className="flex justify-end space-x-2">
                       <button 
                         onClick={() => router.push(`/list/events/${event.id}`)}
-                        className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
+                        className="text-white hover:text-josseypink2 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
                       >
                         <Image src="/view.png" alt="View" width={16} height={16} />
                       </button>
@@ -228,7 +228,7 @@ const EventListPage = () => {
                             data={event}
                             onSuccess={(updatedEvent) => handleSuccess(updatedEvent, "update")}
                             trigger={
-                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                              <button className="text-white hover:text-josseypink2 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                                 <Image src="/update.png" alt="Update" width={16} height={16} />
                               </button>
                             }
@@ -239,14 +239,14 @@ const EventListPage = () => {
                             id={String(event.id)}
                             onSuccess={() => handleSuccess(event, "delete")}
                             trigger={
-                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                              <button className="text-white hover:text-josseypink2 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                                 <Image src="/delete.png" alt="Delete" width={16} height={16} />
                               </button>
                             }
                           />
                         </>
                       ) : (
-                        // Show disabled buttons with tooltip for non-admin users
+                       
                         <>
                           <button 
                             className="text-gray-400 cursor-not-allowed p-1 rounded relative group"
@@ -295,7 +295,7 @@ const EventListPage = () => {
                 <div className="flex space-x-1">
                   <button 
                     onClick={() => router.push(`/list/events/${event.id}`)}
-                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
+                    className="text-white hover:text-josseypink2 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
                   >
                     <Image src="/view.png" alt="View" width={14} height={14} />
                   </button>
@@ -308,7 +308,7 @@ const EventListPage = () => {
                         data={event}
                         onSuccess={(updatedEvent) => handleSuccess(updatedEvent, "update")}
                         trigger={
-                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                          <button className="text-white hover:text-josseypink2 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                             <Image src="/update.png" alt="Update" width={14} height={14} />
                           </button>
                         }
@@ -319,7 +319,7 @@ const EventListPage = () => {
                         id={String(event.id)}
                         onSuccess={() => handleSuccess(event, "delete")}
                         trigger={
-                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                          <button className="text-white hover:text-josseypink2 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                             <Image src="/delete.png" alt="Delete" width={14} height={14} />
                           </button>
                         }
@@ -385,7 +385,7 @@ const EventListPage = () => {
         )}
       </div>
 
-      {/* Only show pagination when not searching or in client-side mode */}
+
       {(!searchTerm || isClientSideSearch) && pagination.total_pages > 1 && (
         <div className="mt-6">
           <Pagination 

@@ -47,7 +47,7 @@ const ClassListPage = () => {
     refreshData();
   };
 
-  // Check if user can edit/delete (only admin)
+
   const canEditDelete = role === "admin";
   const canCreate = role === "admin";
 
@@ -137,7 +137,7 @@ const ClassListPage = () => {
           </div>
         )}
 
-        {/* Mobile Create Button - Only for admin */}
+        {/* Mobile Create Button */}
         {canCreate && (
           <div className="md:hidden">
             <FormModal 
@@ -241,7 +241,7 @@ const ClassListPage = () => {
                             id={String(classItem.id)}
                             onSuccess={() => handleSuccess(classItem, "delete")}
                             trigger={
-                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                              <button className="text-white hover:text-josseypink2 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                                 <Image 
                                   src="/delete.png" 
                                   alt="Delete" 
@@ -278,7 +278,7 @@ const ClassListPage = () => {
                 <div className="flex space-x-1">
                   <button 
                     onClick={() => router.push(`/list/classes/${classItem.id}`)}
-                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
+                    className="text-white hover:text-josseypink2 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
                   >
                     <Image src="/view.png" alt="View" width={14} height={14} />
                   </button>
@@ -291,7 +291,7 @@ const ClassListPage = () => {
                         data={classItem}
                         onSuccess={(updatedClass) => handleSuccess(updatedClass, "update")}
                         trigger={
-                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                          <button className="text-white hover:text-josseypink2 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
                             <Image src="/update.png" alt="Update" width={14} height={14} />
                           </button>
                         }

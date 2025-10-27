@@ -29,7 +29,7 @@ const EventDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Check if user can edit/delete (only admin)
+
   const canEditDelete = isAdmin();
 
   useEffect(() => {
