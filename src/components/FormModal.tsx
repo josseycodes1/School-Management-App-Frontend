@@ -1,4 +1,4 @@
-// components/FormModal.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -203,7 +203,7 @@ const getDeleteEndpoint = () => {
             type === "delete" 
               ? "text-red-600 hover:text-red-800" 
               : type === "view" 
-              ? "text-blue-600 hover:text-blue-800" 
+              ? "text-josseypink1 hover:text-josseypink10" 
               : "text-josseypink1 hover:text-josseypink2"
           }`}
         >

@@ -20,7 +20,7 @@ export default function UserAvatar({ size = 36, className = "" }: UserAvatarProp
     )
   }
 
-  //use cloudinary URL directly if available
+  
   const imageUrl = userData?.profile_image || "/avatar.png"
 
   return (

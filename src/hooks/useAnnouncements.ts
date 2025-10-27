@@ -31,7 +31,7 @@ export function useAnnouncements() {
           const data = await response.json()
           setAnnouncements(data)
           
-          // Count unread announcements
+      
           const unread = data.filter((item: Announcement) => !item.is_read).length
           setUnreadCount(unread)
         }
