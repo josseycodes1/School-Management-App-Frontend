@@ -54,7 +54,7 @@ const handleSubmit = async (e: FormEvent) => {
   setLoading(true);
   setError('');
 
-    // Validate email format
+   
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(formData.email)) {
     setError('Please enter a valid email address');
@@ -62,7 +62,7 @@ const handleSubmit = async (e: FormEvent) => {
     return;
   }
 
-  // Validate first name and last name
+ 
   if (!formData.first_name.trim()) {
     setError('First name is required');
     setLoading(false);
@@ -75,7 +75,7 @@ const handleSubmit = async (e: FormEvent) => {
     return;
   }
 
-  // Validate name length
+
   if (formData.first_name.trim().length < 2) {
     setError('First name must be at least 2 characters long');
     setLoading(false);
@@ -98,7 +98,7 @@ const handleSubmit = async (e: FormEvent) => {
     setLoading(false);
     return;
   }
-  // Stronger password validation
+ 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
   if (!passwordRegex.test(formData.password)) {
     setError('Password must contain at least one uppercase letter, one lowercase letter, and one number');
@@ -106,7 +106,7 @@ const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
     return;
   }
 
-// Validate name doesn't contain numbers/special characters
+
 const nameRegex = /^[a-zA-Z\s]+$/;
   if (!nameRegex.test(formData.first_name)) {
     setError('First name can only contain letters');
@@ -225,7 +225,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
       return;
     }
 
-    // Unexpected response
+ 
     const unexpectedMsg = String(data?.message || 'Signup completed but with unexpected response.');
     console.warn('Unexpected signup response:', status, data);
     setError(unexpectedMsg);
@@ -240,7 +240,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
       } else if (err.message === 'Network Error') {
         setError('Network error: Cannot connect to the server. Please check your internet connection and ensure the backend is running.');
       } else if (err.response) {
-        // Server responded with error status (maybe we threw earlier)
+      
         console.error('Server error response:', err.response.status, err.response.data);
 
         if (err.response.status === 400) {
@@ -253,7 +253,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
           setError(`Request failed with status ${err.response.status}`);
         }
       } else {
-        // This also catches errors we deliberately threw (e.g., missing EmailJS config or email send failure)
+       
         if (err.message) {
           setError(String(err.message));
         } else {
@@ -261,7 +261,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
         }
       }
     } else {
-      // Non-Axios error
+     
       setError(err?.message || 'An unexpected error occurred. Please try again.');
     }
 
@@ -345,13 +345,13 @@ const nameRegex = /^[a-zA-Z\s]+$/;
   // };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-pink-100">
+    <div className="min-h-screen flex items-center justify-center bg-josseypink2">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <div className="text-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
+          <div className="w-16 h-16 rounded-full bg-josseypink1 mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
             JC
           </div>
-          <h1 className="text-3xl font-bold text-[#FC46AA]">JOSSEYCODES</h1>
+          <h1 className="text-3xl font-bold text-josseypink1">JOSSEYCODES</h1>
           <p className="text-gray-600 mt-2">Create your account</p>
         </div>
 
@@ -370,7 +370,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2"
               required
               placeholder="Enter your email address"
               disabled={loading}
@@ -387,7 +387,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD] pr-10"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2 pr-10"
                 minLength={6}
                 placeholder="At least 6 characters"
                 required
@@ -416,7 +416,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD] pr-10"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2 pr-10"
                 minLength={6}
                 placeholder="Re-enter your password"
                 required
@@ -445,7 +445,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
                 name="first_name"
                 value={formData.first_name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2"
                 required
                 placeholder="Your first name"
                 disabled={loading}
@@ -460,7 +460,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
                 name="last_name"
                 value={formData.last_name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2"
                 required
                 placeholder="Your last name"
                 disabled={loading}
@@ -476,7 +476,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2"
               disabled={loading}
             >
               <option value="student">Student</option>
@@ -488,7 +488,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#FC46AA] text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-josseypink1 text-white py-2 px-4 rounded-md hover:bg-josseypink2 transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Signing up...' : 'Sign Up'}
           </button>
@@ -497,7 +497,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
         <div className="mt-4 text-center">
           <p className="text-gray-600">
             Already have an account?{' '}
-            <a href="/log-in" className="text-[#FC46AA] hover:underline">
+            <a href="/log-in" className="text-josseypink1 hover:underline">
               Log in
             </a>
           </p>
