@@ -45,7 +45,7 @@ export default function Navbar() {
               className={`font-medium transition-all duration-200 px-4 py-2 rounded-lg hover:bg-josseypink1/10 ${
                 isScrolled 
                   ? 'text-gray-700 hover:text-josseypink1' 
-                  : 'text-white hover:text-[#F8BBD9]'
+                  : 'text-white hover:text-josseypink5'
               }`}
             >
               Courses
@@ -55,7 +55,7 @@ export default function Navbar() {
               className={`font-medium transition-all duration-200 px-4 py-2 rounded-lg hover:bg-josseypink1/10 ${
                 isScrolled 
                   ? 'text-gray-700 hover:text-josseypink1' 
-                  : 'text-white hover:text-[#F8BBD9]'
+                  : 'text-white hover:text-josseypink5'
               }`}
             >
               About
@@ -65,7 +65,7 @@ export default function Navbar() {
               className={`font-medium transition-all duration-200 px-4 py-2 rounded-lg hover:bg-josseypink1/10 ${
                 isScrolled 
                   ? 'text-gray-700 hover:text-josseypink1' 
-                  : 'text-white hover:text-[#F8BBD9]'
+                  : 'text-white hover:josseypink5'
               }`}
             >
               Contact
@@ -76,7 +76,7 @@ export default function Navbar() {
               className={`font-medium transition-all duration-200 px-4 py-2 rounded-lg hover:bg-josseypink1/10 ${
                 isScrolled 
                   ? 'text-gray-700 hover:text-josseypink1' 
-                  : 'text-white hover:text-[#F8BBD9]'
+                  : 'text-white hover:josseypink5'
               }`}
             >
               Log in
@@ -85,8 +85,8 @@ export default function Navbar() {
               href="/sign-up" 
               className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
                 isScrolled
-                  ? 'bg-josseypink1 text-white hover:bg-[#D63384]'
-                  : 'bg-white text-josseypink1 hover:bg-[#F8BBD9] hover:text-white'
+                  ? 'bg-josseypink1 text-white hover:bg-josseypink10'
+                  : 'bg-white text-josseypink1 hover:bg-josseypink5 hover:text-white'
               }`}
             >
               Sign Up
@@ -162,7 +162,7 @@ export default function Navbar() {
               </Link>
               <Link 
                 href="/sign-up" 
-                className="block text-center px-4 py-3 bg-josseypink1 text-white rounded-lg font-semibold hover:bg-[#D63384] transition-all duration-200 shadow-md mt-2"
+                className="block text-center px-4 py-3 bg-josseypink1 text-white rounded-lg font-semibold hover:bg-josseypink10 transition-all duration-200 shadow-md mt-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Sign Up

@@ -190,7 +190,7 @@ const MobileMenu = () => {
         isMenuOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         {/* Header with User Info */}
-        <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-josseypink1 to-pink-600 text-white">
+        <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-josseypink1 to-josseypink10 text-white">
           <div className="flex items-center justify-between mb-4">
             <Link
               href="/"

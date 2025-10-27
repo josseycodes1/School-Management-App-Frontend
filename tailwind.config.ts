@@ -19,8 +19,16 @@ const config: Config = {
       },
 
       colors: {
-        josseypink1: "#FC46AA",
-        josseypink2: "#F699CD",
+        josseypink8: "#eff6ff",
+        josseypink2: "#dbeafe",
+        josseypink3: "#bfdbfe",
+        josseypink4: "#93c5fd",
+        josseypink5: "#60a5fa",
+        josseypink6: "#3882f1",
+        josseypink7: "#2563eb",
+        josseypink1: "#1d4ed8",
+        josseypink9: "#1e40af",
+        josseypink10: "#1e3a8a",
       },
     },
   },

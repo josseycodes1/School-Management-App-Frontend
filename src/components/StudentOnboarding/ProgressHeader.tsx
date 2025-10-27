@@ -22,7 +22,7 @@ interface ProgressHeaderProps {
 
 export default function ProgressHeader({ progress }: ProgressHeaderProps) {
   return (
-    <div className="bg-[#FC46AA] py-4 px-6 text-white">
+    <div className="bg-josseypink1 py-4 px-6 text-white">
       <h1 className="text-2xl font-bold text-center">Student Onboarding</h1>
       <div className="mt-2">
         <div className="flex justify-between text-sm">

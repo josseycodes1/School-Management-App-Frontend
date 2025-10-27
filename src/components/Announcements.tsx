@@ -14,7 +14,7 @@ interface Announcement {
   target_roles: string[];
 }
 
-// Skeleton Loading Component for Announcements
+
 const AnnouncementSkeleton = ({ limit = 2 }: { limit?: number }) => {
   return (
     <div className="flex flex-col gap-4 mt-4">
@@ -56,7 +56,7 @@ const Announcements = ({ limit = 2 }: { limit?: number }) => {
         
         console.log("Announcements API response:", res.data);
         
-        // Handle different response formats
+        
         let announcementsData: Announcement[] = [];
         
         if (Array.isArray(res.data)) {
@@ -67,7 +67,7 @@ const Announcements = ({ limit = 2 }: { limit?: number }) => {
           announcementsData = res.data.data;
         }
         
-        // Get only the first 'limit' announcements, sorted by date (newest first)
+        
         const sortedAnnouncements = announcementsData.sort(
           (a: Announcement, b: Announcement) => 
             new Date(b.start_date).getTime() - new Date(a.start_date).getTime()

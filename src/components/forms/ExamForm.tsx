@@ -1,4 +1,3 @@
-// components/forms/ExamForm.tsx
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -72,24 +71,24 @@ const ExamForm = ({
         setLoading(true);
         setError("");
 
-        // Fetch subjects
+   
         const subjectsRes = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/subjects/`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         });
         
-        // Handle different response structures
+      
         const subjectsData = Array.isArray(subjectsRes.data) 
           ? subjectsRes.data 
           : subjectsRes.data.results || subjectsRes.data.subjects || [];
         
         setSubjects(subjectsData);
 
-        // Fetch teachers
+      
         const teachersRes = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/teachers/`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         });
         
-        // Handle different response structures
+      
         const teachersData = Array.isArray(teachersRes.data) 
           ? teachersRes.data 
           : teachersRes.data.results || teachersRes.data.teachers || [];
@@ -312,7 +311,7 @@ const ExamForm = ({
                 <button
                   type="button"
                   onClick={calculateDuration}
-                  className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm hover:bg-blue-200"
+                  className="bg-blue-100 text-josseypink1 px-3 py-1 rounded text-sm hover:bg-blue-200"
                 >
                   Calculate Duration from Times
                 </button>

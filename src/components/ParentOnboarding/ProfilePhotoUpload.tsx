@@ -49,8 +49,8 @@ export default function ProfilePhotoUpload({
               file:mr-4 file:py-2 file:px-4
               file:rounded-md file:border-0
               file:text-sm file:font-semibold
-              file:bg-[#FC46AA] file:text-white
-              hover:file:bg-[#e03d98]"
+              file:bg-josseypink1 file:text-white
+              hover:file:bg-josseypink10"
             required
           />
           {error && (

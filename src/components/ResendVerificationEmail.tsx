@@ -22,13 +22,13 @@ export function ResendVerification({ email, isPasswordReset = false }: ResendVer
       let response;
       
       if (isPasswordReset) {
-        //for password reset flow
+        
         response = await axios.post(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/password_reset/resend/`,
           { email }
         );
       } else {
-        //for signup verification flow
+        
         response = await axios.post(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/users/resend_verification/`,
           { email }
@@ -39,7 +39,7 @@ export function ResendVerification({ email, isPasswordReset = false }: ResendVer
     } catch (err) {
       const error = err as AxiosError;
       if (error.response?.data) {
-        // Handle different error response formats
+        
         if (typeof error.response.data === 'object') {
           if ('email' in error.response.data) {
             setError((error.response.data as { email: string[] }).email[0]);
@@ -67,7 +67,7 @@ export function ResendVerification({ email, isPasswordReset = false }: ResendVer
       <button
         onClick={handleResend}
         disabled={loading}
-        className={`text-[#FC46AA] hover:underline focus:outline-none ${
+        className={`text-josseypink1 hover:underline focus:outline-none ${
           loading ? 'opacity-50 cursor-not-allowed' : ''
         }`}
       >

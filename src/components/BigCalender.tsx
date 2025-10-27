@@ -16,14 +16,14 @@ const BigCalendar = () => {
     setView(selectedView);
   };
 
-  // Group events by day for mobile view
+  
   const getEventsForSelectedDate = () => {
     return calendarEvents.filter(event => 
       moment(event.start).isSame(selectedDate, 'day')
     ).sort((a, b) => moment(a.start).diff(moment(b.start)));
   };
 
-  // Mobile Day View - Vertical timeline
+ 
   const MobileDayView = () => {
     const dayEvents = getEventsForSelectedDate();
     
@@ -71,10 +71,10 @@ const BigCalendar = () => {
     );
   };
 
-  // Mobile Week View - List of days with events (Monday to Friday only)
+  
   const MobileWeekView = () => {
     const weekStart = moment(selectedDate).startOf('week');
-    // Only Monday to Friday (0-indexed: 1=Monday, 5=Friday)
+    
     const weekDays = Array.from({ length: 5 }, (_, i) => 
       moment(weekStart).add(i + 1, 'days').toDate()
     );
@@ -220,7 +220,7 @@ const BigCalendar = () => {
               min={new Date(2025, 1, 0, 8, 0, 0)}
               max={new Date(2025, 1, 0, 17, 0, 0)}
               onSelectEvent={(event) => {
-                // Optional: Handle event click
+                
                 console.log('Event selected:', event);
               }}
             />

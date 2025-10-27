@@ -69,7 +69,7 @@ export default function ProfilePhotoUpload({
           <div className="flex items-center space-x-4">
             <label
               htmlFor="photo"
-              className="cursor-pointer bg-[#FC46AA] text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-[#e03d98] transition-colors duration-200"
+              className="cursor-pointer bg-josseypink1 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-josseypink1 transition-colors duration-200"
             >
               Choose Photo
             </label>

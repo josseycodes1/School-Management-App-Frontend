@@ -25,7 +25,7 @@ const Navbar = () => {
   const { unreadCount } = useAnnouncements()
   const router = useRouter()
 
-  // Load user profile data from localStorage
+  
   useEffect(() => {
     const loadUserProfile = () => {
       try {
@@ -40,7 +40,7 @@ const Navbar = () => {
 
     loadUserProfile()
     
-    // Listen for storage changes
+  
     const handleStorageChange = () => {
       loadUserProfile()
     }
@@ -55,7 +55,7 @@ const Navbar = () => {
 
   const role = userData ? userData.role || "admin" : "admin"
 
-  // Safely get admission number and class level - FIXED
+
   const admissionNumber = (userData as any)?.admission_number || userProfile?.admission_number
   const classLevel = (userData as any)?.class_level || userProfile?.class_level
 
@@ -188,7 +188,7 @@ const Navbar = () => {
         <div className="bg-white rounded-full w-7 h-7 flex items-center justify-center cursor-pointer relative">
           <Image src="/announcement.png" alt="Announcements" width={20} height={20}/>
           {unreadCount > 0 && (
-            <div className="absolute -top-3 -right-3 w-5 h-5 flex items-center justify-center bg-pink-500 text-white rounded-full text-xs">
+            <div className="absolute -top-3 -right-3 w-5 h-5 flex items-center justify-center bg-josseypink1 text-white rounded-full text-xs">
               {unreadCount}
             </div>
           )}
@@ -223,14 +223,14 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Avatar - Always visible */}
+        {/* Avatar */}
         <UserAvatar size={36} />
 
-        {/* Logout - Hidden on mobile (will be in mobile menu) */}
+        {/* Logout */}
         <div className="hidden md:block">
           <LogoutButton
             variant="text"
-            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-pink-400 to-red-400 text-white hover:from-pink-500 hover:to-red-500 rounded-full shadow-md transition"
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-josseypink1 to-red-400 text-white hover:from-josseypink10 hover:to-red-500 rounded-full shadow-md transition"
           >
             <Image src="/logout.png" alt="Logout" width={14} height={14} />
             <span>Logout</span>

@@ -38,7 +38,7 @@ export default function Testimonials() {
               key={index} 
               className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl border border-white/20 shadow-lg"
             >
-              <div className="text-[#FC46AA] text-4xl mb-4">"</div>
+              <div className="text-josseypink1 text-4xl mb-4">"</div>
               <p className="text-gray-800 italic mb-6 leading-relaxed">"{testimonial.quote}"</p>
               <div className="border-t border-gray-200 pt-4">
                 <p className="font-semibold text-gray-800">{testimonial.author}</p>

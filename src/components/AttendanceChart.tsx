@@ -14,7 +14,7 @@ import {
 import axios from "axios";
 
 interface AttendanceData {
-  name: string; // Mon, Tue, etc.
+  name: string; 
   present: number;
   absent: number;
 }
@@ -32,7 +32,7 @@ const AttendanceChart = () => {
       .then((res) => {
         const formatted = res.data.map((item: any) => {
           const dayName = new Date(item.date).toLocaleDateString("en-US", {
-            weekday: "short", // Mon, Tue...
+            weekday: "short",
           });
           return {
             name: dayName,

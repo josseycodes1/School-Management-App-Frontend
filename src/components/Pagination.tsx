@@ -1,4 +1,4 @@
-// components/Pagination.tsx
+
 "use client";
 
 interface PaginationProps {
@@ -17,7 +17,7 @@ const Pagination = ({
   if (totalPages <= 1) return null;
 
   const getVisiblePages = () => {
-    const delta = 2; // Number of pages to show on each side of current page
+    const delta = 2; 
     const range = [];
     const rangeWithDots = [];
 

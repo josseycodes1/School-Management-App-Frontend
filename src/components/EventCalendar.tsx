@@ -23,7 +23,7 @@ type EventItem = {
 
 const MAX_EVENTS = 2;
 
-// Skeleton Loading Component for Events
+
 const EventSkeleton = () => {
   return (
     <div className="flex flex-col gap-4">

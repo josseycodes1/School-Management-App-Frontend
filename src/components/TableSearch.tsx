@@ -7,7 +7,7 @@ import { ChangeEvent, useState, useEffect } from "react";
 interface TableSearchProps {
   value: string;
   onChange: (value: string) => void;
-  onSubmit: () => void; // New prop for API search
+  onSubmit: () => void; 
   placeholder?: string;
 }
 
@@ -15,7 +15,7 @@ const TableSearch = ({ value, onChange, onSubmit, placeholder = "Search..." }: T
   const router = useRouter();
   const [localValue, setLocalValue] = useState(value);
 
-  // Keep localValue in sync with external changes
+  
   useEffect(() => {
     setLocalValue(value);
   }, [value]);
@@ -23,18 +23,18 @@ const TableSearch = ({ value, onChange, onSubmit, placeholder = "Search..." }: T
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setLocalValue(newValue);
-    onChange(newValue); // Live update for client-side search
+    onChange(newValue); 
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onSubmit(); // Trigger API search
+    onSubmit(); 
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      onSubmit(); // Trigger API search on Enter
+      onSubmit(); 
     }
   };
 

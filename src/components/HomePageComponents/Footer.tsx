@@ -40,7 +40,7 @@ export default function Footer() {
         {/* Logo + About */}
         <div className="lg:col-span-2">
           <div className="flex items-center mb-2">
-            <div className="w-8 h-8 rounded-full bg-[#FC46AA] mr-2 flex items-center justify-center text-white text-sm font-bold">
+            <div className="w-8 h-8 rounded-full bg-josseypink1 mr-2 flex items-center justify-center text-white text-sm font-bold">
               JC
             </div>
             <h3 className="text-lg font-bold">JosseyCodes Academy</h3>

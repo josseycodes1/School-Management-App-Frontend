@@ -26,8 +26,8 @@ interface UsePaginationReturn<T> {
   setSearchTerm: (term: string) => void;
   handlePageChange: (page: number) => void;
   refreshData: () => void;
-  handleSearchSubmit: () => void; // Add this
-  isClientSideSearch: boolean; // Add this
+  handleSearchSubmit: () => void; 
+  isClientSideSearch: boolean; 
   
 }
 
@@ -159,8 +159,8 @@ const usePagination = <T>(
     setSearchTerm,
     handlePageChange,
     refreshData,
-    handleSearchSubmit, // Make sure this is included
-    isClientSideSearch // And this
+    handleSearchSubmit, 
+    isClientSideSearch 
   };
 };
 

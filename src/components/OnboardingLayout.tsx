@@ -37,7 +37,7 @@ export default function OnboardingLayout({ role, steps, onSubmit }: OnboardingLa
   const CurrentStep = steps[currentStep].component;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-100 to-[#F699CD] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-josseypink2 to-josseypink5 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
         {/* Progress Steps */}
         <div className="flex justify-between mb-8">
@@ -45,7 +45,7 @@ export default function OnboardingLayout({ role, steps, onSubmit }: OnboardingLa
             <div key={i} className="text-center">
               <div
                 className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center 
-                  ${i <= currentStep ? 'bg-[#FC46AA] text-white' : 'bg-gray-200'}`}
+                  ${i <= currentStep ? 'bg-josseypink1 text-white' : 'bg-gray-200'}`}
               >
                 {i + 1}
               </div>

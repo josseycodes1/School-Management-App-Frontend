@@ -25,11 +25,11 @@ export function useUserData() {
           return
         }
 
-        // Decode the token to get user info
+       
         const decoded: any = jwtDecode(token)
         const userId = decoded.user_id || decoded.id
 
-        // Fetch user details from backend
+        
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/user/${userId}/`, {
           headers: {
             'Authorization': `Bearer ${token}`

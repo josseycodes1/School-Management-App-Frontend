@@ -72,7 +72,7 @@ export default function EmergencyInfoForm({
             value={formData.occupation}
             onChange={onChange}
             onBlur={onBlur}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FC46AA] focus:ring-[#FC46AA] sm:text-sm p-2 border"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-josseypink1 focus:ring-josseypink1 sm:text-sm p-2 border"
             placeholder="Your profession"
           />
           {formData.occupation && (
