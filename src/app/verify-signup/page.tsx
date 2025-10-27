@@ -17,7 +17,7 @@ function VerifySignUpContent() {
   const [resendSuccess, setResendSuccess] = useState('');
   const [resending, setResending] = useState(false);
 
-  // Load email from localStorage
+ 
   useEffect(() => {
     const savedEmail = localStorage.getItem("signupEmail");
     if (savedEmail) {
@@ -54,7 +54,7 @@ function VerifySignUpContent() {
 
       setVerifySuccess(response.data.message || 'Email verified successfully');
 
-      // Cleanup and redirect
+     
       setTimeout(() => {
         localStorage.removeItem("signupEmail");
         router.push('/log-in');
@@ -108,13 +108,13 @@ function VerifySignUpContent() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-pink-100">
+    <div className="min-h-screen flex items-center justify-center bg-josseypink2">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <div className="text-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
+          <div className="w-16 h-16 rounded-full bg-josseypink1 mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
             JC
           </div>
-          <h1 className="text-3xl font-bold text-[#FC46AA]">JOSSEYCODES</h1>
+          <h1 className="text-3xl font-bold text-josseypink1">JOSSEYCODES</h1>
           <p className="text-gray-600 mt-2">Verify your email address</p>
         </div>
 
@@ -146,7 +146,7 @@ function VerifySignUpContent() {
               value={formData.token}
               onChange={handleChange}
               placeholder="Paste your verification token here"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F699CD]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2"
               required
               disabled={loading}
             />
@@ -155,7 +155,7 @@ function VerifySignUpContent() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#FC46AA] text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+            className="w-full bg-josseypink1 text-white py-2 px-4 rounded-md hover:bg-josseypink2 transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#F699CD] focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
           >
             {loading ? 'Verifying...' : 'Verify Email'}
           </button>
@@ -167,7 +167,7 @@ function VerifySignUpContent() {
             <button
               onClick={handleResendToken}
               disabled={resending}
-              className="text-[#FC46AA] font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-josseypink1 font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {resending ? 'Sending...' : 'Resend'}
             </button>
@@ -185,16 +185,16 @@ function VerifySignUpContent() {
   );
 }
 
-// Main wrapper with Suspense
+
 export default function VerifySignUp() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-pink-100">
+      <div className="min-h-screen flex items-center justify-center bg-josseypink2">
         <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
-          <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
+          <div className="w-16 h-16 rounded-full bg-josseypink1 mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
             JC
           </div>
-          <h1 className="text-3xl font-bold text-[#FC46AA]">JOSSEYCODES</h1>
+          <h1 className="text-3xl font-bold text-josseypink1">JOSSEYCODES</h1>
           <p className="text-gray-600 mt-4">Loading verification page...</p>
         </div>
       </div>
