@@ -12,16 +12,16 @@ export default function LogoutPage() {
   useEffect(() => {
     const logout = async () => {
       try {
-        // Clear all user data from localStorage
+       
         localStorage.removeItem('accessToken')
         localStorage.removeItem('refreshToken')
         localStorage.removeItem('user')
         localStorage.removeItem('role')
         
-        // Show success message
+      
         toast.success('You have been successfully logged out!')
         
-        // Redirect to login page after a brief delay
+        
         setTimeout(() => {
           router.push('/log-in')
         }, 1500)
@@ -36,13 +36,13 @@ export default function LogoutPage() {
   }, [router])
 
   const handleCancel = () => {
-    router.back() // Go back to the previous page
+    router.back() 
   }
 
   return (
     <div className="min-h-screen bg-pink-100 flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
-        <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-6 flex items-center justify-center text-white text-2xl font-bold">
+        <div className="w-16 h-16 rounded-full bg-josseypink1 mx-auto mb-6 flex items-center justify-center text-white text-2xl font-bold">
           JC
         </div>
         
@@ -52,7 +52,7 @@ export default function LogoutPage() {
             <p className="text-gray-600 mb-6">
               Please wait while we securely log you out...
             </p>
-            <div className="w-12 h-12 border-t-2 border-b-2 border-[#FC46AA] rounded-full animate-spin mx-auto"></div>
+            <div className="w-12 h-12 border-t-2 border-b-2 border-josseypink1 rounded-full animate-spin mx-auto"></div>
           </>
         ) : (
           <>
@@ -63,7 +63,7 @@ export default function LogoutPage() {
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => window.location.reload()}
-                className="w-full bg-[#FC46AA] text-white py-2 rounded-md hover:bg-[#F699CD] transition-colors"
+                className="w-full bg-josseypink1 text-white py-2 rounded-md hover:bg-[#F699CD] transition-colors"
               >
                 Try Again
               </button>
@@ -80,7 +80,7 @@ export default function LogoutPage() {
         <div className="mt-6 text-center text-sm text-gray-600">
           <p>
             Changed your mind?{' '}
-            <Link href="/" className="font-medium text-[#FC46AA] hover:text-[#F699CD]">
+            <Link href="/" className="font-medium text-josseypink1 hover:text-josseypink2">
               Go back to dashboard
             </Link>
           </p>
