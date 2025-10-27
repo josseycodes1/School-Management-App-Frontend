@@ -68,7 +68,7 @@ const ProfilePage = () => {
         
         console.log('📊 Parsed profile data:', profileFromStorage);
 
-        // Create a profile combining user data and stored profile data
+       
         const profileData: Profile = {
           id: user.id,
           user: {
@@ -80,7 +80,7 @@ const ProfilePage = () => {
             admission_number: user.admission_number || profileFromStorage.admission_number,
             class_level: user.class_level || profileFromStorage.class_level
           },
-          // Use data from localStorage if available
+          
           phone: profileFromStorage.phone || '',
           address: profileFromStorage.address || '',
           birth_date: profileFromStorage.birth_date || '',
@@ -142,7 +142,7 @@ const ProfilePage = () => {
     }
   };
 
-  // Helper to check if user has completed onboarding
+
   const hasCompletedOnboarding = () => {
     if (typeof window === 'undefined') return false;
     
@@ -219,7 +219,7 @@ const ProfilePage = () => {
     );
   }
 
-  // Render the actual profile content
+ 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
