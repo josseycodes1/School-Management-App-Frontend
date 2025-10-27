@@ -37,7 +37,7 @@ const AnnouncementDetailPage = () => {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  // Check if user can edit/delete (only admin)
+
   const canEditDelete = isAdmin();
 
   useEffect(() => {

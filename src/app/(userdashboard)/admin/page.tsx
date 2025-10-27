@@ -45,7 +45,7 @@ const AdminPage = () => {
           <UserCard type="student" count={counts.students} />
           <UserCard type="teacher" count={counts.teachers} />
           <UserCard type="parent" count={counts.parents} />
-          <UserCard type="staff" count={0} /> {/* Placeholder for now */}
+          <UserCard type="staff" count={0} /> 
         </div>
 
         {/* MIDDLE CHARTS */}

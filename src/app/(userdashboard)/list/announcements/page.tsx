@@ -51,7 +51,7 @@ const AnnouncementListPage = () => {
     return announcement.target_roles.join(", ");
   };
 
-  // Check if user can edit/delete (only admin)
+
   const canEditDelete = isAdmin();
   const canCreate = isAdmin();
 
@@ -287,7 +287,7 @@ const AnnouncementListPage = () => {
                           />
                         </>
                       ) : (
-                        // Show disabled buttons with tooltip for non-admin users
+                       
                         <>
                           <button 
                             className="text-gray-400 cursor-not-allowed p-1 rounded relative group bg-josseypink1"
