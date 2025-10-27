@@ -151,7 +151,7 @@ const BigCalendar = () => {
   return (
     <div className="w-full h-full flex flex-col">
       {/* View Toggle Buttons */}
-      <div className="flex md:hidden bg-pink-50 rounded-lg p-1 mx-4 mt-4 mb-2">
+      <div className="flex md:hidden bg-josseypink2 rounded-lg p-1 mx-4 mt-4 mb-2">
         <button
           onClick={() => setView(Views.DAY)}
           className={`flex-1 py-3 px-4 rounded-md text-sm font-medium transition-colors ${

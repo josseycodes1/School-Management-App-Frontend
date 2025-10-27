@@ -81,11 +81,11 @@ function VerifyForgotPasswordContent() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-pink-50">
+    <div className="min-h-screen flex items-center justify-center bg-josseypink2">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[#FC46AA] mb-2">JOSSEY SCHOOL</h1>
-          <h2 className="text-xl text-[#F699CD]">Reset Password</h2>
+          <h1 className="text-3xl font-bold text-josseypink1 mb-2">JOSSEY SCHOOL</h1>
+          <h2 className="text-xl text-josseypink1">Reset Password</h2>
         </div>
 
         <form className="space-y-6" onSubmit={handleReset}>
@@ -99,7 +99,7 @@ function VerifyForgotPasswordContent() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FC46AA] focus:border-[#FC46AA]"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-josseypink1 focus:border-josseypink1"
             />
           </div>
 
@@ -113,7 +113,7 @@ function VerifyForgotPasswordContent() {
               value={token}
               onChange={(e) => setToken(e.target.value)}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FC46AA] focus:border-[#FC46AA]"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-josseypink1 focus:border-josseypink1"
             />
           </div>
 
@@ -127,7 +127,7 @@ function VerifyForgotPasswordContent() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FC46AA] focus:border-[#FC46AA]"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-josseypink1 focus:border-josseypink1"
             />
           </div>
 
@@ -141,7 +141,7 @@ function VerifyForgotPasswordContent() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FC46AA] focus:border-[#FC46AA]"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[josseypink1 focus:border-josseypink1"
             />
           </div>
 
@@ -162,7 +162,7 @@ function VerifyForgotPasswordContent() {
             <button
               type="submit"
               disabled={loading}
-              className={`py-2 px-4 rounded-md text-sm font-medium text-white bg-[#FC46AA] hover:bg-[#F699CD] ${
+              className={`py-2 px-4 rounded-md text-sm font-medium text-white bg-josseypink1 hover:bg-josseypink2 ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
@@ -172,7 +172,7 @@ function VerifyForgotPasswordContent() {
         </form>
 
         <div className="mt-6 text-center">
-          <Link href="/log-in" className="text-sm text-[#FC46AA] hover:text-[#F699CD]">
+          <Link href="/log-in" className="text-sm text-josseypink1 hover:text-josseypink2">
             Back to Login
           </Link>
         </div>
