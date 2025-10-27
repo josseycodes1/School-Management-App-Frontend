@@ -23,7 +23,7 @@ export default function ForgotPassword() {
         { email }
       );
       setSuccess(response.data.message);
-      // Redirect to verify page with email as query parameter
+     
       router.push(`/verify-forgotpassword?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
       setError(
@@ -37,11 +37,11 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-pink-50">
+    <div className="min-h-screen flex items-center justify-center bg-josseypink2">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[#FC46AA] mb-2">JOSSEY SCHOOL</h1>
-          <h2 className="text-xl text-[#F699CD]">Forgot Password</h2>
+          <h1 className="text-3xl font-bold text-josseypink1 mb-2">JOSSEY SCHOOL</h1>
+          <h2 className="text-xl text-josseypink2">Forgot Password</h2>
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
@@ -56,7 +56,8 @@ export default function ForgotPassword() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FC46AA] focus:border-[#FC46AA]"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+               focus:outline-none focus:ring-josseypink1 focus:border-josseypink1"
             />
           </div>
 
@@ -67,7 +68,7 @@ export default function ForgotPassword() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FC46AA] hover:bg-[#F699CD] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC46AA] ${
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-josseypink1 hover:bg-josseypink2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-josseypink1 ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
@@ -77,7 +78,7 @@ export default function ForgotPassword() {
         </form>
 
         <div className="mt-6 text-center">
-          <Link href="/log-in" className="text-sm text-[#FC46AA] hover:text-[#F699CD]">
+          <Link href="/log-in" className="text-sm text-josseypink1 hover:text-josseypink2">
             Back to Login
           </Link>
         </div>
