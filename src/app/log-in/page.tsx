@@ -84,17 +84,17 @@ export default function LoginPage() {
     setIsLoading(true)
     setErrors({})
 
-    // Mark all fields as touched
+    
     setTouched({ email: true, password: true })
 
-    // Validate form
+   
     if (!validateForm()) {
       setIsLoading(false)
       toast.error('Please fix the form errors before submitting')
       return
     }
 
-    // Additional email format validation
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.email)) {
       setErrors(prev => ({ ...prev, email: 'Please enter a valid email address' }))
@@ -107,7 +107,7 @@ export default function LoginPage() {
       console.log('Backend URL:', process.env.NEXT_PUBLIC_BACKEND_URL)
       console.log('Login attempt to:', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/login/`)
 
-      // Make login request
+    
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/login/`, 
         formData,
@@ -115,7 +115,7 @@ export default function LoginPage() {
           headers: {
             'Content-Type': 'application/json'
           },
-          timeout: 10000 // 10 second timeout
+          timeout: 10000 
         }
       )
 
@@ -123,7 +123,7 @@ export default function LoginPage() {
         const { user, access } = response.data
         toast.success(`Welcome back, ${user.first_name || 'User'}!`)
         
-        // Store user data and tokens
+        
         localStorage.setItem('accessToken', access)
         localStorage.setItem('refreshToken', response.data.refresh)
         localStorage.setItem('user', JSON.stringify(user))
@@ -133,13 +133,13 @@ export default function LoginPage() {
         console.log('✅ Stored user role:', user.role)
         console.log('✅ Stored onboarding status:', user.onboarding_complete)
 
-        // If admin, go straight to dashboard
+        
         if (user.role === 'admin') {
           router.push(`/${user.role}`)
           return
         }
 
-        // Check onboarding progress
+        
         const isOnboardingComplete = await checkOnboardingProgress(user.role, access)
         
         if (isOnboardingComplete) {
@@ -150,7 +150,7 @@ export default function LoginPage() {
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        // Handle axios error
+        
         const status = error.response?.status
         const errorData = error.response?.data
 
@@ -162,7 +162,7 @@ export default function LoginPage() {
 
         switch (status) {
           case 401:
-            // Check if it's a specific error message from backend
+           
             const errorMessage = errorData?.error?.toLowerCase()
             
             if (errorMessage?.includes('email') || errorMessage?.includes('account')) {
@@ -185,7 +185,7 @@ export default function LoginPage() {
             break
           case 400:
             if (errorData?.error) {
-              // Handle specific backend validation errors
+              
               const errorMsg = errorData.error.toLowerCase()
               
               if (errorMsg.includes('email') && errorMsg.includes('required')) {
@@ -198,7 +198,7 @@ export default function LoginPage() {
                 toast.error(errorData.error)
               }
             } else if (errorData?.email || errorData?.password) {
-              // Handle field-specific errors from backend
+              
               setErrors({
                 email: errorData.email?.[0],
                 password: errorData.password?.[0]
@@ -233,7 +233,7 @@ export default function LoginPage() {
             }
         }
       } else if (error instanceof z.ZodError) {
-        // This should already be handled by validateForm, but just in case
+        
         toast.error('Please fix the form errors before submitting')
       } else {
         toast.error('An unexpected error occurred. Please try again.')
@@ -251,12 +251,12 @@ export default function LoginPage() {
       [name]: value
     }))
 
-    // Clear error when user starts typing
+    
     if (errors[name as keyof typeof errors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }))
     }
 
-    // Validate field in real-time if it's been touched
+    
     if (touched[name as keyof typeof touched]) {
       const error = validateField(name, value)
       setErrors(prev => ({ ...prev, [name]: error }))
@@ -282,10 +282,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-pink-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-josseypink2 flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-[#FC46AA] mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
+          <div className="w-16 h-16 rounded-full bg-josseypink1 mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
             JC
           </div>
           <h2 className="text-2xl font-bold text-gray-800">Welcome Back</h2>
@@ -363,7 +363,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#FC46AA] text-white py-2 rounded-md hover:bg-[#F699CD] transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
+            className="w-full bg-josseypink1 text-white py-2 rounded-md hover:bg-josseypink2 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {isLoading ? (
               <>
@@ -382,7 +382,7 @@ export default function LoginPage() {
         <div className="mt-6 text-center text-sm text-gray-600">
           <Link 
             href="/forgot-password" 
-            className="font-medium text-[#FC46AA] hover:text-[#F699CD] transition-colors"
+            className="font-medium text-josseypink1 hover:text-josseypink2 transition-colors"
           >
             Forgot password?
           </Link>
@@ -390,7 +390,7 @@ export default function LoginPage() {
             Don't have an account?{' '}
             <Link 
               href="/sign-up" 
-              className="font-medium text-[#FC46AA] hover:text-[#F699CD] transition-colors"
+              className="font-medium text-josseypink1 hover:text-josseypink2 transition-colors"
             >
               Sign up
             </Link>
