@@ -18,8 +18,8 @@ const CountChart = ({ maleCount, femaleCount }: CountChartProps) => {
 
   const data = [
     { name: "Total", count: total, fill: "white" },
-    { name: "Girls", count: femaleCount, fill: "#FC46AA" },
-    { name: "Boys", count: maleCount, fill: "#F699CD" },
+    { name: "Girls", count: femaleCount, fill: "#1d4ed8" },
+    { name: "Boys", count: maleCount, fill: "#bfdbfe" },
   ];
 
   return (
@@ -56,12 +56,12 @@ const CountChart = ({ maleCount, femaleCount }: CountChartProps) => {
       {/* BOTTOM */}
       <div className="flex justify-center gap-16">
         <div className="flex flex-col gap-1">
-          <div className="w-5 h-5 bg-lamaSky rounded-full" />
+          <div className="w-5 h-5 josseypink1 rounded-full" />
           <h1 className="font-bold">{maleCount}</h1>
           <h2 className="text-xs text-gray-900">Boys ({malePercent}%)</h2>
         </div>
         <div className="flex flex-col gap-1">
-          <div className="w-5 h-5 bg-lamaYellow rounded-full" />
+          <div className="w-5 h-5 josseypink4 rounded-full" />
           <h1 className="font-bold">{femaleCount}</h1>
           <h2 className="text-xs text-gray-900">Girls ({femalePercent}%)</h2>
         </div>
