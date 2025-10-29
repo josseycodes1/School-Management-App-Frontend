@@ -21,7 +21,7 @@ export default function UserAvatar({ size = 36, className = "" }: UserAvatarProp
   }
 
   
-  const imageUrl = userData?.profile_image || "/avatar.png"
+  const imageUrl = userData?.profile_image || "/blueavatar.png"
 
   return (
     <Image 
