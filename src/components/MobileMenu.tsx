@@ -20,15 +20,15 @@ const menuItems = [
   {
     title: "MENU",
     items: [
-      {
-        icon: "/home.png",
-        label: "Home",
-        href: "/",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
+      // {
+      //   icon: "/home.png",
+      //   label: "Home",
+      //   href: "/",
+      //   visible: ["admin", "teacher", "student", "parent"],
+      // },
       {
         icon: "/lesson.png",
-        label: "Dashboard",
+        label: "Overview",
         href: "/", 
         visible: ["admin", "teacher", "student", "parent"],
         dynamicDashboard: true, 
