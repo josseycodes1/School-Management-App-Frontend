@@ -13,7 +13,7 @@
 }
 
 .react-calendar__tile--active {
-  background-color: #F699CD !important;
+  background-color: #93c5fd !important;
   color: black !important;
 }
 
@@ -22,13 +22,13 @@
 }
 
 .rbc-day-slot .rbc-event:nth-of-type(even) {
-  background-color: #FC46AA !important;
+  background-color: #2563eb !important;
   color: #FFFFFF !important;
 }
 
 /*  Hover effect */
 .rbc-toolbar > span > button:hover {
-  background-color: #F699CD !important;
+  background-color: #3882f1 !important;
   cursor: pointer;
 }
 
@@ -48,12 +48,12 @@
 
 .rbc-btn-group:last-child button {
   border: none !important;
-  background-color: #F699CD !important;
+  background-color: #3882f1 !important;
   margin-left: 2px !important;
 }
 
 .rbc-toolbar button.rbc-active {
-  background-color: #FC46AA !important;
+  background-color: #3882f1 !important;
   box-shadow: none !important;
 }
 
@@ -78,7 +78,7 @@
 }
 
 .rbc-timeslot-group {
-  background-color: #FFFFFF !important;
+  background-color: #93c5fd !important;
 }
 
 .rbc-day-slot {
@@ -94,28 +94,28 @@
 }
 
 .rbc-event:nth-child(1) {
-  background-color: #FC46AA !important;
+  background-color: #2563eb !important;
 }
 .rbc-event:nth-child(2) {
-  background-color: #FC46AA !important;
+  background-color: #2563eb !important;
 }
 .rbc-event:nth-child(3) {
-  background-color: #FC46AA !important;
+  background-color: #2563eb !important;
 }
 .rbc-event:nth-child(4) {
-  background-color: #FC46AA !important;
+  background-color: #2563eb !important;
 }
 .rbc-event:nth-child(5) {
-  background-color: #FC46AA!important;
+  background-color: #2563eb!important;
 }
 .rbc-event:nth-child(6) {
-  background-color: #FC46AA !important;
+  background-color: #2563eb !important;
 }
 .rbc-event:nth-child(7) {
-  background-color: #FC46AA !important;
+  background-color: #2563eb !important;
 }
 .rbc-event:nth-child(8) {
-  background-color: #FC46AA !important;
+  background-color: #2563eb !important;
 }
 
 .rbc-event-label{
