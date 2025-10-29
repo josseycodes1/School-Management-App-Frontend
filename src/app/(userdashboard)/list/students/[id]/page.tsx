@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import Announcements from "@/components/Announcements";
 import BigCalendar from "@/components/BigCalender";
@@ -34,6 +34,7 @@ type Student = {
 
 const SingleStudentPage = () => {
   const { id } = useParams();
+  const router = useRouter();
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -97,184 +98,232 @@ const SingleStudentPage = () => {
       </div>
     );
 
-  if (!student) return <div>Student not found</div>;
+  if (!student) return (
+    <div className="text-center py-8 text-gray-500">
+      Student not found
+    </div>
+  );
 
   return (
-    <div className="flex-1 p-4 flex flex-col gap-4 xl:flex-row">
-      {/* LEFT */}
-      <div className="w-full xl:w-2/3">
-        {/* TOP */}
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* USER INFO CARD */}
-          <div className="bg-josseypink1 py-6 px-4 rounded-md flex-1 flex gap-4">
-            <div className="w-1/3">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => router.back()}
+            className="flex items-center text-josseypink1 hover:text-josseypink2 transition-colors"
+          >
+            <Image src="/back.png" alt="Back" width={20} height={20} className="mr-2" />
+            <span className="hidden md:inline">Back to Students</span>
+          </button>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800">Student Details</h1>
+        </div>
+        
+        {role === "admin" && (
+          <div className="flex space-x-2 w-full md:w-auto">
+            <FormModal
+              table="student"
+              type="update"
+              data={student}
+              onSuccess={(updatedStudent) => setStudent(updatedStudent)}
+              trigger={
+                <button className="flex-1 md:flex-none bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+                  <Image src="/update.png" alt="Edit" width={16} height={16} />
+                  <span>Edit Student</span>
+                </button>
+              }
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Student Profile Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        {/* Profile Card */}
+        <div className="lg:col-span-1 bg-gray-50 rounded-lg p-6">
+          <div className="flex flex-col items-center text-center">
+            <div className="relative mb-4">
               <Image
                 src={student.profile_picture || "/blueavatar.png"}
                 alt={`${student.user.first_name} ${student.user.last_name}`}
-                width={144}
-                height={144}
-                className="w-36 h-36 rounded-full object-cover"
+                width={120}
+                height={120}
+                className="rounded-full border-4 border-white shadow-md object-cover"
               />
             </div>
-            <div className="w-2/3 flex flex-col justify-between gap-4 text-white">
-              <div className="flex items-center gap-4">
-                <h1 className="text-xl font-semibold">
-                  {student.user.first_name} {student.user.last_name}
-                </h1>
-                {role === "admin" && (
-                  <FormModal
-                    table="student"
-                    type="update"
-                    data={student}
-                    onSuccess={(updatedStudent) => setStudent(updatedStudent)}
-                  />
-                )}
-              </div>
-              <p className="text-sm text-gray-200">
-                {student.class_level || "Student"}
-              </p>
-              <div className="flex items-center justify-between gap-2 flex-wrap text-xs font-medium">
-                <div className="flex items-center gap-2">
-                  <Image src="/mail.png" alt="" width={14} height={14} />
-                  <span>{student.user.email}</span>
-                </div>
-                {student.phone && (
-                  <div className="flex items-center gap-2">
-                    <Image src="/phone.png" alt="" width={14} height={14} />
-                    <span>{student.phone}</span>
-                  </div>
-                )}
-                {student.address && (
-                  <div className="flex items-center gap-2">
-                    <Image src="/location.png" alt="" width={14} height={14} />
-                    <span>{student.address}</span>
-                  </div>
-                )}
-                {student.birth_date && (
-                  <div className="flex items-center gap-2">
-                    <Image src="/date.png" alt="" width={14} height={14} />
-                    <span>
-                      {new Date(student.birth_date).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* SMALL CARDS */}
-          <div className="flex-1 flex gap-4 justify-between flex-wrap">
-            <div className="bg-josseypink2 p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%]">
-              <Image
-                src="/singleAttendance.png"
-                alt=""
-                width={24}
-                height={24}
-                className="w-6 h-6"
-              />
-              <div>
-                <h1 className="text-xl font-semibold">
-                  {student.attendance_rate}%
-                </h1>
-                <span className="text-sm text-gray-400">Attendance</span>
-              </div>
-            </div>
-
-            <div className="bg-josseypink1 p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%]">
-              <Image
-                src="/singleBranch.png"
-                alt=""
-                width={24}
-                height={24}
-                className="w-6 h-6"
-              />
-              <div>
-                <h1 className="text-xl font-semibold">{student.grade}</h1>
-                <span className="text-sm text-gray-400">Grade</span>
-              </div>
-            </div>
-
-            <div className="bg-josseypink1 p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%]">
-              <Image
-                src="/singleLesson.png"
-                alt=""
-                width={24}
-                height={24}
-                className="w-6 h-6"
-              />
-              <div>
-                <h1 className="text-xl font-semibold">
-                  {student.lessons_count}
-                </h1>
-                <span className="text-sm text-gray-400">Lessons</span>
-              </div>
-            </div>
-
-            <div className="bg-josseypink2 p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%]">
-              <Image
-                src="/singleClass.png"
-                alt=""
-                width={24}
-                height={24}
-                className="w-6 h-6"
-              />
-              <div>
-                <h1 className="text-xl font-semibold">
-                  {student.class_name}
-                </h1>
-                <span className="text-sm text-gray-400">Class</span>
-              </div>
-            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-1">
+              {student.user.first_name} {student.user.last_name}
+            </h2>
+            <p className="text-gray-600 mb-2">{student.user.email}</p>
+            <span className="px-3 py-1 bg-josseypink1 text-white text-sm font-semibold rounded-full">
+              {student.class_level}
+            </span>
           </div>
         </div>
 
-        {/* BOTTOM */}
-        <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
-          <h1>Student&apos;s Schedule</h1>
-          <BigCalendar />
+        {/* Details Card */}
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Personal Information */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <Image src="/user.png" alt="Personal" width={20} height={20} />
+              Personal Information
+            </h3>
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:justify-between">
+                <span className="font-medium text-gray-700 text-sm sm:text-base">Student ID:</span>
+                <span className="text-gray-900 font-semibold">{student.admission_number}</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:justify-between">
+                <span className="font-medium text-gray-700 text-sm sm:text-base">Gender:</span>
+                <span className="text-gray-900">{student.gender || "N/A"}</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:justify-between">
+                <span className="font-medium text-gray-700 text-sm sm:text-base">Date of Birth:</span>
+                <span className="text-gray-900">
+                  {student.birth_date ? new Date(student.birth_date).toLocaleDateString() : "N/A"}
+                </span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:justify-between">
+                <span className="font-medium text-gray-700 text-sm sm:text-base">Blood Type:</span>
+                <span className="text-gray-900">{student.blood_type || "N/A"}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Information */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <Image src="/contact.png" alt="Contact" width={20} height={20} />
+              Contact Information
+            </h3>
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:justify-between">
+                <span className="font-medium text-gray-700 text-sm sm:text-base">Phone:</span>
+                <span className="text-gray-900">{student.phone || "N/A"}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-700 text-sm sm:text-base mb-1">Address:</span>
+                <span className="text-gray-900 text-sm break-words">{student.address || "No address provided"}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Cards - Responsive Grid */}
+          <div className="md:col-span-2 grid grid-cols-2 gap-4">
+            <div className="bg-josseypink2 p-4 rounded-lg flex items-center gap-3">
+              <div className="bg-white bg-opacity-20 p-2 rounded-lg">
+                <Image src="/singleAttendance.png" alt="Attendance" width={24} height={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">{student.attendance_rate}%</h3>
+                <p className="text-white text-opacity-90 text-sm">Attendance</p>
+              </div>
+            </div>
+            <div className="bg-josseypink1 p-4 rounded-lg flex items-center gap-3">
+              <div className="bg-white bg-opacity-20 p-2 rounded-lg">
+                <Image src="/singleBranch.png" alt="Grade" width={24} height={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">{student.grade}</h3>
+                <p className="text-white text-opacity-90 text-sm">Grade</p>
+              </div>
+            </div>
+            <div className="bg-josseypink1 p-4 rounded-lg flex items-center gap-3">
+              <div className="bg-white bg-opacity-20 p-2 rounded-lg">
+                <Image src="/singleLesson.png" alt="Lessons" width={24} height={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">{student.lessons_count}</h3>
+                <p className="text-white text-opacity-90 text-sm">Lessons</p>
+              </div>
+            </div>
+            <div className="bg-josseypink2 p-4 rounded-lg flex items-center gap-3">
+              <div className="bg-white bg-opacity-20 p-2 rounded-lg">
+                <Image src="/singleClass.png" alt="Class" width={24} height={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">{student.class_name}</h3>
+                <p className="text-white text-opacity-90 text-sm">Class</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* RIGHT */}
-      <div className="w-full xl:w-1/3 flex flex-col gap-4">
-        <div className="bg-white p-4 rounded-md">
-          <h1 className="text-xl font-semibold">Shortcuts</h1>
-          <div className="mt-4 flex gap-4 flex-wrap text-xs text-gray-500">
-            <Link
-              className="p-3 rounded-md bg-josseypink1 text-white"
-              href={`/students/${id}/lessons`}
-            >
-              Student&apos;s Lessons
-            </Link>
-            <Link
-              className="p-3 rounded-md bg-josseypink2 text-white"
-              href={`/students/${id}/teachers`}
-            >
-              Student&apos;s Teachers
-            </Link>
-            <Link
-              className="p-3 rounded-md bg-josseypink1 text-white"
-              href={`/students/${id}/exams`}
-            >
-              Student&apos;s Exams
-            </Link>
-            <Link
-              className="p-3 rounded-md bg-josseypink2 text-white"
-              href={`/students/${id}/assignments`}
-            >
-              Student&apos;s Assignments
-            </Link>
-            <Link
-              className="p-3 rounded-md bg-josseypink1 text-white"
-              href={`/students/${id}/results`}
-            >
-              Student&apos;s Results
-            </Link>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* LEFT - Calendar */}
+        <div className="xl:col-span-2">
+          <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Student's Schedule</h2>
+            <div className="h-[400px] md:h-[600px]">
+              <BigCalendar />
+            </div>
           </div>
         </div>
 
-        <Performance />
-        <Announcements />
+        {/* RIGHT - Sidebar */}
+        <div className="xl:col-span-1 space-y-6">
+          {/* Shortcuts */}
+          <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <Link 
+                href={`/students/${id}/lessons`}
+                className="bg-josseypink1 hover:bg-josseypink2 text-white p-3 rounded-lg text-center transition-colors flex flex-col items-center gap-2"
+              >
+                <Image src="/lesson.png" alt="Lessons" width={20} height={20} />
+                <span className="text-sm font-medium">Lessons</span>
+              </Link>
+              <Link 
+                href={`/students/${id}/teachers`}
+                className="bg-josseypink2 hover:bg-josseypink1 text-white p-3 rounded-lg text-center transition-colors flex flex-col items-center gap-2"
+              >
+                <Image src="/teacher.png" alt="Teachers" width={20} height={20} />
+                <span className="text-sm font-medium">Teachers</span>
+              </Link>
+              <Link 
+                href={`/students/${id}/exams`}
+                className="bg-josseypink1 hover:bg-josseypink2 text-white p-3 rounded-lg text-center transition-colors flex flex-col items-center gap-2"
+              >
+                <Image src="/exam.png" alt="Exams" width={20} height={20} />
+                <span className="text-sm font-medium">Exams</span>
+              </Link>
+              <Link 
+                href={`/students/${id}/assignments`}
+                className="bg-josseypink2 hover:bg-josseypink1 text-white p-3 rounded-lg text-center transition-colors flex flex-col items-center gap-2"
+              >
+                <Image src="/assignment.png" alt="Assignments" width={20} height={20} />
+                <span className="text-sm font-medium">Assignments</span>
+              </Link>
+              <Link 
+                href={`/students/${id}/results`}
+                className="bg-josseypink1 hover:bg-josseypink2 text-white p-3 rounded-lg text-center transition-colors flex flex-col items-center gap-2"
+              >
+                <Image src="/result.png" alt="Results" width={20} height={20} />
+                <span className="text-sm font-medium">Results</span>
+              </Link>
+              <Link 
+                href={`/students/${id}/attendance`}
+                className="bg-josseypink2 hover:bg-josseypink1 text-white p-3 rounded-lg text-center transition-colors flex flex-col items-center gap-2"
+              >
+                <Image src="/attendance.png" alt="Attendance" width={20} height={20} />
+                <span className="text-sm font-medium">Attendance</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Performance */}
+          <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
+            <Performance />
+          </div>
+
+          {/* Announcements */}
+          <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
+            <Announcements />
+          </div>
+        </div>
       </div>
     </div>
   );
