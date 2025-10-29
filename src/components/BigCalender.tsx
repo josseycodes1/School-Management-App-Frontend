@@ -94,7 +94,7 @@ const BigCalendar = () => {
             ).sort((a, b) => moment(a.start).diff(moment(b.start)));
 
             return (
-              <div key={index} className="bg-pink-50 rounded-lg p-4">
+              <div key={index} className="bg-josseypink2 rounded-lg p-4">
                 <div className="flex justify-between items-center mb-3">
                   <h4 className={`font-semibold ${
                     moment(day).isSame(moment(), 'day') 

@@ -79,7 +79,7 @@ const SingleStudentPage = () => {
 
   if (error)
     return (
-      <div className="bg-pink-100 border-l-4 border-josseypink1 p-4 mb-4">
+      <div className="bg-josseypink2 border-l-4 border-josseypink1 p-4 mb-4">
         <div className="flex items-center text-josseypink1">
           <svg
             className="h-5 w-5 mr-2"
@@ -109,7 +109,7 @@ const SingleStudentPage = () => {
           <div className="bg-josseypink1 py-6 px-4 rounded-md flex-1 flex gap-4">
             <div className="w-1/3">
               <Image
-                src={student.profile_picture || "/avatar.png"}
+                src={student.profile_picture || "/blueavatar.png"}
                 alt={`${student.user.first_name} ${student.user.last_name}`}
                 width={144}
                 height={144}

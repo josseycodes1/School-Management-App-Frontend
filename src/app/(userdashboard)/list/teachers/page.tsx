@@ -256,13 +256,14 @@ const TeacherListPage = () => {
         </table>
       </div>
 
-      {/* Mobile Cards */}
+      {/* Mobile Cards - FIXED LAYOUT */}
       <div className="md:hidden space-y-4">
         {teachers.length > 0 ? (
           teachers.map((teacher) => (
             <div key={teacher.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center">
+              {/* Header with profile and actions - FIXED */}
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center flex-1 min-w-0 mr-3">
                   <div className="flex-shrink-0 h-12 w-12">
                     <Image
                       src={teacher.profile_picture || "/default-teacher.png"}
@@ -272,19 +273,22 @@ const TeacherListPage = () => {
                       className="rounded-full"
                     />
                   </div>
-                  <div className="ml-3">
-                    <h3 className="font-semibold text-gray-800 text-lg">
+                  <div className="ml-3 min-w-0 flex-1">
+                    <h3 className="font-semibold text-gray-800 text-base truncate">
                       {teacher.user.first_name} {teacher.user.last_name}
                     </h3>
-                    <p className="text-sm text-gray-500">{teacher.user.email}</p>
+                    <p className="text-sm text-gray-500 truncate">{teacher.user.email}</p>
                   </div>
                 </div>
-                <div className="flex space-x-1">
+                
+                {/* Action buttons - FIXED SIZE AND SPACING */}
+                <div className="flex space-x-2 flex-shrink-0">
                   <button 
                     onClick={() => router.push(`/list/teachers/${teacher.id}`)}
-                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
+                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]"
+                    title="View Details"
                   >
-                    <Image src="/view.png" alt="View" width={14} height={14} />
+                    <Image src="/view.png" alt="View" width={18} height={18} />
                   </button>
                   
                   {canEditDelete && (
@@ -295,8 +299,11 @@ const TeacherListPage = () => {
                         data={teacher}
                         onSuccess={(updatedTeacher) => handleSuccess(updatedTeacher, "update")}
                         trigger={
-                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
-                            <Image src="/update.png" alt="Update" width={14} height={14} />
+                          <button 
+                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]"
+                            title="Edit Teacher"
+                          >
+                            <Image src="/update.png" alt="Update" width={18} height={18} />
                           </button>
                         }
                       />
@@ -306,8 +313,11 @@ const TeacherListPage = () => {
                         id={String(teacher.id)}
                         onSuccess={() => handleSuccess(teacher, "delete")}
                         trigger={
-                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
-                            <Image src="/delete.png" alt="Delete" width={14} height={14} />
+                          <button 
+                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]"
+                            title="Delete Teacher"
+                          >
+                            <Image src="/delete.png" alt="Delete" width={18} height={18} />
                           </button>
                         }
                       />
@@ -316,10 +326,11 @@ const TeacherListPage = () => {
                 </div>
               </div>
               
-              <div className="space-y-2 text-sm text-gray-600">
+              {/* Teacher Information - Improved layout */}
+              <div className="space-y-3 text-sm text-gray-600 border-t border-gray-100 pt-3">
                 <div className="flex justify-between items-center">
-                  <span className="font-medium">Specialization:</span>
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-josseypink1 text-white">
+                  <span className="font-medium text-gray-700">Specialization:</span>
+                  <span className="px-3 py-1 text-xs font-semibold rounded-full bg-josseypink1 text-white">
                     {teacher.subject_specialization || "General"}
                   </span>
                 </div>
