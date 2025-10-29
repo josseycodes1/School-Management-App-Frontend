@@ -49,7 +49,7 @@ const StudentListPage = () => {
   };
 
   const getProfilePictureUrl = (url?: string) => {
-    if (!url) return "/avatar.png";
+    if (!url) return "/blueavatar.png";
     if (url.startsWith("http")) return url;
     return `${process.env.NEXT_PUBLIC_BACKEND_URL}${url}`;
   };
