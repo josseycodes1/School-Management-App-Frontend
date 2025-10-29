@@ -228,3 +228,5 @@ const SingleTeacherPage = () => {
     </div>
   );
 };
+
+export default SingleTeacherPage;
