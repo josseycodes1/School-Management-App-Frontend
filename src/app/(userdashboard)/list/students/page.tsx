@@ -308,20 +308,20 @@ const StudentListPage = () => {
         </table>
       </div>
 
-      {/* Mobile Cards - IMPROVED LAYOUT */}
+      {/* Mobile Cards - FIXED LAYOUT */}
       <div className="md:hidden space-y-4">
         {students.length > 0 ? (
           students.map((student) => (
             <div key={student.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-              {/* Header with profile and actions */}
+              {/* Header with profile and actions - FIXED */}
               <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center flex-1 min-w-0">
-                  <div className="flex-shrink-0 h-14 w-14">
+                <div className="flex items-center flex-1 min-w-0 mr-3">
+                  <div className="flex-shrink-0 h-12 w-12">
                     <Image
                       src={getProfilePictureUrl(student.profile_picture)}
                       alt="Profile"
-                      width={56}
-                      height={56}
+                      width={48}
+                      height={48}
                       className="rounded-full"
                     />
                   </div>
@@ -333,14 +333,14 @@ const StudentListPage = () => {
                   </div>
                 </div>
                 
-                {/* Action buttons with better spacing */}
-                <div className="flex space-x-2 ml-2 flex-shrink-0">
+                {/* Action buttons - FIXED SIZE AND SPACING */}
+                <div className="flex space-x-2 flex-shrink-0">
                   <button
                     onClick={() => router.push(`/list/students/${student.id}`)}
-                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center"
+                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]"
                     title="View Details"
                   >
-                    <Image src="/view.png" alt="View" width={16} height={16} />
+                    <Image src="/view.png" alt="View" width={18} height={18} />
                   </button>
                   
                   {canEditDelete && (
@@ -352,14 +352,14 @@ const StudentListPage = () => {
                         onSuccess={(updatedStudent) => handleSuccess(updatedStudent, "update")}
                         trigger={
                           <button 
-                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center"
+                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]"
                             title="Edit Student"
                           >
                             <Image
                               src="/update.png"
                               alt="Update"
-                              width={16}
-                              height={16}
+                              width={18}
+                              height={18}
                             />
                           </button>
                         }
@@ -371,14 +371,14 @@ const StudentListPage = () => {
                         onSuccess={() => handleSuccess(student, "delete")}
                         trigger={
                           <button 
-                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center"
+                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]"
                             title="Delete Student"
                           >
                             <Image
                               src="/delete.png"
                               alt="Delete"
-                              width={16}
-                              height={16}
+                              width={18}
+                              height={18}
                             />
                           </button>
                         }
@@ -388,7 +388,7 @@ const StudentListPage = () => {
                 </div>
               </div>
               
-              {/* Student Information - Improved layout */}
+              {/* Student Information */}
               <div className="space-y-3 text-sm text-gray-600 border-t border-gray-100 pt-3">
                 <div className="flex justify-between items-center">
                   <span className="font-medium text-gray-700">Student ID:</span>

@@ -282,39 +282,35 @@ export default function ParentListPage() {
         </table>
       </div>
 
-      {/* Mobile Cards - IMPROVED LAYOUT */}
+      {/* Mobile Cards */}
       <div className="md:hidden space-y-4">
         {parentsData.length > 0 ? (
           parentsData.map((parent) => (
             <div key={parent.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-              {/* Header with profile and actions */}
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center flex-1 min-w-0">
-                  <div className="flex-shrink-0 h-14 w-14">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 h-12 w-12">
                     <Image
-                      src="/blueavatar.png"
+                      src="/avatar.png"
                       alt={`${parent.user.first_name}'s profile`}
-                      width={56}
-                      height={56}
+                      width={48}
+                      height={48}
                       className="rounded-full"
                     />
                   </div>
-                  <div className="ml-3 min-w-0 flex-1">
-                    <h3 className="font-semibold text-gray-800 text-base truncate">
+                  <div className="ml-3">
+                    <h3 className="font-semibold text-gray-800 text-lg">
                       {parent.user.first_name} {parent.user.last_name}
                     </h3>
-                    <p className="text-sm text-gray-500 truncate">{parent.user.email}</p>
+                    <p className="text-sm text-gray-500">{parent.user.email}</p>
                   </div>
                 </div>
-                
-                {/* Action buttons with better spacing */}
-                <div className="flex space-x-2 ml-2 flex-shrink-0">
+                <div className="flex space-x-1">
                   <button 
                     onClick={() => router.push(`/list/parents/${parent.id}`)}
-                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center"
-                    title="View Details"
+                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
                   >
-                    <Image src="/view.png" alt="View" width={16} height={16} />
+                    <Image src="/view.png" alt="View" width={14} height={14} />
                   </button>
                   
                   {canEditDelete && (
@@ -325,11 +321,8 @@ export default function ParentListPage() {
                         data={parent}
                         onSuccess={(updatedParent) => handleSuccess(updatedParent, "update")}
                         trigger={
-                          <button 
-                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center"
-                            title="Edit Parent"
-                          >
-                            <Image src="/update.png" alt="Update" width={16} height={16} />
+                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                            <Image src="/update.png" alt="Update" width={14} height={14} />
                           </button>
                         }
                       />
@@ -339,11 +332,8 @@ export default function ParentListPage() {
                         id={String(parent.id)}
                         onSuccess={() => handleSuccess(parent, "delete")}
                         trigger={
-                          <button 
-                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center"
-                            title="Delete Parent"
-                          >
-                            <Image src="/delete.png" alt="Delete" width={16} height={16} />
+                          <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                            <Image src="/delete.png" alt="Delete" width={14} height={14} />
                           </button>
                         }
                       />
@@ -352,29 +342,28 @@ export default function ParentListPage() {
                 </div>
               </div>
               
-              {/* Parent Information - Improved layout */}
-              <div className="space-y-3 text-sm text-gray-600 border-t border-gray-100 pt-3">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-gray-700">Phone:</span>
-                  <span className="text-gray-900">{parent.phone || "N/A"}</span>
+              <div className="space-y-2 text-sm text-gray-600">
+                <div className="flex justify-between">
+                  <span className="font-medium">Phone:</span>
+                  <span>{parent.phone || "N/A"}</span>
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-gray-700">Emergency Contact:</span>
-                  <span className="text-gray-900">{parent.emergency_contact || "None"}</span>
+                <div className="flex justify-between">
+                  <span className="font-medium">Emergency Contact:</span>
+                  <span>{parent.emergency_contact || "None"}</span>
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-gray-700">Occupation:</span>
-                  <span className="text-gray-900">{parent.occupation || "N/A"}</span>
+                <div className="flex justify-between">
+                  <span className="font-medium">Occupation:</span>
+                  <span>{parent.occupation || "N/A"}</span>
                 </div>
                 
-                <div className="flex flex-col gap-1">
-                  <span className="font-medium text-gray-700">Students:</span>
-                  <span className="text-gray-900 text-right break-words">
+                <div className="flex justify-between">
+                  <span className="font-medium">Students:</span>
+                  <span className="text-right max-w-[60%]">
                     {Array.isArray(parent.students) && parent.students.length > 0 
                       ? parent.students.join(", ")
-                      : "No students assigned"}
+                      : "No students"}
                   </span>
                 </div>
               </div>
