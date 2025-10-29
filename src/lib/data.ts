@@ -922,7 +922,7 @@ const year = today.getFullYear();
 const month = today.getMonth();
 const date = today.getDate();
 
-// 👇 This ensures we always include today (for Day view)
+
 const todaySubjects = ["Math", "English", "Biology"];
 
 type CalendarEvent = {
@@ -932,9 +932,9 @@ type CalendarEvent = {
   end: Date;
 };
 
-// Include events for today
+
 export const calendarEvents: CalendarEvent[] = todaySubjects.map((subject, i) => {
-  const startHour = 9 + i * 2; // 9:00, 11:00, 13:00
+  const startHour = 9 + i * 2; 
   return {
     title: subject,
     allDay: false,
@@ -943,8 +943,8 @@ export const calendarEvents: CalendarEvent[] = todaySubjects.map((subject, i) =>
   };
 });
 
-// 👇 Add events for Monday–Friday for Work Week
-const monday = date - today.getDay() + 1; // Monday of current week
+
+const monday = date - today.getDay() + 1; 
 const weekSubjects = ["Physics", "Chemistry", "History", "Lit", "Civic", "Geo"];
 
 for (let i = 0; i < 5; i++) {

@@ -272,7 +272,7 @@ export default function LoginPage() {
   }
 
   const getInputClass = (fieldName: string) => {
-    const baseClass = "w-full px-4 py-2 border rounded-md focus:ring-[#FC46AA] focus:border-[#FC46AA] transition-colors"
+    const baseClass = "w-full px-4 py-2 border rounded-md focus:ring-josseypink2 focus:border-josseypink1 transition-colors"
     const hasError = errors[fieldName as keyof typeof errors] && touched[fieldName as keyof typeof touched]
     
     if (hasError) {

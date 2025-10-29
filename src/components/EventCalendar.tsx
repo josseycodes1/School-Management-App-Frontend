@@ -112,7 +112,7 @@ const EventCalendar = () => {
         <Calendar onChange={onChange} value={value} />
         {loading && (
           <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center rounded-md">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FC46AA]"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-josseypink1"></div>
           </div>
         )}
       </div>
@@ -193,7 +193,7 @@ const EventCalendar = () => {
                 </p>
                 <button
                   onClick={() => router.push("/list/events")}
-                  className="text-xs text-pink-500 hover:underline mt-1"
+                  className="text-xs text-josseypink1 hover:underline mt-1"
                 >
                   View More
                 </button>

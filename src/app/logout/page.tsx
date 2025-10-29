@@ -40,7 +40,7 @@ export default function LogoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-pink-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-josseypink2 flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
         <div className="w-16 h-16 rounded-full bg-josseypink1 mx-auto mb-6 flex items-center justify-center text-white text-2xl font-bold">
           JC
@@ -63,7 +63,7 @@ export default function LogoutPage() {
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => window.location.reload()}
-                className="w-full bg-josseypink1 text-white py-2 rounded-md hover:bg-[#F699CD] transition-colors"
+                className="w-full bg-josseypink1 text-white py-2 rounded-md hover:bg-josseypink2 transition-colors"
               >
                 Try Again
               </button>

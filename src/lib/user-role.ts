@@ -1,7 +1,7 @@
 export const getUserRole = (): string => {
   if (typeof window === 'undefined') return '';
   
-  // Try multiple possible storage locations
+
   const role = localStorage.getItem('role') || 
                localStorage.getItem('userRole') || 
                '';

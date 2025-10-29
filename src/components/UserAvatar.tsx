@@ -33,7 +33,7 @@ export default function UserAvatar({ size = 36, className = "" }: UserAvatarProp
       unoptimized
       onError={(e) => {
         const target = e.target as HTMLImageElement
-        target.src = "/avatar.png"
+        target.src = "/blueavatar.png"
       }}
     />
   )
