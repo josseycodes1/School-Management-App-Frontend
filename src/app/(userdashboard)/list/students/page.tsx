@@ -1,9 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import FormModal from "@/components/FormModal";
+import TableSearch from "@/components/TableSearch";
+import { useRouter } from "next/navigation";
 import { role } from "@/lib/data";
-import { useState, useEffect } from "react";
+import Pagination from "@/components/Pagination";
+import usePagination from "@/hooks/usePagination";
+import { useState } from "react";
 
 type Student = {
   id: string;
@@ -17,52 +21,32 @@ type Student = {
   address: string;
   class_level: string;
   gender?: string;
-  profile_picture?: string;
-  date_of_birth?: string;
-  parent?: {
-    user: {
-      first_name: string;
-      last_name: string;
-      email: string;
-      phone: string;
-    };
-  };
+  profile_picture?: string; 
 };
 
-const StudentDetailPage = () => {
+const StudentListPage = () => {
   const router = useRouter();
-  const params = useParams();
-  const studentId = params.id as string;
-  
-  const [student, setStudent] = useState<Student | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isMobileSearchVisible, setIsMobileSearchVisible] = useState(false);
 
-  const canEditDelete = role === "admin";
+  const {
+    data: students,
+    loading,
+    error,
+    pagination,
+    searchTerm,
+    setSearchTerm,
+    handlePageChange,
+    refreshData,
+    handleSearchSubmit,
+    isClientSideSearch
+  } = usePagination<Student>('/api/accounts/students/', {
+    initialPage: 1,
+    pageSize: 10,
+  });
 
-  useEffect(() => {
-    const fetchStudent = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/accounts/students/${studentId}/`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch student');
-        }
-        
-        const data = await response.json();
-        setStudent(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (studentId) {
-      fetchStudent();
-    }
-  }, [studentId]);
+  const handleSuccess = (updatedStudent: Student, type: "create" | "update" | "delete") => {
+    refreshData();
+  };
 
   const getProfilePictureUrl = (url?: string) => {
     if (!url) return "/blueavatar.png";
@@ -70,202 +54,387 @@ const StudentDetailPage = () => {
     return `${process.env.NEXT_PUBLIC_BACKEND_URL}${url}`;
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString();
-  };
+  const canEditDelete = role === "admin";
+  const canCreate = role === "admin";
 
-  if (loading) {
+  if (loading)
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-josseypink1"></div>
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
       <div className="bg-josseypink2 border-l-4 border-josseypink1 p-4 mb-4">
         <div className="flex items-center text-josseypink1">
-          <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          <svg
+            className="h-5 w-5 mr-2"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clipRule="evenodd"
+            />
           </svg>
           {error}
         </div>
       </div>
     );
-  }
-
-  if (!student) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        Student not found
-      </div>
-    );
-  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800">Student Management</h1>
+          
+          {/* Mobile Search Toggle Button */}
           <button 
-            onClick={() => router.back()}
-            className="flex items-center text-josseypink1 hover:text-josseypink2 transition-colors"
+            className="md:hidden flex items-center justify-center w-10 h-10 text-josseypink1 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => setIsMobileSearchVisible(!isMobileSearchVisible)}
           >
-            <Image src="/back.png" alt="Back" width={20} height={20} className="mr-2" />
-            <span className="hidden md:inline">Back to Students</span>
+            <Image src="/search.png" alt="Search" width={20} height={20} />
           </button>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-800">Student Details</h1>
         </div>
-        
-        {canEditDelete && (
-          <div className="flex space-x-2 w-full md:w-auto">
-            <button 
-              onClick={() => router.push(`/list/students/${student.id}/edit`)}
-              className="flex-1 md:flex-none bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              <Image src="/update.png" alt="Edit" width={16} height={16} />
-              <span>Edit</span>
-            </button>
+
+        {/* Search and Create - Desktop */}
+        <div className="hidden md:flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+          <div className="w-full md:w-64">
+            <TableSearch
+              value={searchTerm}
+              onChange={setSearchTerm}
+              onSubmit={handleSearchSubmit}
+              placeholder="Search students... (Press Enter for full search)"
+            />
+          </div>
+          
+          {/* Only show create button for admin */}
+          {canCreate && (
+            <FormModal
+              table="student"
+              type="create"
+              onSuccess={(newStudent) => handleSuccess(newStudent, "create")}
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-2 rounded-lg whitespace-nowrap transition-colors"
+            />
+          )}
+        </div>
+
+        {/* Mobile Search */}
+        {isMobileSearchVisible && (
+          <div className="md:hidden">
+            <div className="flex items-center gap-2 text-sm rounded-lg ring-2 ring-gray-300 px-3 py-2 bg-white">
+              <Image src="/search.png" alt="Search icon" width={16} height={16} className="text-gray-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearchSubmit();
+                  }
+                }}
+                placeholder="Search students... (Press Enter for full search)"
+                className="w-full p-1 bg-transparent outline-none text-gray-700"
+                autoFocus
+              />
+              {searchTerm && (
+                <button 
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <Image src="/close.png" alt="Clear" width={16} height={16} />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Create Button - Only for admin */}
+        {canCreate && (
+          <div className="md:hidden">
+            <FormModal
+              table="student"
+              type="create"
+              onSuccess={(newStudent) => handleSuccess(newStudent, "create")}
+              className="bg-josseypink1 hover:bg-josseypink2 text-white px-4 py-3 rounded-lg w-full text-center transition-colors"
+            />
           </div>
         )}
       </div>
 
-      {/* Student Profile Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* Profile Card */}
-        <div className="lg:col-span-1 bg-gray-50 rounded-lg p-6">
-          <div className="flex flex-col items-center text-center">
-            <div className="relative mb-4">
-              <Image
-                src={getProfilePictureUrl(student.profile_picture)}
-                alt="Profile"
-                width={120}
-                height={120}
-                className="rounded-full border-4 border-white shadow-md"
-              />
-            </div>
-            <h2 className="text-xl font-bold text-gray-800 mb-1">
-              {student.user.first_name} {student.user.last_name}
-            </h2>
-            <p className="text-gray-600 mb-2">{student.user.email}</p>
-            <span className="px-3 py-1 bg-josseypink1 text-white text-sm font-semibold rounded-full">
-              {student.class_level}
-            </span>
-          </div>
-        </div>
+      {/* Updated Results count with search mode */}
+      <div className="mb-4 text-sm text-gray-600">
+        {isClientSideSearch ? (
+          <>
+            Showing {students.length} student{students.length !== 1 ? 's' : ''}
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" on this current page, <span className="text-josseypink1 font-medium">press Enter for full search on other pages</span></>
+            )}
+          </>
+        ) : (
+          <>
+            Showing {students.length} of {pagination.count} student{students.length !== 1 ? 's' : ''}
+            {searchTerm && (
+              <> for "<span className="font-medium">{searchTerm}</span>" (all data)</>
+            )}
+          </>
+        )}
+      </div>
 
-        {/* Details Card */}
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Personal Information */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <Image src="/user.png" alt="Personal" width={20} height={20} />
-              Personal Information
-            </h3>
-            <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:justify-between">
-                <span className="font-medium text-gray-700 text-sm sm:text-base">Student ID:</span>
-                <span className="text-gray-900 font-semibold">{student.admission_number}</span>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:justify-between">
-                <span className="font-medium text-gray-700 text-sm sm:text-base">Gender:</span>
-                <span className="text-gray-900">{student.gender || "N/A"}</span>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:justify-between">
-                <span className="font-medium text-gray-700 text-sm sm:text-base">Date of Birth:</span>
-                <span className="text-gray-900">{formatDate(student.date_of_birth)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Contact Information */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <Image src="/contact.png" alt="Contact" width={20} height={20} />
-              Contact Information
-            </h3>
-            <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:justify-between">
-                <span className="font-medium text-gray-700 text-sm sm:text-base">Phone:</span>
-                <span className="text-gray-900">{student.phone || "N/A"}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-700 text-sm sm:text-base mb-1">Address:</span>
-                <span className="text-gray-900 text-sm break-words">{student.address || "No address provided"}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Parent Information */}
-          <div className="md:col-span-2 bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <Image src="/parent.png" alt="Parent" width={20} height={20} />
-              Parent/Guardian Information
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {student.parent ? (
-                <>
-                  <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:justify-between">
-                      <span className="font-medium text-gray-700 text-sm sm:text-base">Parent Name:</span>
-                      <span className="text-gray-900">{student.parent.user.first_name} {student.parent.user.last_name}</span>
+      {/* Desktop Table */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Student
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Student ID
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Class
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Contact
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {students.length > 0 ? (
+              students.map((student) => (
+                <tr key={student.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <Image
+                          src={getProfilePictureUrl(student.profile_picture)}
+                          alt="Profile"
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {student.user.first_name} {student.user.last_name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {student.user.email}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row sm:justify-between">
-                      <span className="font-medium text-gray-700 text-sm sm:text-base">Email:</span>
-                      <span className="text-gray-900">{student.parent.user.email}</span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {student.admission_number}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-josseypink1 text-white">
+                      {student.class_level}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div>{student.phone || "N/A"}</div>
+                    <div className="text-xs text-gray-400">
+                      {student.address || "No address"}
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        onClick={() => router.push(`/list/students/${student.id}`)}
+                        className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors"
+                      >
+                        <Image src="/view.png" alt="View" width={16} height={16} />
+                      </button>
+                      {canEditDelete && (
+                        <>
+                          <FormModal
+                            table="student"
+                            type="update"
+                            data={student}
+                            onSuccess={(updatedStudent) => handleSuccess(updatedStudent, "update")}
+                            trigger={
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                                <Image
+                                  src="/update.png"
+                                  alt="Update"
+                                  width={16}
+                                  height={16}
+                                />
+                              </button>
+                            }
+                          />
+                          <FormModal
+                            table="student"
+                            type="delete"
+                            id={String(student.id)}
+                            onSuccess={() => handleSuccess(student, "delete")}
+                            trigger={
+                              <button className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-1 rounded transition-colors">
+                                <Image
+                                  src="/delete.png"
+                                  alt="Delete"
+                                  width={16}
+                                  height={16}
+                                />
+                              </button>
+                            }
+                          />
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
+                  {searchTerm ? "No students found matching your search" : "No students found"}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Cards - FIXED LAYOUT */}
+      <div className="md:hidden space-y-4">
+        {students.length > 0 ? (
+          students.map((student) => (
+            <div key={student.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+              {/* Header with profile and actions - FIXED */}
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center flex-1 min-w-0 mr-3">
+                  <div className="flex-shrink-0 h-12 w-12">
+                    <Image
+                      src={getProfilePictureUrl(student.profile_picture)}
+                      alt="Profile"
+                      width={48}
+                      height={48}
+                      className="rounded-full"
+                    />
                   </div>
-                  <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:justify-between">
-                      <span className="font-medium text-gray-700 text-sm sm:text-base">Phone:</span>
-                      <span className="text-gray-900">{student.parent.user.phone || "N/A"}</span>
-                    </div>
+                  <div className="ml-3 min-w-0 flex-1">
+                    <h3 className="font-semibold text-gray-800 text-base truncate">
+                      {student.user.first_name} {student.user.last_name}
+                    </h3>
+                    <p className="text-sm text-gray-500 truncate">{student.user.email}</p>
                   </div>
-                </>
-              ) : (
-                <div className="col-span-2 text-center text-gray-500 py-4">
-                  No parent/guardian information available
                 </div>
-              )}
+                
+                {/* Action buttons - FIXED SIZE AND SPACING */}
+                <div className="flex space-x-2 flex-shrink-0">
+                  <button
+                    onClick={() => router.push(`/list/students/${student.id}`)}
+                    className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]"
+                    title="View Details"
+                  >
+                    <Image src="/view.png" alt="View" width={18} height={18} />
+                  </button>
+                  
+                  {canEditDelete && (
+                    <>
+                      <FormModal
+                        table="student"
+                        type="update"
+                        data={student}
+                        onSuccess={(updatedStudent) => handleSuccess(updatedStudent, "update")}
+                        trigger={
+                          <button 
+                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]"
+                            title="Edit Student"
+                          >
+                            <Image
+                              src="/update.png"
+                              alt="Update"
+                              width={18}
+                              height={18}
+                            />
+                          </button>
+                        }
+                      />
+                      <FormModal
+                        table="student"
+                        type="delete"
+                        id={String(student.id)}
+                        onSuccess={() => handleSuccess(student, "delete")}
+                        trigger={
+                          <button 
+                            className="text-white hover:text-pink-100 bg-josseypink1 hover:bg-josseypink2 p-2 rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]"
+                            title="Delete Student"
+                          >
+                            <Image
+                              src="/delete.png"
+                              alt="Delete"
+                              width={18}
+                              height={18}
+                            />
+                          </button>
+                        }
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              {/* Student Information */}
+              <div className="space-y-3 text-sm text-gray-600 border-t border-gray-100 pt-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-gray-700">Student ID:</span>
+                  <span className="text-gray-900 font-semibold">{student.admission_number}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-gray-700">Class:</span>
+                  <span className="px-3 py-1 text-xs font-semibold rounded-full bg-josseypink1 text-white">
+                    {student.class_level}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-gray-700">Phone:</span>
+                  <span className="text-gray-900">{student.phone || "N/A"}</span>
+                </div>
+                
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium text-gray-700">Address:</span>
+                  <span className="text-gray-900 text-right break-words">
+                    {student.address || "No address provided"}
+                  </span>
+                </div>
+              </div>
             </div>
+          ))
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            {searchTerm ? "No students found matching your search" : "No students found"}
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Quick Actions - Mobile Friendly */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <button className="bg-white border border-gray-300 rounded-lg p-3 text-center hover:bg-gray-50 transition-colors">
-            <div className="flex flex-col items-center gap-2">
-              <Image src="/attendance.png" alt="Attendance" width={24} height={24} />
-              <span className="text-sm font-medium text-gray-700">Attendance</span>
-            </div>
-          </button>
-          <button className="bg-white border border-gray-300 rounded-lg p-3 text-center hover:bg-gray-50 transition-colors">
-            <div className="flex flex-col items-center gap-2">
-              <Image src="/grades.png" alt="Grades" width={24} height={24} />
-              <span className="text-sm font-medium text-gray-700">Grades</span>
-            </div>
-          </button>
-          <button className="bg-white border border-gray-300 rounded-lg p-3 text-center hover:bg-gray-50 transition-colors">
-            <div className="flex flex-col items-center gap-2">
-              <Image src="/timetable.png" alt="Timetable" width={24} height={24} />
-              <span className="text-sm font-medium text-gray-700">Timetable</span>
-            </div>
-          </button>
-          <button className="bg-white border border-gray-300 rounded-lg p-3 text-center hover:bg-gray-50 transition-colors">
-            <div className="flex flex-col items-center gap-2">
-              <Image src="/message.png" alt="Message" width={24} height={24} />
-              <span className="text-sm font-medium text-gray-700">Message</span>
-            </div>
-          </button>
+      {/* Only show pagination when not searching or in client-side mode */}
+      {(!searchTerm || isClientSideSearch) && pagination.total_pages > 1 && (
+        <div className="mt-6">
+          <Pagination 
+            currentPage={pagination.current_page}
+            totalPages={pagination.total_pages}
+            onPageChange={handlePageChange}
+          />
         </div>
-      </div>
+      )}
     </div>
   );
 };
 
-export default StudentDetailPage;
+export default StudentListPage;
