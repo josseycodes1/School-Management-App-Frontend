@@ -190,7 +190,7 @@ export default function ParentListPage() {
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         <Image
-                          src="/avatar.png"
+                          src="/blueavatar.png"
                           alt={`${parent.user.first_name}'s profile`}
                           width={40}
                           height={40}
