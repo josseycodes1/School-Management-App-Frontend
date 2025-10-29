@@ -128,7 +128,7 @@ const EventCalendar = () => {
               className="p-1 rounded-md bg-josseypink1"
               trigger={
                 <button className="p-1 rounded-md bg-josseypink1">
-                  <Image src="/add.png" alt="Add" width={20} height={20} />
+                  <Image src="/create.png" alt="Add" width={20} height={20} />
                 </button>
               }
             />

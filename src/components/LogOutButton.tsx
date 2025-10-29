@@ -38,7 +38,7 @@ export default function LogoutButton({
   }
 
   const buttonClass = variant === 'primary' 
-    ? `bg-josseypink1 text-white py-2 px-4 rounded-md hover:bg-[#F699CD] transition-colors ${className}`
+    ? `bg-josseypink1 text-white py-2 px-4 rounded-md hover:bg-josseypink2 transition-colors ${className}`
     : variant === 'secondary'
     ? `bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors ${className}`
     : `text-josseypink1 hover:text-josseypink8 transition-colors ${className}`
