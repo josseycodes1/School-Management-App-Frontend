@@ -1,9 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+
+interface SocialMediaLinks {
+  facebook?: string;
+  twitter?: string;
+  instagram?: string;
+  linkedin?: string;
+  youtube?: string;
+}
 
 export default function Footer() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [socialLinks, setSocialLinks] = useState<SocialMediaLinks>({});
+  const [loading, setLoading] = useState(true);
 
   const footerLinks = [
     {
@@ -34,6 +44,34 @@ export default function Footer() {
     },
   ];
 
+ 
+  useEffect(() => {
+    const fetchSocialLinks = async () => {
+      try {
+        const response = await fetch('/api/social-media/links/');
+        if (response.ok) {
+          const data = await response.json();
+          setSocialLinks(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch social media links:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSocialLinks();
+  }, []);
+
+ 
+  const socialIcons = {
+    facebook: "FB",
+    twitter: "TW", 
+    instagram: "IG",
+    linkedin: "IN",
+    youtube: "YT"
+  };
+
   return (
     <footer className="bg-josseypink1 text-white py-4 md:py-8 px-3 md:px-6">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-8">
@@ -50,24 +88,27 @@ export default function Footer() {
             education since 2013.
           </p>
           <div className="flex space-x-3">
-            <a
-              href="#"
-              className="text-gray-300 hover:text-white transition-colors text-sm"
-            >
-              FB
-            </a>
-            <a
-              href="#"
-              className="text-gray-300 hover:text-white transition-colors text-sm"
-            >
-              TW
-            </a>
-            <a
-              href="#"
-              className="text-gray-300 hover:text-white transition-colors text-sm"
-            >
-              IG
-            </a>
+            {!loading ? (
+              Object.entries(socialLinks).map(([platform, url]) => (
+                <a
+                  key={platform}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors text-sm"
+                  title={platform.charAt(0).toUpperCase() + platform.slice(1)}
+                >
+                  {socialIcons[platform as keyof typeof socialIcons] || platform.toUpperCase()}
+                </a>
+              ))
+            ) : (
+              // Loading skeleton
+              <>
+                <div className="w-6 h-6 bg-gray-400 rounded animate-pulse"></div>
+                <div className="w-6 h-6 bg-gray-400 rounded animate-pulse"></div>
+                <div className="w-6 h-6 bg-gray-400 rounded animate-pulse"></div>
+              </>
+            )}
           </div>
         </div>
 
