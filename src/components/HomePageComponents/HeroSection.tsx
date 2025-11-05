@@ -27,13 +27,13 @@ export default function HeroSection() {
         <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
           <Link 
             href="/log-in" 
-            className="px-6 py-3 bg-josseypink1 text-white rounded-md hover:josseypink2 transition-colors font-medium shadow-md"
+            className="px-6 py-3 bg-josseypink1 text-white rounded-md hover:text-josseypink2 transition-colors font-medium shadow-md"
           >
             Log In
           </Link>
           <Link 
             href="/sign-up" 
-            className="px-6 py-3 bg-white text-josseypink1 hover:bg-josseypink9 rounded-md transition-colors font-medium shadow-md"
+            className="px-6 py-3 bg-white text-josseypink1 hover:text-josseypink5 rounded-md transition-colors font-medium shadow-md"
           >
             Sign Up
           </Link>
