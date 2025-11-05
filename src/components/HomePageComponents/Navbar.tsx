@@ -45,7 +45,7 @@ export default function Navbar() {
               className={`font-medium transition-all duration-200 px-4 py-2 rounded-lg hover:bg-josseypink1/10 ${
                 isScrolled 
                   ? 'text-gray-700 hover:text-josseypink1' 
-                  : 'text-white hover:text-josseypink5'
+                  : 'text-white hover:bg-josseypink9'
               }`}
             >
               Courses
@@ -55,7 +55,7 @@ export default function Navbar() {
               className={`font-medium transition-all duration-200 px-4 py-2 rounded-lg hover:bg-josseypink1/10 ${
                 isScrolled 
                   ? 'text-gray-700 hover:text-josseypink1' 
-                  : 'text-white hover:text-josseypink5'
+                  : 'text-white hover:bg-josseypink9'
               }`}
             >
               About
@@ -65,7 +65,7 @@ export default function Navbar() {
               className={`font-medium transition-all duration-200 px-4 py-2 rounded-lg hover:bg-josseypink1/10 ${
                 isScrolled 
                   ? 'text-gray-700 hover:text-josseypink1' 
-                  : 'text-white hover:josseypink5'
+                  : 'text-white hover:bg-josseypink9'
               }`}
             >
               Contact
@@ -76,7 +76,7 @@ export default function Navbar() {
               className={`font-medium transition-all duration-200 px-4 py-2 rounded-lg hover:bg-josseypink1/10 ${
                 isScrolled 
                   ? 'text-gray-700 hover:text-josseypink1' 
-                  : 'text-white hover:josseypink5'
+                  : 'text-white hover:bg-josseypink10'
               }`}
             >
               Log in
@@ -86,7 +86,7 @@ export default function Navbar() {
               className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
                 isScrolled
                   ? 'bg-josseypink1 text-white hover:bg-josseypink10'
-                  : 'bg-white text-josseypink1 hover:bg-josseypink5 hover:text-white'
+                  : 'bg-white text-josseypink1 hover:bg-josseypink10 hover:text-white'
               }`}
             >
               Sign Up

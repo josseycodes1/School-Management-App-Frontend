@@ -36,7 +36,7 @@ export default function Programs() {
             ))}
           </div>
           <div className="text-center mt-12 md:mt-16">
-            <Link href="/academics" className="inline-block px-8 py-3 bg-josseypink1 text-white rounded-xl hover:bg-josseypink2 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
+            <Link href="/academics" className="inline-block px-8 py-3 bg-josseypink1  text-white rounded-xl hover:bg-josseypink10 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
               View Full Curriculum
             </Link>
           </div>

@@ -45,7 +45,7 @@ export default function Footer() {
     },
   ];
 
-  // Fetch social media links from backend - USING THE SAME PATTERN AS LOGIN PAGE
+ 
   useEffect(() => {
     const fetchSocialLinks = async () => {
       try {
@@ -65,7 +65,7 @@ export default function Footer() {
         setSocialLinks(response.data);
       } catch (error) {
         console.error('Failed to fetch social media links:', error);
-        // Fallback links in case of error
+       
         setSocialLinks({
           facebook: "#",
           twitter: "#", 
@@ -79,7 +79,7 @@ export default function Footer() {
     fetchSocialLinks();
   }, []);
 
-  // Social media icons mapping
+  
   const socialIcons = {
     facebook: "FB",
     twitter: "TW", 
@@ -94,7 +94,7 @@ export default function Footer() {
         {/* Logo + About */}
         <div className="lg:col-span-2">
           <div className="flex items-center mb-2">
-            <div className="w-8 h-8 rounded-full bg-josseypink1 mr-2 flex items-center justify-center text-white text-sm font-bold">
+            <div className="w-8 h-8 rounded-full text-josseypink1 mr-2 flex items-center justify-center bg-white text-sm font-bold">
               JC
             </div>
             <h3 className="text-lg font-bold">JosseyCodes Academy</h3>
@@ -118,7 +118,7 @@ export default function Footer() {
                 </a>
               ))
             ) : (
-              // Loading skeleton
+              
               <>
                 <div className="w-6 h-6 bg-gray-400 rounded animate-pulse"></div>
                 <div className="w-6 h-6 bg-gray-400 rounded animate-pulse"></div>

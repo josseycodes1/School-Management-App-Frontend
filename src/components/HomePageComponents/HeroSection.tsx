@@ -33,7 +33,7 @@ export default function HeroSection() {
           </Link>
           <Link 
             href="/sign-up" 
-            className="px-6 py-3 bg-white text-josseypink1 rounded-md hover:bg-gray-100 transition-colors font-medium shadow-md"
+            className="px-6 py-3 bg-white text-josseypink1 hover:bg-josseypink9 rounded-md transition-colors font-medium shadow-md"
           >
             Sign Up
           </Link>

@@ -42,7 +42,7 @@ export default function AboutUs() {
         </div>
 
         <div className="text-center mt-8 md:mt-12">
-          <Link href="/admission" className="inline-block px-6 py-3 bg-josseypink1 text-white rounded-md hover:josseypink2 transition-colors font-medium">
+          <Link href="/admission" className="inline-block px-6 py-3 bg-josseypink1 hover:bg-josseypink9 text-white rounded-md hover:josseypink2 transition-colors font-medium">
             Learn More About Us
           </Link>
         </div>
