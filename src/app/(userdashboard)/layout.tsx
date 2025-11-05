@@ -19,7 +19,7 @@ export default function DashboardLayout({
           <div className="w-12 h-12 text-white rounded-full mr-3 flex items-center justify-center bg-josseypink1 border-2 border-black">
             JC
           </div>
-          <span className="hidden lg:block font-bold text-josseypink1">JOSSEYCODES ACADEMY</span>
+          <span className="hidden lg:block font-bold text-josseypink1"></span>
         </Link>
         <Menu />
       </div>
