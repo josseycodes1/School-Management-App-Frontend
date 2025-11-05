@@ -164,7 +164,7 @@ const SingleStudentPage = () => {
 
           {/* SMALL CARDS */}
           <div className="flex-1 flex gap-4 justify-between flex-wrap">
-            <div className="bg-josseypink2 p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%]">
+            <div className="bg-josseypink1 p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%]">
               <Image
                 src="/singleAttendance.png"
                 alt=""
