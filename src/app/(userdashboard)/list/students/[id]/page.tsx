@@ -210,7 +210,7 @@ const SingleStudentPage = () => {
               </div>
             </div>
 
-            <div className="bg-josseypink2 p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%]">
+            <div className="bg-josseypink1 p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%]">
               <Image
                 src="/singleClass.png"
                 alt=""
@@ -247,7 +247,7 @@ const SingleStudentPage = () => {
               Student&apos;s Lessons
             </Link>
             <Link
-              className="p-3 rounded-md bg-josseypink2 text-white"
+              className="p-3 rounded-md bg-josseypink1 text-white"
               href={`/students/${id}/teachers`}
             >
               Student&apos;s Teachers
@@ -259,7 +259,7 @@ const SingleStudentPage = () => {
               Student&apos;s Exams
             </Link>
             <Link
-              className="p-3 rounded-md bg-josseypink2 text-white"
+              className="p-3 rounded-md bg-josseypink1 text-white"
               href={`/students/${id}/assignments`}
             >
               Student&apos;s Assignments
