@@ -13,12 +13,12 @@
 }
 
 .react-calendar__tile--active {
-  background-color: #93c5fd !important;
+  background-color: #feffff !important;
   color: black !important;
 }
 
 .rbc-day-slot {
-  border-right: 1px solid #E5E7EB !important; /* vertical line */
+  border-right: 1px solid #fcfcfc !important; /* vertical line */
 }
 
 .rbc-day-slot .rbc-event:nth-of-type(even) {
