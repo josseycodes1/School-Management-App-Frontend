@@ -62,7 +62,7 @@ export default function ProfessionalInfoForm({
     if (error) {
       return `${baseClass} border-red-300 focus:border-red-500 bg-red-50`;
     }
-    return `${baseClass} border-gray-300 focus:border-[#FC46AA]`;
+    return `${baseClass} border-gray-300 focus:border-josseypink1`;
   };
 
   const getTextareaClass = (fieldName: string) => {
@@ -100,7 +100,7 @@ export default function ProfessionalInfoForm({
             <p className="mt-1 text-sm text-red-600">{getFieldError('subject_specialization')}</p>
           )}
           {!getFieldError('subject_specialization') && formData.subject_specialization && (
-            <p className="mt-1 text-sm text-green-600">✓ Subject specialization entered</p>
+            <p className="mt-1 text-sm text-josseypink1">✓ Subject specialization entered</p>
           )}
         </div>
 
@@ -123,7 +123,7 @@ export default function ProfessionalInfoForm({
             <p className="mt-1 text-sm text-red-600">{getFieldError('hire_date')}</p>
           )}
           {!getFieldError('hire_date') && formData.hire_date && (
-            <p className="mt-1 text-sm text-green-600">✓ Valid hire date</p>
+            <p className="mt-1 text-sm text-josseypink1">✓ Valid hire date</p>
           )}
         </div>
 
@@ -143,7 +143,7 @@ export default function ProfessionalInfoForm({
             placeholder="List your educational qualifications, certifications, and relevant training"
           />
           {formData.qualifications && (
-            <p className="mt-1 text-sm text-green-600">
+            <p className="mt-1 text-sm text-josseypink1">
               ✓ {formData.qualifications.split(/\r\n|\r|\n/).filter(line => line.trim()).length} qualification(s) entered
             </p>
           )}

@@ -489,9 +489,9 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
 
   if (loadingProgress) {
     return (
-      <div className="min-h-screen bg-pink-100 flex items-center justify-center">
+      <div className="min-h-screen bg-josseypink2 flex items-center justify-center">
         <div className="text-center">
-          <div className="spinner border-4 border-[#FC46AA] border-t-transparent rounded-full w-12 h-12 animate-spin mx-auto"></div>
+          <div className="spinner border-4 border-josseypink1 border-t-transparent rounded-full w-12 h-12 animate-spin mx-auto"></div>
           <p className="mt-4 text-gray-700">Checking onboarding status...</p>
         </div>
       </div>
@@ -499,7 +499,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
   }
 
   return (
-    <div className="min-h-screen bg-pink-100 py-10 px-4">
+    <div className="min-h-screen bg-josseypink2 py-10 px-4">
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         <ProgressHeader progress={progress} />
         
@@ -552,7 +552,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
             <button
               type="submit"
               disabled={isSubmitting || !isFormValid()}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FC46AA] hover:bg-[#e03d98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC46AA] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-josseypink1 hover:bg-josseypink1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-josseypink1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
               {isSubmitting ? (
                 <span className="flex items-center">

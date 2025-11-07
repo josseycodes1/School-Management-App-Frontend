@@ -32,13 +32,13 @@ export default function ParentInfoForm({
 }: ParentInfoFormProps) {
   
   const getInputClass = (fieldName: string) => {
-    const baseClass = "mt-1 block w-full rounded-md shadow-sm focus:ring-[#FC46AA] sm:text-sm p-2 border";
+    const baseClass = "mt-1 block w-full rounded-md shadow-sm focus:ring-josseypink1 sm:text-sm p-2 border";
     const error = getFieldError(fieldName);
     
     if (error) {
       return `${baseClass} border-red-300 focus:border-red-500 bg-red-50`;
     }
-    return `${baseClass} border-gray-300 focus:border-[#FC46AA]`;
+    return `${baseClass} border-gray-300 focus:border-josseypink1`;
   };
 
   return (
@@ -66,7 +66,7 @@ export default function ParentInfoForm({
             <p className="mt-1 text-sm text-red-600">{getFieldError('parent_name')}</p>
           )}
           {!getFieldError('parent_name') && formData.parent_name && (
-            <p className="mt-1 text-sm text-green-600">✓ Valid parent name</p>
+            <p className="mt-1 text-sm text-josseypink1">✓ Valid parent name</p>
           )}
         </div>
 
@@ -90,7 +90,7 @@ export default function ParentInfoForm({
             <p className="mt-1 text-sm text-red-600">{getFieldError('parent_contact')}</p>
           )}
           {!getFieldError('parent_contact') && formData.parent_contact && (
-            <p className="mt-1 text-sm text-green-600">✓ Valid contact number</p>
+            <p className="mt-1 text-sm text-josseypink1">✓ Valid contact number</p>
           )}
         </div>
       </div>

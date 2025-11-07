@@ -74,7 +74,7 @@ export default function ParentOnboarding() {
     }
   });
 
-  // Validation functions
+  
   const validateField = (name: string, value: any): string | undefined => {
     switch (name) {
       case 'phone':
@@ -146,7 +146,7 @@ export default function ParentOnboarding() {
     return Object.keys(errors).length === 0;
   };
 
-  // Check if user is already onboarded
+  
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       try {
@@ -156,7 +156,7 @@ export default function ParentOnboarding() {
           return;
         }
 
-        // Get onboarding progress
+      
         const progressRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/onboarding/progress/`, 
           {
@@ -168,13 +168,13 @@ export default function ParentOnboarding() {
 
         setProgress(progressRes.data);
 
-        // If onboarding is complete, redirect to dashboard
+       
         if (progressRes.data.completed) {
           router.push('/parent');
           return;
         }
 
-        // Pre-fill existing data if available
+        
         const profileRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/onboarding/`,
           {
@@ -228,7 +228,7 @@ export default function ParentOnboarding() {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       
-      // Validate file type
+     
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
         const errorMsg = 'Please select a valid image file (JPEG, PNG, or WebP)';
@@ -237,7 +237,7 @@ export default function ParentOnboarding() {
         return;
       }
       
-      // Validate file size (5MB max)
+     
       if (file.size > 5 * 1024 * 1024) {
         const errorMsg = 'File size should be less than 5MB';
         setValidationErrors(prev => ({ ...prev, photo: errorMsg }));
@@ -252,7 +252,7 @@ export default function ParentOnboarding() {
 
       setValidationErrors(prev => ({ ...prev, photo: undefined }));
 
-      // Create preview
+     
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewImage(reader.result as string);
@@ -344,7 +344,7 @@ export default function ParentOnboarding() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Mark all fields as touched
+    
     const allFields = ['phone', 'address', 'gender', 'birth_date', 'emergency_contact', 'photo'];
     setTouchedFields(prev => new Set([...prev, ...allFields]));
 
@@ -368,7 +368,7 @@ export default function ParentOnboarding() {
         return d.toISOString().split('T')[0];
       }
 
-      // Append required fields
+      
       formPayload.append('phone', formData.phone);
       formPayload.append('address', formData.address);
       formPayload.append('gender', formData.gender);
@@ -379,7 +379,7 @@ export default function ParentOnboarding() {
         formPayload.append('photo', formData.photo);
       }
       
-      // Optional fields
+     
       if (formData.occupation) {
         formPayload.append('occupation', formData.occupation);
       }
@@ -405,7 +405,7 @@ export default function ParentOnboarding() {
         }
       );
 
-      // Check progress after submission
+      
       const progressRes = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/parents/onboarding/progress/`,
         {
@@ -459,9 +459,9 @@ export default function ParentOnboarding() {
 
   if (loadingProgress) {
     return (
-      <div className="min-h-screen bg-pink-100 flex items-center justify-center">
+      <div className="min-h-screen bg-josseypink2 flex items-center justify-center">
         <div className="text-center">
-          <div className="spinner border-4 border-[#FC46AA] border-t-transparent rounded-full w-12 h-12 animate-spin mx-auto"></div>
+          <div className="spinner border-4 border-josseypink1 border-t-transparent rounded-full w-12 h-12 animate-spin mx-auto"></div>
           <p className="mt-4 text-gray-700">Checking onboarding status...</p>
         </div>
       </div>
@@ -469,7 +469,7 @@ export default function ParentOnboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-pink-100 py-10 px-4">
+    <div className="min-h-screen bg-josseypink2 py-10 px-4">
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         <ProgressHeader progress={progress} />
         
@@ -522,7 +522,7 @@ export default function ParentOnboarding() {
             <button
               type="submit"
               disabled={isSubmitting || !isFormValid()}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FC46AA] hover:bg-[#e03d98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC46AA] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-josseypink1 hover:bg-josseypink1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-josseypink1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
               {isSubmitting ? (
                 <span className="flex items-center">

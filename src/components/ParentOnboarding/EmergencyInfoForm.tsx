@@ -29,13 +29,13 @@ export default function EmergencyInfoForm({
 }: EmergencyInfoFormProps) {
   
   const getInputClass = (fieldName: string) => {
-    const baseClass = "mt-1 block w-full rounded-md shadow-sm focus:ring-[#FC46AA] sm:text-sm p-2 border";
+    const baseClass = "mt-1 block w-full rounded-md shadow-sm focus:ring-josseypink1 sm:text-sm p-2 border";
     const error = getFieldError(fieldName);
     
     if (error) {
       return `${baseClass} border-red-300 focus:border-red-500 bg-red-50`;
     }
-    return `${baseClass} border-gray-300 focus:border-[#FC46AA]`;
+    return `${baseClass} border-gray-300 focus:border-josseypink1`;
   };
 
   return (
@@ -59,7 +59,7 @@ export default function EmergencyInfoForm({
             <p className="mt-1 text-sm text-red-600">{getFieldError('emergency_contact')}</p>
           )}
           {!getFieldError('emergency_contact') && formData.emergency_contact && (
-            <p className="mt-1 text-sm text-blue-600">✓ Valid emergency contact</p>
+            <p className="mt-1 text-sm text-josseypink1">✓ Valid emergency contact</p>
           )}
         </div>
 
@@ -76,7 +76,7 @@ export default function EmergencyInfoForm({
             placeholder="Your profession"
           />
           {formData.occupation && (
-            <p className="mt-1 text-sm text-blue-600">✓ Occupation added</p>
+            <p className="mt-1 text-sm text-josseypink1">✓ Occupation added</p>
           )}
         </div>
       </div>

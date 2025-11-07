@@ -61,13 +61,13 @@ export default function PersonalInfoForm({
 }: PersonalInfoFormProps) {
   
   const getInputClass = (fieldName: string) => {
-    const baseClass = "mt-1 block w-full rounded-md shadow-sm focus:ring-[#FC46AA] sm:text-sm p-2 border";
+    const baseClass = "mt-1 block w-full rounded-md shadow-sm focus:ring-josseypink1 sm:text-sm p-2 border";
     const error = getFieldError(fieldName);
     
     if (error) {
       return `${baseClass} border-red-300 focus:border-red-500 bg-red-50`;
     }
-    return `${baseClass} border-gray-300 focus:border-[#FC46AA]`;
+    return `${baseClass} border-gray-300 focus:border-josseypink1`;
   };
 
   return (
@@ -95,7 +95,7 @@ export default function PersonalInfoForm({
             <p className="mt-1 text-sm text-red-600">{getFieldError('phone')}</p>
           )}
           {!getFieldError('phone') && formData.phone && (
-            <p className="mt-1 text-sm text-green-600">✓ Valid phone number</p>
+            <p className="mt-1 text-sm text-josseypink1">✓ Valid phone number</p>
           )}
         </div>
 
@@ -123,7 +123,7 @@ export default function PersonalInfoForm({
             <p className="mt-1 text-sm text-red-600">{getFieldError('gender')}</p>
           )}
           {!getFieldError('gender') && formData.gender && (
-            <p className="mt-1 text-sm text-green-600">✓ Gender selected</p>
+            <p className="mt-1 text-sm text-josseypink1">✓ Gender selected</p>
           )}
         </div>
 
@@ -147,7 +147,7 @@ export default function PersonalInfoForm({
             <p className="mt-1 text-sm text-red-600">{getFieldError('address')}</p>
           )}
           {!getFieldError('address') && formData.address && (
-            <p className="mt-1 text-sm text-green-600">✓ Address looks good</p>
+            <p className="mt-1 text-sm text-josseypink1">✓ Address looks good</p>
           )}
         </div>
 
@@ -170,7 +170,7 @@ export default function PersonalInfoForm({
             <p className="mt-1 text-sm text-red-600">{getFieldError('birth_date')}</p>
           )}
           {!getFieldError('birth_date') && formData.birth_date && (
-            <p className="mt-1 text-sm text-green-600">✓ Valid birth date</p>
+            <p className="mt-1 text-sm text-josseypink1">✓ Valid birth date</p>
           )}
         </div>
 
@@ -193,7 +193,7 @@ export default function PersonalInfoForm({
             ))}
           </select>
           {formData.blood_type && (
-            <p className="mt-1 text-sm text-green-600">✓ Blood type selected</p>
+            <p className="mt-1 text-sm text-josseypink1">✓ Blood type selected</p>
           )}
         </div>
       </div>

@@ -47,9 +47,9 @@ export default function ProfilePhotoUpload({
               <img 
                 src={previewImage} 
                 alt="Profile preview" 
-                className="h-24 w-24 rounded-full object-cover border-2 border-green-500"
+                className="h-24 w-24 rounded-full object-cover border-2 border-josseypink1"
               />
-              <div className="absolute -top-1 -right-1 bg-green-500 rounded-full w-6 h-6 flex items-center justify-center">
+              <div className="absolute -top-1 -right-1 bg-josseypink1 rounded-full w-6 h-6 flex items-center justify-center">
                 <span className="text-white text-xs">✓</span>
               </div>
             </div>
@@ -84,7 +84,7 @@ export default function ProfilePhotoUpload({
             />
             
             {previewImage && (
-              <span className="text-sm text-green-600 font-medium">
+              <span className="text-sm text-josseypink1 font-medium">
                 Photo selected ✓
               </span>
             )}
@@ -110,7 +110,7 @@ export default function ProfilePhotoUpload({
             
             {!error && previewImage && (
               <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-md">
-                <p className="text-sm text-green-600 font-medium">
+                <p className="text-sm text-josseypink1 font-medium">
                   ✓ Profile photo looks good! You can proceed.
                 </p>
               </div>
