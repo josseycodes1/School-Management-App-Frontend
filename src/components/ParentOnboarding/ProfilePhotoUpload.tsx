@@ -57,7 +57,7 @@ export default function ProfilePhotoUpload({
             <p className="mt-1 text-sm text-red-600">{error}</p>
           )}
           {!error && previewImage && (
-            <p className="mt-1 text-sm text-green-600">✓ Profile photo uploaded</p>
+            <p className="mt-1 text-sm text-blue-600">✓ Profile photo uploaded</p>
           )}
           <p className="mt-1 text-xs text-gray-500">JPEG or PNG, max 5MB</p>
         </div>

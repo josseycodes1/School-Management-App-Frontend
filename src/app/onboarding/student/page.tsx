@@ -89,7 +89,7 @@ export default function StudentOnboarding() {
     }
   });
 
-  // Validation functions - KEEP YOUR EXISTING VALIDATION LOGIC
+
   const validateField = (name: string, value: any): string | undefined => {
     switch (name) {
       case 'phone':
@@ -115,7 +115,7 @@ export default function StudentOnboarding() {
         const birthDate = new Date(value);
         const today = new Date();
         if (birthDate > today) return 'Birth date cannot be in the future';
-        // For students, you might want different age validation
+        
         const minStudentAge = new Date();
         minStudentAge.setFullYear(today.getFullYear() - 6);
         if (birthDate > minStudentAge) return 'Student must be at least 6 years old';
@@ -181,7 +181,7 @@ export default function StudentOnboarding() {
           return;
         }
 
-        // Get onboarding progress
+        
         const progressRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/onboarding/progress/`, 
           {
@@ -193,13 +193,13 @@ export default function StudentOnboarding() {
 
         setProgress(progressRes.data);
 
-        // If onboarding is complete, redirect to dashboard
+       
         if (progressRes.data.completed) {
           router.push('/student');
           return;
         }
 
-        // Pre-fill existing data if available
+        
         const profileRes = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/onboarding/`,
           {
@@ -224,7 +224,7 @@ export default function StudentOnboarding() {
           setPreviewImage(profileData.photo);
         }
 
-        // If admission number is already generated, update form data
+        
         if (profileData.admission_number) {
           setFormData(prev => ({
             ...prev,
@@ -263,7 +263,7 @@ export default function StudentOnboarding() {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       
-      // Validate file type
+      
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
         const errorMsg = 'Please select a valid image file (JPEG, PNG, or WebP)';
@@ -272,7 +272,7 @@ export default function StudentOnboarding() {
         return;
       }
       
-      // Validate file size (5MB max)
+      
       if (file.size > 5 * 1024 * 1024) {
         const errorMsg = 'File size should be less than 5MB';
         setValidationErrors(prev => ({ ...prev, photo: errorMsg }));
@@ -287,7 +287,7 @@ export default function StudentOnboarding() {
 
       setValidationErrors(prev => ({ ...prev, photo: undefined }));
 
-      // Create preview
+      
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewImage(reader.result as string);
@@ -384,7 +384,7 @@ export default function StudentOnboarding() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Mark all fields as touched
+    
     const allFields = ['phone', 'address', 'gender', 'birth_date', 'class_level', 'parent_name', 'parent_contact', 'photo'];
     setTouchedFields(prev => new Set([...prev, ...allFields]));
 
@@ -408,7 +408,7 @@ export default function StudentOnboarding() {
         return d.toISOString().split('T')[0];
       }
 
-      // Append all fields with proper names
+     
       formPayload.append('phone', formData.phone);
       formPayload.append('address', formData.address);
       formPayload.append('gender', formData.gender);
@@ -418,7 +418,7 @@ export default function StudentOnboarding() {
       formPayload.append('parent_name', formData.parent_name);
       formPayload.append('parent_contact', formData.parent_contact);
       
-      // Optional fields
+      
       if (formData.blood_type) {
         formPayload.append('blood_type', formData.blood_type);
       }
@@ -433,7 +433,7 @@ export default function StudentOnboarding() {
         return;
       }
 
-      console.log('🚀 Submitting onboarding data...');
+      console.log('Submitting onboarding data...');
       const response = await axios.patch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/onboarding/`,
         formPayload,
@@ -446,13 +446,13 @@ export default function StudentOnboarding() {
       );
 
       const userProfileData = response.data;
-      console.log('✅ Onboarding response:', userProfileData);
+      console.log('Onboarding response:', userProfileData);
       
-      // ✅ CRITICAL: Save the complete response data to localStorage
+     
       localStorage.setItem('user_profile', JSON.stringify(userProfileData));
       localStorage.setItem('onboarding_complete', 'true');
       
-      // Also update the user data with admission number and class level
+      
       const userData = localStorage.getItem('user');
       if (userData) {
         const user = JSON.parse(userData);
@@ -465,7 +465,7 @@ export default function StudentOnboarding() {
         console.log('✅ Updated user data with admission number:', updatedUser.admission_number);
       }
 
-      // Check progress after submission
+      
       const progressRes = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/accounts/students/onboarding/progress/`,
         {
@@ -478,9 +478,9 @@ export default function StudentOnboarding() {
       setProgress(progressRes.data);
 
       if (progressRes.data.completed) {
-        console.log('🎉 Onboarding completed successfully!');
-        console.log('📝 Admission Number:', userProfileData.admission_number);
-        console.log('🏫 Class Level:', userProfileData.class_level);
+        console.log('Onboarding completed successfully!');
+        console.log('Admission Number:', userProfileData.admission_number);
+        console.log('Class Level:', userProfileData.class_level);
         
         toast.success(`Onboarding completed! Your Admission Number is ${userProfileData.admission_number}`);
         router.push('/student');
@@ -522,9 +522,9 @@ export default function StudentOnboarding() {
 
   if (loadingProgress) {
     return (
-      <div className="min-h-screen bg-pink-100 flex items-center justify-center">
+      <div className="min-h-screen bg-josseypink2 flex items-center justify-center">
         <div className="text-center">
-          <div className="spinner border-4 border-[#FC46AA] border-t-transparent rounded-full w-12 h-12 animate-spin mx-auto"></div>
+          <div className="spinner border-4 border-josseypink1 border-t-transparent rounded-full w-12 h-12 animate-spin mx-auto"></div>
           <p className="mt-4 text-gray-700">Checking onboarding status...</p>
         </div>
       </div>
@@ -532,7 +532,7 @@ export default function StudentOnboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-pink-100 py-10 px-4">
+    <div className="min-h-screen bg-josseypink2 py-10 px-4">
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         <ProgressHeader progress={progress} />
         
@@ -612,7 +612,7 @@ export default function StudentOnboarding() {
             <button
               type="submit"
               disabled={isSubmitting || !isFormValid()}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FC46AA] hover:bg-[#e03d98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC46AA] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-josseypink1 hover:bg-josseypink10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-josseypink1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
               {isSubmitting ? (
                 <span className="flex items-center">

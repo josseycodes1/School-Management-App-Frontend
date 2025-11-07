@@ -59,7 +59,7 @@ export default function EmergencyInfoForm({
             <p className="mt-1 text-sm text-red-600">{getFieldError('emergency_contact')}</p>
           )}
           {!getFieldError('emergency_contact') && formData.emergency_contact && (
-            <p className="mt-1 text-sm text-green-600">✓ Valid emergency contact</p>
+            <p className="mt-1 text-sm text-blue-600">✓ Valid emergency contact</p>
           )}
         </div>
 
@@ -76,7 +76,7 @@ export default function EmergencyInfoForm({
             placeholder="Your profession"
           />
           {formData.occupation && (
-            <p className="mt-1 text-sm text-green-600">✓ Occupation added</p>
+            <p className="mt-1 text-sm text-blue-600">✓ Occupation added</p>
           )}
         </div>
       </div>
