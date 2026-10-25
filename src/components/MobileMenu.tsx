@@ -200,7 +200,7 @@ const MobileMenu = () => {
               <div className="w-12 h-12 text-josseypink1 rounded-full mr-3 flex items-center justify-center bg-white border-2 border-white">
                 JC
               </div>
-              <span className="font-bold text-white">JOSSEYCODES ACADEMY</span>
+              <span className="font-bold text-white">JS ACADEMY</span>
             </Link>
           </div>
           

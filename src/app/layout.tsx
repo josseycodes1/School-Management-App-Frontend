@@ -5,7 +5,7 @@ import "./globals.css";
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500"] }); 
 
 export const metadata: Metadata = {
-  title: "Josseycodes School Management Dashboard",
+  title: "JS School Management Dashboard",
   description: "School Management System built with Nextjs",
 };
 

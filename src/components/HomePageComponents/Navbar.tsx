@@ -34,7 +34,7 @@ export default function Navbar() {
             <h1 className={`text-xl md:text-2xl font-bold ${
               isScrolled ? 'text-josseypink1' : 'text-white'
             } tracking-tight`}>
-              JosseyCodes Academy
+              JS Academy
             </h1>
           </Link>
 

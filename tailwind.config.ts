@@ -15,7 +15,7 @@ const config: Config = {
       },
       
       images: {
-        domains: ["josseycodes-academy.onrender.com"],
+        domains: ["js-academy.onrender.com"],
       },
 
       colors: {

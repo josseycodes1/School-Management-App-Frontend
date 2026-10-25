@@ -5,12 +5,12 @@ export default function AboutUs() {
     <section className="py-12 md:py-16 bg-white">
       <div className="max-w-6xl mx-auto px-4 md:px-6">
         <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-8 md:mb-12">
-          About <span className="text-josseypink1">JosseyCodes Academy</span>
+          About <span className="text-josseypink1">JS Academy</span>
         </h2>
         
         <div className="mb-8 md:mb-12">
           <p className="text-gray-600 text-center max-w-3xl mx-auto mb-6">
-            Established in 2013, JosseyCodes Academy has been at the forefront of providing quality secondary education 
+            Established in 2013, JS Academy has been at the forefront of providing quality secondary education
             that balances academic excellence with character development. Our mission is to nurture well-rounded individuals 
             who are prepared for university education and beyond.
           </p>

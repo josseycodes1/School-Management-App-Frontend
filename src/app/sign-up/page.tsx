@@ -351,7 +351,7 @@ const nameRegex = /^[a-zA-Z\s]+$/;
           <div className="w-16 h-16 rounded-full bg-josseypink1 mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
             JC
           </div>
-          <h1 className="text-3xl font-bold text-josseypink1">JOSSEYCODES</h1>
+          <h1 className="text-3xl font-bold text-josseypink1">JS</h1>
           <p className="text-gray-600 mt-2">Create your account</p>
         </div>
 

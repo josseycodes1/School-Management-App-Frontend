@@ -1,7 +1,7 @@
 export default function Testimonials() {
   const testimonials = [
     {
-      quote: "JosseyCodes Academy transformed my child's approach to learning. The teachers are dedicated and the facilities are exceptional.",
+      quote: "JS Academy transformed my child's approach to learning. The teachers are dedicated and the facilities are exceptional.",
       author: "Mrs. Adekunle",
       role: "Parent of SS2 Student"
     },
@@ -11,7 +11,7 @@ export default function Testimonials() {
       role: "Graduate, Class of 2022"
     },
     {
-      quote: "Teaching at JosseyCodes is rewarding. We have small class sizes that allow for personalized attention to each student.",
+      quote: "Teaching at JS is rewarding. We have small class sizes that allow for personalized attention to each student.",
       author: "Mr. Johnson",
       role: "Mathematics Teacher"
     }

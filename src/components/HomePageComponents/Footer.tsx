@@ -97,7 +97,7 @@ export default function Footer() {
             <div className="w-8 h-8 rounded-full text-josseypink1 mr-2 flex items-center justify-center bg-white text-sm font-bold">
               JC
             </div>
-            <h3 className="text-lg font-bold">JosseyCodes Academy</h3>
+            <h3 className="text-lg font-bold">JS Academy</h3>
           </div>
           <p className="text-gray-300 text-sm mb-2 leading-snug">
             Empowering the next generation of leaders through quality secondary
@@ -177,7 +177,7 @@ export default function Footer() {
       {/* Bottom Footer */}
       <div className="max-w-6xl mx-auto mt-6 pt-4 border-t border-white text-center text-gray-300 text-xs">
         <p>
-          © {new Date().getFullYear()} JosseyCodes Academy. All rights
+          © {new Date().getFullYear()} JS Academy. All rights
           reserved.
         </p>
       </div>
